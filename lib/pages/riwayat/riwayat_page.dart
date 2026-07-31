@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/header_halaman.dart';
 
@@ -500,43 +501,58 @@ class _KartuRiwayat extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
+      constraints: const BoxConstraints(minHeight: 99),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: _dekorasiKartu,
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Image.asset(
-            'assets/icons/riwayat/blood_drop.png',
-            width: 56,
-            height: 56,
+          // Icon Blood — Figma 66px + inset −6% ≈ 74px visual
+          SizedBox(
+            width: 74,
+            height: 74,
+            child: SvgPicture.asset(
+              'assets/icons/riwayat/blood_drop.svg',
+              width: 74,
+              height: 74,
+              fit: BoxFit.contain,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                Text(
+                  item.tanggal,
+                  style: AppTextStyles.body.copyWith(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 2),
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
                       child: Text(
-                        item.tanggal,
-                        style: AppTextStyles.body.copyWith(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
+                        item.lokasi,
+                        style: AppTextStyles.body.copyWith(fontSize: 14),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
+                    const SizedBox(width: 8),
+                    // Gol dar — Figma 43×21, font 10; sedikit diperbesar
                     Container(
-                      width: 43,
-                      height: 21,
+                      width: 48,
+                      height: 24,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: AppColors.surface,
                         borderRadius: BorderRadius.circular(8),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.12),
+                            color: Colors.black.withValues(alpha: 0.25),
                             blurRadius: 4,
                             offset: Offset.zero,
                           ),
@@ -545,7 +561,7 @@ class _KartuRiwayat extends StatelessWidget {
                       child: Text(
                         item.golonganDarah,
                         style: const TextStyle(
-                          fontSize: 10,
+                          fontSize: 12,
                           fontWeight: FontWeight.w600,
                           color: AppColors.primary,
                         ),
@@ -553,8 +569,6 @@ class _KartuRiwayat extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 2),
-                Text(item.lokasi, style: AppTextStyles.body),
                 const SizedBox(height: 6),
                 Row(
                   children: [
@@ -562,7 +576,7 @@ class _KartuRiwayat extends StatelessWidget {
                       item.volume,
                       style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
                     ),
-                    const SizedBox(width: 28),
+                    const SizedBox(width: 36),
                     Text(
                       item.status,
                       style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500),
