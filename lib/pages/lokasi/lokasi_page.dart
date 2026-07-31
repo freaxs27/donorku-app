@@ -2,54 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../../theme/app_theme.dart';
-
-class _DataLokasi {
-  final String nama;
-  final String alamat;
-  final String? fotoAsset; 
-  final LatLng posisi;
-
-  const _DataLokasi({
-    required this.nama,
-    required this.alamat,
-    this.fotoAsset,
-    required this.posisi,
-  });
-}
-
-const List<_DataLokasi> _semuaLokasi = [
-  _DataLokasi(
-    nama: 'Rumah Sakit Pasundan',
-    alamat: 'Lebakgede, Coblong',
-    fotoAsset: 'assets/images/lokasi/rs-pasundan.jpg',
-    posisi: LatLng(-6.8916, 107.6107),
-  ),
-  _DataLokasi(
-    nama: 'Rumah Sakit Santo Boromeus',
-    alamat: 'Lebakgede, Coblong',
-    fotoAsset: 'assets/images/lokasi/rs-santo.jpg',
-    posisi: LatLng(-6.8975, 107.6100),
-  ),
-  _DataLokasi(
-    nama: 'Rumah Sakit Kartini Bandung',
-    alamat: 'Negiasari, Cibeunying Kaler',
-    posisi: LatLng(-6.9012, 107.6205),
-  ),
-  _DataLokasi(
-    nama: 'RSKB Helmahera Siaga',
-    alamat: 'Citarum, Bandung Wetan',
-    posisi: LatLng(-6.9068, 107.6152),
-  ),
-  _DataLokasi(
-    nama: 'Rumah Sakit Veteran',
-    alamat: 'Kb. Pisang, Sumur Bandung',
-    posisi: LatLng(-6.9143, 107.6098),
-  ),
-];
+import '../../widgets/header_halaman.dart';
+import '../../model/lokasi_donor.dart';
 
 // (LK-001 s/d LK-004).
 class LokasiPage extends StatefulWidget {
-  const LokasiPage({super.key});
+  final LokasiDonor? lokasiAwal;
+
+  const LokasiPage({super.key, this.lokasiAwal});
 
   @override
   State<LokasiPage> createState() => _LokasiPageState();
@@ -65,13 +25,21 @@ class _LokasiPageState extends State<LokasiPage> with TickerProviderStateMixin {
   final MapController _mapController = MapController();
   final DraggableScrollableController _sheetController = DraggableScrollableController();
 
-  _DataLokasi? _lokasiTerpilih;
-  double _sheetExtent = _sheetAwal;
+  LokasiDonor? _lokasiTerpilih;
+  late double _sheetExtent;
   double _opasitasMarker = 1;
+
+  @override
+  void initState() {
+    super.initState();
+    _lokasiTerpilih = widget.lokasiAwal;
+    _sheetExtent = widget.lokasiAwal != null ? _sheetSatuKartu : _sheetAwal;
+  }
 
   bool get _sheetTerbuka => _sheetExtent > (_sheetAwal + _sheetMax) / 2;
 
-  void _pilihLokasi(_DataLokasi lokasi) {
+
+  void _pilihLokasi(LokasiDonor lokasi) {
     final posisiAwal = _mapController.camera.center;
     final zoomAwal = _mapController.camera.zoom;
     final rotasiAwal = _mapController.camera.rotation;
@@ -140,9 +108,9 @@ class _LokasiPageState extends State<LokasiPage> with TickerProviderStateMixin {
           // Peta asli (OpenStreetMap via flutter_map)
           FlutterMap(
             mapController: _mapController,
-            options: const MapOptions(
-              initialCenter: _pusatDefault,
-              initialZoom: 14,
+            options: MapOptions(
+              initialCenter: widget.lokasiAwal?.posisi ?? _pusatDefault,
+              initialZoom: widget.lokasiAwal != null ? 16 : 14,
             ),
             children: [
               TileLayer(
@@ -162,7 +130,7 @@ class _LokasiPageState extends State<LokasiPage> with TickerProviderStateMixin {
                           ),
                         ),
                       ]
-                    : _semuaLokasi
+                    : daftarLokasiDonor
                         .map(
                           (l) => Marker(
                             point: l.posisi,
@@ -223,17 +191,17 @@ class _LokasiPageState extends State<LokasiPage> with TickerProviderStateMixin {
             },
             child: DraggableScrollableSheet(
               controller: _sheetController,
-              initialChildSize: _sheetAwal,
+              initialChildSize: _sheetExtent,
               minChildSize: _sheetMinAbsolut,
               maxChildSize: _sheetMax,
               builder: (context, scrollController) {
-                final List<_DataLokasi> daftarDitampilkan;
+                final List<LokasiDonor> daftarDitampilkan;
                 if (_sheetTerbuka) {
-                  daftarDitampilkan = _semuaLokasi; 
+                  daftarDitampilkan = daftarLokasiDonor; 
                 } else if (_lokasiTerpilih != null) {
                   daftarDitampilkan = [_lokasiTerpilih!]; 
                 } else {
-                  daftarDitampilkan = _semuaLokasi.take(2).toList(); 
+                  daftarDitampilkan = daftarLokasiDonor.take(2).toList(); 
                 }
 
                 return Container(
@@ -249,21 +217,10 @@ class _LokasiPageState extends State<LokasiPage> with TickerProviderStateMixin {
                           padding: const EdgeInsets.fromLTRB(
                             AppDimens.paddingM, 12, AppDimens.paddingM, 0,
                           ),
-                          child: Row(
-                            children: [
-                              GestureDetector(
-                                onTap: _toggleSheet,
-                                child: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-                              ),
-                              const Expanded(
-                                child: Text(
-                                  'Lokasi',
-                                  textAlign: TextAlign.center,
-                                  style: AppTextStyles.subheading,
-                                ),
-                              ),
-                              const SizedBox(width: 24),
-                            ],
+                          child: HeaderHalaman(
+                            judul: 'Lokasi',
+                            leadingIcon: Icons.arrow_back,
+                            onTapLeading: _toggleSheet,
                           ),
                         ),
                       GestureDetector(
@@ -306,7 +263,13 @@ class _LokasiPageState extends State<LokasiPage> with TickerProviderStateMixin {
             ),
           ),
 
-          if (!_sheetTerbuka) _HeaderLokasi(onTapBack: _toggleSheet),
+          if (!_sheetTerbuka)
+            _HeaderLokasi(
+              tampilkanPanah: widget.lokasiAwal != null,
+              onTapBack: widget.lokasiAwal != null
+                  ? () => Navigator.of(context).pop()
+                  : _toggleSheet,
+            ),
         ],
       ),
       ),
@@ -315,30 +278,20 @@ class _LokasiPageState extends State<LokasiPage> with TickerProviderStateMixin {
 }
 
 class _HeaderLokasi extends StatelessWidget {
+  final bool tampilkanPanah;
   final VoidCallback onTapBack;
 
-  const _HeaderLokasi({required this.onTapBack});
+  const _HeaderLokasi({required this.tampilkanPanah, required this.onTapBack});
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: AppDimens.paddingL, vertical: 4),
-        child: Row(
-          children: [
-            GestureDetector(
-              onTap: onTapBack,
-              child: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-            ),
-            const Expanded(
-              child: Text(
-                'Lokasi',
-                textAlign: TextAlign.center,
-                style: AppTextStyles.subheading,
-              ),
-            ),
-            const SizedBox(width: 24), 
-          ],
+        child: HeaderHalaman(
+          judul: 'Lokasi',
+          leadingIcon: tampilkanPanah ? Icons.arrow_back : null,
+          onTapLeading: onTapBack,
         ),
       ),
     );
@@ -346,7 +299,7 @@ class _HeaderLokasi extends StatelessWidget {
 }
 
 class _KartuLokasiPeta extends StatelessWidget {
-  final _DataLokasi data;
+  final LokasiDonor data;
   final VoidCallback onCekDetail;
 
   const _KartuLokasiPeta({required this.data, required this.onCekDetail});

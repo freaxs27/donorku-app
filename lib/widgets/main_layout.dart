@@ -1,27 +1,17 @@
 import 'package:flutter/material.dart';
-
-/// MainLayout adalah kerangka utama aplikasi Donorku.
-/// Semua halaman yang punya bottom navigation bar (Beranda, Lokasi,
-/// Daftar, Riwayat, Profil) akan "dibungkus" oleh widget ini.
-///
-/// Cara pakai nanti (contoh, JANGAN dijalankan dulu sebelum halaman lain
-/// dibuat):
-///
-/// MainLayout(
-///   pages: [
-///     DashboardPage(),   // Beranda
-///     LocationPage(),    // Lokasi
-///     DonorFlowPage(),   // Daftar
-///     HistoryPage(),     // Riwayat
-///     ProfilePage(),     // Profil
-///   ],
-/// )
+//
+// MainLayout(
+//   pages: [
+//     DashboardPage(),   // Beranda
+//     LocationPage(),    // Lokasi
+//     DonorFlowPage(),   // Daftar
+//     HistoryPage(),     // Riwayat
+//     ProfilePage(),     // Profil
+//   ],
+// )
 class MainLayout extends StatefulWidget {
-  /// Daftar halaman untuk tiap tab, urutannya harus sama dengan urutan
-  /// item di bottom navigation bar.
   final List<Widget> pages;
 
-  /// Index tab yang aktif saat pertama kali dibuka (default: tab pertama).
   final int initialIndex;
 
   const MainLayout({
@@ -36,6 +26,7 @@ class MainLayout extends StatefulWidget {
 
 class _MainLayoutState extends State<MainLayout> {
   late int _currentIndex;
+  late final List<GlobalKey<NavigatorState>> _navigatorKeys;
 
   static const List<_NavItemData> _navItems = [
     _NavItemData(assetPath: 'assets/icons/nav/beranda.png', label: 'Beranda'),
@@ -49,9 +40,13 @@ class _MainLayoutState extends State<MainLayout> {
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
+    _navigatorKeys = List.generate(widget.pages.length, (_) => GlobalKey<NavigatorState>());
   }
 
   void _onTapNav(int index) {
+    if (index != _currentIndex) {
+      _navigatorKeys[index].currentState?.popUntil((route) => route.isFirst);
+    }
     setState(() => _currentIndex = index);
   }
 
@@ -63,12 +58,16 @@ class _MainLayoutState extends State<MainLayout> {
     );
 
     return Scaffold(
-      // IndexedStack menjaga state tiap halaman tetap hidup walau
-      // berpindah tab (tidak seperti Navigator.push yang membuat
-      // instance baru tiap kali).
       body: IndexedStack(
         index: _currentIndex,
-        children: widget.pages,
+        children: List.generate(widget.pages.length, (i) {
+          return Navigator(
+            key: _navigatorKeys[i],
+            onGenerateRoute: (settings) => MaterialPageRoute(
+              builder: (context) => widget.pages[i],
+            ),
+          );
+        }),
       ),
       bottomNavigationBar: _buildBottomNav(context),
     );
@@ -78,7 +77,7 @@ class _MainLayoutState extends State<MainLayout> {
     return SafeArea(
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).scaffoldBackgroundColor,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.06),
@@ -133,14 +132,12 @@ class _NavItem extends StatelessWidget {
     final Color activeBg = Theme.of(context).colorScheme.primary;
     final Color inactiveColor = Colors.black87;
 
-    // Item AKTIF: kotak merah rounded membungkus icon + label, keduanya putih.
-    // Item TIDAK aktif: hanya icon + label warna hitam, tanpa background.
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(5),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        width: 68, // lebar tetap, sama untuk semua item (ikut label terpanjang: "Riwayat")
+        width: 68, 
         padding: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
           color: isActive ? activeBg : Colors.transparent,
@@ -150,9 +147,6 @@ class _NavItem extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             ColorFiltered(
-              // Icon PNG asli warnanya hitam polos (dari Figma export).
-              // ColorFiltered dipakai supaya bisa "dicat ulang" jadi putih
-              // saat aktif, tanpa perlu file gambar terpisah untuk tiap warna.
               colorFilter: ColorFilter.mode(
                 isActive ? Colors.white : inactiveColor,
                 BlendMode.srcIn,
