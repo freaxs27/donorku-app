@@ -17,7 +17,7 @@ class DonorkuApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       // Entry point aplikasi sekarang ke Login, bukan langsung ke Beranda.
       // MainLayout (bottom nav) baru muncul setelah user berhasil login.
-      home: const LoginPage(),
+      home: const LoginPage(), 
     );
   }
 }

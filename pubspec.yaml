@@ -66,6 +66,7 @@ flutter:
        - assets/icons/notifikasi/
        - assets/icons/bantuan/
        - assets/icons/edukasi/
+       - assets/icons/riwayat/
        - assets/images/
        - assets/images/lokasi/
 
