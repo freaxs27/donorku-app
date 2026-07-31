@@ -3,16 +3,17 @@ import '../../theme/app_theme.dart';
 import '../bantuan/reza_chatbot_page.dart';
 import '../bantuan/chat_cs.dart';
 
-// (D-001 / B-001 ).
+// (D-001 / B-001).
 class BerandaPage extends StatelessWidget {
   const BerandaPage({super.key});
 
-  void _bukaNotifikasi(BuildContext context) {
-    showDialog(
+  void _bukaNotifikasi(BuildContext context) async {
+    await showDialog(
       context: context,
       barrierDismissible: true, 
       builder: (context) => const _NotifikasiModal(),
     );
+    if (context.mounted) FocusScope.of(context).unfocus();
   }
 
   @override
@@ -53,8 +54,16 @@ class BerandaPage extends StatelessWidget {
 
             const _KartuLokasiTersedia(
               daftarLokasi: [
-                _DataLokasi(nama: 'Rumah Sakit Pasundan', alamat: 'Lebakgede, Coblong'),
-                _DataLokasi(nama: 'Rumah Sakit Santo Boromeus', alamat: 'Lebakgede, Coblong'),
+                _DataLokasi(
+                  nama: 'Rumah Sakit Pasundan',
+                  alamat: 'Lebakgede, Coblong',
+                  fotoAsset: 'assets/images/lokasi/rs-pasundan.jpg',
+                ),
+                _DataLokasi(
+                  nama: 'Rumah Sakit Santo Boromeus',
+                  alamat: 'Lebakgede, Coblong',
+                  fotoAsset: 'assets/images/lokasi/rs-santo.jpg',
+                ),
               ],
             ),
             const SizedBox(height: 20),
@@ -63,7 +72,10 @@ class BerandaPage extends StatelessWidget {
               judul: 'Bicara Dengan Reza Chatbot',
               subjudul: 'Silahkan bertanya kepada Reza seputar donor darah',
               iconAssetPath: null,
-              onTap: () => Navigator.of(context).push(
+              onTapPanah: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const RezaChatbotPage()),
+              ),
+              onKirimPesan: (pesan) => Navigator.of(context).push(
                 MaterialPageRoute(builder: (context) => const RezaChatbotPage()),
               ),
             ),
@@ -72,8 +84,11 @@ class BerandaPage extends StatelessWidget {
               judul: 'Bicara Dengan Admin',
               subjudul: 'Terhubung langsung dengan staf dukungan',
               iconAssetPath: 'assets/icons/bantuan/admin.png',
-              onTap: () => Navigator.of(context).push(
+              onTapPanah: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (context) => const ChatCsPage()),
+              ),
+              onKirimPesan: (pesan) => Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => ChatCsPage(pesanAwal: pesan)),
               ),
             ),
           ],
@@ -103,37 +118,50 @@ class _KartuMulaiDonor extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppDimens.paddingM),
-      decoration: BoxDecoration(
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppDimens.radiusM),
+      child: Container(
+        width: double.infinity, 
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppDimens.radiusM),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Mulai Donorkan Darahmu', style: AppTextStyles.subheading),
-                const SizedBox(height: 4),
-                Text(
-                  'Donorkan di posko donor terdekat untuk membantu orang yang membutuhkan',
-                  style: AppTextStyles.caption,
-                ),
-                const SizedBox(height: 12),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(minimumSize: const Size(140, 40)),
-                  onPressed: () {
-                  },
-                  child: const Text('Daftar Donor'),
-                ),
-              ],
+        child: Stack(
+          children: [
+            Positioned(
+              right: -16,
+              bottom: -10,
+              child: Image.asset(
+                'assets/images/ilustrasi_donor.png',
+                width: 170,
+              ),
             ),
-          ),
-          const SizedBox(width: 12),
-          Image.asset('assets/images/ilustrasi_donor.png', width: 90),
-        ],
+            Padding(
+              padding: const EdgeInsets.all(AppDimens.paddingM),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(
+                    width: 190,
+                    child: Text('Mulai Donorkan Darahmu', style: AppTextStyles.subheading),
+                  ),
+                  const SizedBox(height: 4),
+                  SizedBox(
+                    width: 190,
+                    child: Text(
+                      'Donorkan di posko donor terdekat untuk membantu orang yang membutuhkan',
+                      style: AppTextStyles.caption,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(minimumSize: const Size(140, 40)),
+                    onPressed: () {
+                    },
+                    child: const Text('Daftar Donor'),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -220,7 +248,8 @@ class _KartuAndaSudahDonor extends StatelessWidget {
 class _DataLokasi {
   final String nama;
   final String alamat;
-  const _DataLokasi({required this.nama, required this.alamat});
+  final String fotoAsset;
+  const _DataLokasi({required this.nama, required this.alamat, required this.fotoAsset});
 }
 
 class _KartuLokasiTersedia extends StatelessWidget {
@@ -263,7 +292,9 @@ class _KartuLokasiItem extends StatelessWidget {
         border: Border.all(color: AppColors.border),
         borderRadius: BorderRadius.circular(AppDimens.radiusM),
       ),
-      child: Center(
+      child: Padding(
+        padding: const EdgeInsets.only(left: 16),
+        child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -272,14 +303,14 @@ class _KartuLokasiItem extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Container(
-                  width: 72,
-                  height: 72,
-                  decoration: BoxDecoration(
-                    color: AppColors.background,
-                    borderRadius: BorderRadius.circular(AppDimens.radiusS),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(AppDimens.radiusS),
+                  child: Image.asset(
+                    data.fotoAsset,
+                    width: 72,
+                    height: 72,
+                    fit: BoxFit.cover,
                   ),
-                  child: const Icon(Icons.local_hospital_outlined, color: AppColors.textSecondary),
                 ),
                 const SizedBox(width: 12),
                 SizedBox(
@@ -306,42 +337,69 @@ class _KartuLokasiItem extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 14),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(0, 36),
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                shape: const StadiumBorder(),
-              ),
-              onPressed: () {
-              },
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: const [
-                  Text('Cek Detail Lokasi'),
-                  SizedBox(width: 6),
-                  Icon(Icons.arrow_forward, size: 16, color: Colors.white),
-                ],
+            SizedBox(
+              width: 274, 
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(36),
+                  shape: const StadiumBorder(),
+                ),
+                onPressed: () {
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Text('Cek Detail Lokasi'),
+                    SizedBox(width: 6),
+                    Icon(Icons.arrow_forward, size: 16, color: Colors.white),
+                  ],
+                ),
               ),
             ),
           ],
         ),
       ),
+      ),
     );
   }
 }
 
-class _KartuChat extends StatelessWidget {
+class _KartuChat extends StatefulWidget {
   final String judul;
   final String subjudul;
   final String? iconAssetPath; 
-  final VoidCallback onTap;
+  final VoidCallback onTapPanah; 
+  final ValueChanged<String> onKirimPesan; 
 
   const _KartuChat({
     required this.judul,
     required this.subjudul,
     this.iconAssetPath,
-    required this.onTap,
+    required this.onTapPanah,
+    required this.onKirimPesan,
   });
+
+  @override
+  State<_KartuChat> createState() => _KartuChatState();
+}
+
+class _KartuChatState extends State<_KartuChat> {
+  final TextEditingController _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _kirim() {
+    widget.onKirimPesan(_controller.text);
+  }
+
+  void _hapusDanTutupKeyboard() {
+    _controller.clear();
+    FocusScope.of(context).unfocus();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -356,10 +414,10 @@ class _KartuChat extends StatelessWidget {
         children: [
           Row(
             children: [
-              if (iconAssetPath != null) ...[
+              if (widget.iconAssetPath != null) ...[
                 CircleAvatar(
                   backgroundColor: AppColors.background,
-                  backgroundImage: AssetImage(iconAssetPath!),
+                  backgroundImage: AssetImage(widget.iconAssetPath!),
                 ),
                 const SizedBox(width: 10),
               ],
@@ -367,43 +425,56 @@ class _KartuChat extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(judul, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
-                    Text(subjudul, style: AppTextStyles.caption),
+                    Text(widget.judul, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
+                    Text(widget.subjudul, style: AppTextStyles.caption),
                   ],
                 ),
               ),
-              const Icon(Icons.arrow_forward, size: 18),
+              GestureDetector(
+                onTap: widget.onTapPanah,
+                child: const Icon(Icons.arrow_forward, size: 18),
+              ),
             ],
           ),
           const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
-                child: GestureDetector(
-                  onTap: onTap,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: AppColors.background,
-                      borderRadius: BorderRadius.circular(999), 
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'Tulis Pertanyaanmu',
-                            style: AppTextStyles.body.copyWith(color: AppColors.textHint),
-                          ),
-                        ),
-                        const Icon(Icons.close, size: 16, color: AppColors.textSecondary),
-                      ],
-                    ),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.background,
+                    borderRadius: BorderRadius.circular(999), 
                   ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _controller,
+                          style: AppTextStyles.body,
+                          decoration: const InputDecoration(
+                            hintText: 'Tulis Pertanyaanmu',
+                            filled: false,
+                            isDense: true,
+                            border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                          ),
+                          onSubmitted: (_) => _kirim(),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: _hapusDanTutupKeyboard,
+                        child: const Icon(Icons.close, size: 16, color: AppColors.textSecondary),
+                      ),
+                    ],
+                  ),
+
                 ),
               ),
               const SizedBox(width: 8),
               GestureDetector(
-                onTap: onTap,
+                onTap: _kirim,
                 child: Container(
                   padding: const EdgeInsets.all(10),
                   decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.primary),
