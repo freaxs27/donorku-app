@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/header_halaman.dart';
+import '../../model/lokasi_donor.dart';
+import 'donor_konfirmasi_page.dart';
 
 // (D-003).
 class KuisionerKesehatanPage extends StatefulWidget {
-  const KuisionerKesehatanPage({super.key});
+  final DateTime? tanggalDonor;
+  final LokasiDonor? lokasiDonor;
+
+  const KuisionerKesehatanPage({super.key, this.tanggalDonor, this.lokasiDonor});
 
   @override
   State<KuisionerKesehatanPage> createState() => _KuisionerKesehatanPageState();
 }
 
 class _KuisionerKesehatanPageState extends State<KuisionerKesehatanPage> {
-  static const List<String> _pertanyaan = [
+  static const List<String> pertanyaanKuisioner = [
     'Apakah Anda sedang demam, flu, batuk, atau sakit?',
     'Apakah Anda merasa sehat hari ini?',
     'Apakah pernah dirawat di rumah sakit',
@@ -27,10 +32,19 @@ class _KuisionerKesehatanPageState extends State<KuisionerKesehatanPage> {
     'Apakah Anda bersedia mendonorkan darah secara sukarela tanpa paksaan?',
   ];
 
-  late final List<bool> _jawaban = List.filled(_pertanyaan.length, true);
+  late final List<bool> _jawaban = List.filled(pertanyaanKuisioner.length, true);
 
   void _selanjutnya() {
-    debugPrint('Jawaban kuisioner: $_jawaban');
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => DonorKonfirmasiPage(
+          tanggalDonor: widget.tanggalDonor,
+          lokasiDonor: widget.lokasiDonor,
+          pertanyaan: pertanyaanKuisioner,
+          jawaban: _jawaban,
+        ),
+      ),
+    );
   }
 
   @override
@@ -57,13 +71,13 @@ class _KuisionerKesehatanPageState extends State<KuisionerKesehatanPage> {
                     ),
                     const SizedBox(height: 16),
 
-                    for (int i = 0; i < _pertanyaan.length; i++) ...[
+                    for (int i = 0; i < pertanyaanKuisioner.length; i++) ...[
                       _KartuPertanyaan(
-                        pertanyaan: _pertanyaan[i],
+                        pertanyaan: pertanyaanKuisioner[i],
                         jawabanYa: _jawaban[i],
                         onUbah: (ya) => setState(() => _jawaban[i] = ya),
                       ),
-                      if (i != _pertanyaan.length - 1) const SizedBox(height: 10),
+                      if (i != pertanyaanKuisioner.length - 1) const SizedBox(height: 10),
                     ],
                   ],
                 ),

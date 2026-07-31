@@ -1,4 +1,22 @@
 import 'package:flutter/material.dart';
+
+class MainLayoutScope extends InheritedWidget {
+  final void Function(int index) pindahTab;
+
+  const MainLayoutScope({
+    super.key,
+    required this.pindahTab,
+    required super.child,
+  });
+
+  static MainLayoutScope? of(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<MainLayoutScope>();
+  }
+
+  @override
+  bool updateShouldNotify(MainLayoutScope oldWidget) => pindahTab != oldWidget.pindahTab;
+}
+
 //
 // MainLayout(
 //   pages: [
@@ -57,19 +75,22 @@ class _MainLayoutState extends State<MainLayout> {
       'Jumlah halaman (${widget.pages.length}) harus sama dengan jumlah item nav (${_navItems.length})',
     );
 
-    return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: List.generate(widget.pages.length, (i) {
-          return Navigator(
-            key: _navigatorKeys[i],
-            onGenerateRoute: (settings) => MaterialPageRoute(
-              builder: (context) => widget.pages[i],
-            ),
-          );
-        }),
+    return MainLayoutScope(
+      pindahTab: _onTapNav,
+      child: Scaffold(
+        body: IndexedStack(
+          index: _currentIndex,
+          children: List.generate(widget.pages.length, (i) {
+            return Navigator(
+              key: _navigatorKeys[i],
+              onGenerateRoute: (settings) => MaterialPageRoute(
+                builder: (context) => widget.pages[i],
+              ),
+            );
+          }),
+        ),
+        bottomNavigationBar: _buildBottomNav(context),
       ),
-      bottomNavigationBar: _buildBottomNav(context),
     );
   }
 

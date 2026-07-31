@@ -5,7 +5,7 @@ import '../../model/lokasi_donor.dart';
 import '../lokasi/lokasi_page.dart';
 import 'kuisioner_kesehatan_page.dart';
 
-/// Halaman Jadwal & Lokasi Donor (D-002).
+// (D-002).
 class JadwalLokasiPage extends StatefulWidget {
   const JadwalLokasiPage({super.key});
 
@@ -14,8 +14,8 @@ class JadwalLokasiPage extends StatefulWidget {
 }
 
 class _JadwalLokasiPageState extends State<JadwalLokasiPage> {
-  DateTime _bulanDitampilkan = DateTime(2026, 8);
-  DateTime? _tanggalDipilih = DateTime(2026, 8, 1);
+  DateTime _bulanDitampilkan = DateTime(2025, 12);
+  DateTime? _tanggalDipilih = DateTime(2025, 12, 28);
   LokasiDonor? _lokasiDipilih;
 
   static const List<String> _namaBulan = [
@@ -52,7 +52,12 @@ class _JadwalLokasiPageState extends State<JadwalLokasiPage> {
 
   void _selanjutnya() {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const KuisionerKesehatanPage()),
+      MaterialPageRoute(
+        builder: (context) => KuisionerKesehatanPage(
+          tanggalDonor: _tanggalDipilih,
+          lokasiDonor: _lokasiDipilih,
+        ),
+      ),
     );
   }
 
@@ -75,7 +80,6 @@ class _JadwalLokasiPageState extends State<JadwalLokasiPage> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Kartu kalender
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(AppDimens.paddingM),
@@ -110,7 +114,6 @@ class _JadwalLokasiPageState extends State<JadwalLokasiPage> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Kartu daftar lokasi
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(AppDimens.paddingM),
@@ -123,6 +126,7 @@ class _JadwalLokasiPageState extends State<JadwalLokasiPage> {
                       children: [
                         Text('Silahkan pilih lokasi anda ingin melakukan donor :', style: AppTextStyles.caption),
                         const SizedBox(height: 12),
+
                         SizedBox(
                           height: 340,
                           child: Scrollbar(
@@ -390,6 +394,7 @@ class _ModalPilihBulanTahunState extends State<_ModalPilihBulanTahun> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // Navigasi tahun
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -408,6 +413,7 @@ class _ModalPilihBulanTahunState extends State<_ModalPilihBulanTahun> {
             ),
             const SizedBox(height: 16),
 
+            // Grid 12 bulan
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
