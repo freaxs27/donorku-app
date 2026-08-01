@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
+import '../auth/login_page.dart';
 import 'galeri_sertifikat_page.dart';
 import 'pengaturan_page.dart';
 import 'edit_profil_page.dart';
@@ -420,10 +421,13 @@ class _KartuSertifikasi extends StatelessWidget {
             width: 112,
             height: 32,
             child: ElevatedButton(
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                    builder: (context) => const GaleriSertifikatPage()),
-              ),
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const GaleriSertifikatPage(),
+                  ),
+                );
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,

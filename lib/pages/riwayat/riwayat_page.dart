@@ -761,8 +761,8 @@ class _KartuRiwayat extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: const BoxConstraints(minHeight: 99),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      height: 99,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: _dekorasiKartu,
       child: Row(
         children: [
