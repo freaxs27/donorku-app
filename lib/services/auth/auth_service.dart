@@ -32,10 +32,9 @@ class AuthService {
     }
 
     if (response.statusCode == 200) {
-      return body; // { message, access_token, pendonor: {...} }
+      return body; 
     }
 
-    // Backend balikin { message: "Email atau password salah" } dsb.
     throw ApiException(
       body['message'] as String? ?? 'Login gagal',
       statusCode: response.statusCode,
@@ -108,6 +107,65 @@ class AuthService {
 
     throw ApiException(
       body['message'] as String? ?? 'Gagal membuat akun',
+      statusCode: response.statusCode,
+    );
+  }
+
+  // LP-001: minta kode OTP dikirim ke email.
+  Future<String> kirimOtpLupaPassword({required String email}) async {
+    final body = await _postJson('/auth/forgot-password', {'email': email});
+    return body['message'] as String? ?? 'Kode OTP telah dikirim';
+  }
+
+  // LP-002: verifikasi kode OTP  
+  Future<String> verifikasiOtp({required String email, required String otp}) async {
+    final body = await _postJson('/auth/verify-otp', {'email': email, 'otp': otp});
+    return body['message'] as String? ?? 'Kode OTP valid';
+  }
+
+  // LP-003: set password baru. 
+  Future<String> resetPassword({
+    required String email,
+    required String otp,
+    required String passwordBaru,
+  }) async {
+    final body = await _postJson('/auth/reset-password', {
+      'email': email,
+      'otp': otp,
+      'password_baru': passwordBaru,
+    });
+    return body['message'] as String? ?? 'Password berhasil direset';
+  }
+
+  Future<Map<String, dynamic>> _postJson(String path, Map<String, dynamic> data) async {
+    final uri = Uri.parse('${ApiConfig.baseUrl}$path');
+
+    late final http.Response response;
+    try {
+      response = await http
+          .post(
+            uri,
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode(data),
+          )
+          .timeout(const Duration(seconds: 20));
+    } catch (e) {
+      throw ApiException('Tidak bisa terhubung ke server. Cek koneksi internet Anda.');
+    }
+
+    Map<String, dynamic> body;
+    try {
+      body = jsonDecode(response.body) as Map<String, dynamic>;
+    } catch (_) {
+      throw ApiException('Respons server tidak valid.', statusCode: response.statusCode);
+    }
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return body;
+    }
+
+    throw ApiException(
+      body['message'] as String? ?? 'Terjadi kesalahan',
       statusCode: response.statusCode,
     );
   }

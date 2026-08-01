@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import '../../../theme/app_theme.dart';
+import '../../../services/auth/auth_service.dart';
+import '../../../services/core/api_exception.dart';
 import 'atur_password_page.dart';
 
-// (LP-002)
+// (LP-002).
 class VerifikasiEmailPage extends StatefulWidget {
   final String email;
 
@@ -31,23 +34,59 @@ class _VerifikasiEmailPageState extends State<VerifikasiEmailPage> {
     super.dispose();
   }
 
+  final AuthService _authService = AuthService();
+  bool _sedangVerifikasi = false;
+  bool _sedangKirimUlang = false;
+
   void _onChanged(int index, String value) {
     if (value.isNotEmpty && index < _jumlahKotak - 1) {
-      // Pindah otomatis ke kotak berikutnya saat user selesai mengetik 1 digit.
       _focusNodes[index + 1].requestFocus();
     } else if (value.isEmpty && index > 0) {
-      // Kalau dihapus (backspace), balik fokus ke kotak sebelumnya.
       _focusNodes[index - 1].requestFocus();
     }
   }
 
-  void _verifikasi() {
+  Future<void> _verifikasi() async {
     final kode = _controllers.map((c) => c.text).join();
-    debugPrint('Kode OTP dimasukkan: $kode');
+    if (kode.length != _jumlahKotak) {
+      _tampilkanPesan('Masukkan 6 digit kode OTP lengkap');
+      return;
+    }
 
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const AturPasswordPage()),
-    );
+    setState(() => _sedangVerifikasi = true);
+    try {
+      await _authService.verifikasiOtp(email: widget.email, otp: kode);
+      if (!mounted) return;
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => AturPasswordPage(email: widget.email, otp: kode),
+        ),
+      );
+    } on ApiException catch (e) {
+      _tampilkanPesan(e.message);
+    } catch (e) {
+      _tampilkanPesan('Terjadi kesalahan tak terduga, coba lagi');
+    } finally {
+      if (mounted) setState(() => _sedangVerifikasi = false);
+    }
+  }
+
+  Future<void> _kirimUlang() async {
+    setState(() => _sedangKirimUlang = true);
+    try {
+      final pesan = await _authService.kirimOtpLupaPassword(email: widget.email);
+      _tampilkanPesan(pesan);
+    } on ApiException catch (e) {
+      _tampilkanPesan(e.message);
+    } catch (e) {
+      _tampilkanPesan('Gagal mengirim ulang kode, coba lagi');
+    } finally {
+      if (mounted) setState(() => _sedangKirimUlang = false);
+    }
+  }
+
+  void _tampilkanPesan(String pesan) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(pesan)));
   }
 
   @override
@@ -64,7 +103,7 @@ class _VerifikasiEmailPageState extends State<VerifikasiEmailPage> {
             const Text('Verifikasi Email', style: AppTextStyles.heading),
             const SizedBox(height: 4),
             Text(
-              'Kami telah mengirim email kepada kakamr@gmail.com \nMasukan kode yang ada di email',
+              'Kami telah mengirim email kepada ${widget.email}\nMasukan kode yang ada di email',
               style: AppTextStyles.caption,
             ),
             const SizedBox(height: 24),
@@ -83,7 +122,7 @@ class _VerifikasiEmailPageState extends State<VerifikasiEmailPage> {
                     maxLength: 1,
                     style: AppTextStyles.subheading,
                     decoration: const InputDecoration(
-                      counterText: '',
+                      counterText: '', 
                       contentPadding: EdgeInsets.zero,
                     ),
                     onChanged: (value) => _onChanged(index, value),
@@ -94,8 +133,14 @@ class _VerifikasiEmailPageState extends State<VerifikasiEmailPage> {
             const SizedBox(height: 24),
 
             ElevatedButton(
-              onPressed: _verifikasi,
-              child: const Text('Verifikasi'),
+              onPressed: _sedangVerifikasi ? null : _verifikasi,
+              child: _sedangVerifikasi
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Text('Verifikasi'),
             ),
             const SizedBox(height: 16),
 
@@ -106,11 +151,13 @@ class _VerifikasiEmailPageState extends State<VerifikasiEmailPage> {
                   children: [
                     const TextSpan(text: 'Belum mendapatkan kode? '),
                     TextSpan(
-                      text: 'Kirim ulang',
+                      text: _sedangKirimUlang ? 'Mengirim...' : 'Kirim ulang',
                       style: const TextStyle(
                         color: Colors.blue,
                         decoration: TextDecoration.underline,
                       ),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = _sedangKirimUlang ? null : _kirimUlang,
                     ),
                   ],
                 ),

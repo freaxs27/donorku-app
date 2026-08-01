@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../theme/app_theme.dart';
+import '../../../services/auth/auth_service.dart';
+import '../../../services/core/api_exception.dart';
 import 'verifikasi_email_page.dart';
 
 // (LP-001).
@@ -12,6 +14,8 @@ class LupaPasswordPage extends StatefulWidget {
 
 class _LupaPasswordPageState extends State<LupaPasswordPage> {
   final TextEditingController _emailController = TextEditingController();
+  final AuthService _authService = AuthService();
+  bool _sedangKirim = false;
 
   @override
   void dispose() {
@@ -19,19 +23,38 @@ class _LupaPasswordPageState extends State<LupaPasswordPage> {
     super.dispose();
   }
 
-  void _lanjutkan() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => VerifikasiEmailPage(email: _emailController.text),
-      ),
-    );
+  Future<void> _lanjutkan() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty || !email.contains('@') || !email.contains('.')) {
+      _tampilkanPesan('Masukkan email yang valid');
+      return;
+    }
+
+    setState(() => _sedangKirim = true);
+    try {
+      await _authService.kirimOtpLupaPassword(email: email);
+      if (!mounted) return;
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => VerifikasiEmailPage(email: email),
+        ),
+      );
+    } on ApiException catch (e) {
+      _tampilkanPesan(e.message);
+    } catch (e) {
+      _tampilkanPesan('Terjadi kesalahan tak terduga, coba lagi');
+    } finally {
+      if (mounted) setState(() => _sedangKirim = false);
+    }
+  }
+
+  void _tampilkanPesan(String pesan) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(pesan)));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // AppBar transparan cuma untuk tombol back, tanpa judul & tanpa shadow,
-      // supaya persis seperti desain (back arrow polos di pojok kiri atas).
       appBar: AppBar(
         leading: const BackButton(color: AppColors.textPrimary),
       ),
@@ -58,8 +81,14 @@ class _LupaPasswordPageState extends State<LupaPasswordPage> {
             const SizedBox(height: 24),
 
             ElevatedButton(
-              onPressed: _lanjutkan,
-              child: const Text('Selanjutnya'),
+              onPressed: _sedangKirim ? null : _lanjutkan,
+              child: _sedangKirim
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Text('Selanjutnya'),
             ),
           ],
         ),

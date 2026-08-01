@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import '../../../theme/app_theme.dart';
+import '../../../services/auth/auth_service.dart';
+import '../../../services/core/api_exception.dart';
 import 'reset_sukses_page.dart';
 
-// LP-003).
+// (LP-003).
 class AturPasswordPage extends StatefulWidget {
-  const AturPasswordPage({super.key});
+  final String email;
+  final String otp;
+
+  const AturPasswordPage({super.key, required this.email, required this.otp});
 
   @override
   State<AturPasswordPage> createState() => _AturPasswordPageState();
@@ -13,9 +18,11 @@ class AturPasswordPage extends StatefulWidget {
 class _AturPasswordPageState extends State<AturPasswordPage> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _konfirmasiController = TextEditingController();
+  final AuthService _authService = AuthService();
 
   bool _obscurePassword = true;
   bool _obscureKonfirmasi = true;
+  bool _sedangProses = false;
 
   @override
   void dispose() {
@@ -24,10 +31,45 @@ class _AturPasswordPageState extends State<AturPasswordPage> {
     super.dispose();
   }
 
-  void _aturUlang() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const ResetSuksesPage()),
-    );
+  Future<void> _aturUlang() async {
+    final password = _passwordController.text;
+    final konfirmasi = _konfirmasiController.text;
+
+    if (password.isEmpty) {
+      _tampilkanPesan('Password wajib diisi');
+      return;
+    }
+    if (password.length < 6) {
+      _tampilkanPesan('Password minimal 6 karakter');
+      return;
+    }
+    if (password != konfirmasi) {
+      _tampilkanPesan('Konfirmasi password tidak sama');
+      return;
+    }
+
+    setState(() => _sedangProses = true);
+    try {
+      await _authService.resetPassword(
+        email: widget.email,
+        otp: widget.otp,
+        passwordBaru: password,
+      );
+      if (!mounted) return;
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (context) => const ResetSuksesPage()),
+      );
+    } on ApiException catch (e) {
+      _tampilkanPesan(e.message);
+    } catch (e) {
+      _tampilkanPesan('Terjadi kesalahan tak terduga, coba lagi');
+    } finally {
+      if (mounted) setState(() => _sedangProses = false);
+    }
+  }
+
+  void _tampilkanPesan(String pesan) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(pesan)));
   }
 
   @override
@@ -94,8 +136,14 @@ class _AturPasswordPageState extends State<AturPasswordPage> {
             const SizedBox(height: 24),
 
             ElevatedButton(
-              onPressed: _aturUlang,
-              child: const Text('Atur Ulang Password'),
+              onPressed: _sedangProses ? null : _aturUlang,
+              child: _sedangProses
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Text('Atur Ulang Password'),
             ),
           ],
         ),
