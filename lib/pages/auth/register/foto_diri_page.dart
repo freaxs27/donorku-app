@@ -3,11 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../theme/app_theme.dart';
+import '../../../model/data_register.dart';
+import '../../../services/auth/auth_service.dart';
+import '../../../services/core/api_exception.dart';
 import 'register_sukses_page.dart';
 
 // (R-003).
 class FotoDiriPage extends StatefulWidget {
-  const FotoDiriPage({super.key});
+  final DataRegister data;
+
+  const FotoDiriPage({super.key, required this.data});
 
   @override
   State<FotoDiriPage> createState() => _FotoDiriPageState();
@@ -15,22 +20,20 @@ class FotoDiriPage extends StatefulWidget {
 
 class _FotoDiriPageState extends State<FotoDiriPage> {
   File? _fotoDiri;
-  bool _sedangMemproses = false;
+  bool _sedangMemproses = false; 
+  bool _sedangKirim = false; 
+  final AuthService _authService = AuthService();
 
   Future<void> _ambilFotoDiri() async {
     final picker = ImagePicker();
     final XFile? foto = await picker.pickImage(
       source: ImageSource.camera,
       imageQuality: 90,
-      // Kamera depan, karena ini foto selfie sambil pegang KTP.
       preferredCameraDevice: CameraDevice.front,
     );
-    if (foto == null) return; // user batal ambil foto
+    if (foto == null) return; 
 
     setState(() => _sedangMemproses = true);
-    // Delay kecil biar transisi loading terlihat natural (opsional,
-    // di sini juga bisa dipakai kalau nanti ada proses tambahan
-    // seperti kompresi/upload foto).
     await Future.delayed(const Duration(milliseconds: 200));
 
     setState(() {
@@ -39,11 +42,54 @@ class _FotoDiriPageState extends State<FotoDiriPage> {
     });
   }
 
-  void _buatAkun() {    // 
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (context) => const RegisterSuksesPage()),
-      (route) => false,
-    );
+  Future<void> _buatAkun() async {
+    final data = widget.data;
+
+    if (data.nik == null ||
+        data.tanggalLahir == null ||
+        data.alamat == null ||
+        data.golonganDarah == null ||
+        data.profesi == null ||
+        data.jenisKelamin == null) {
+      _tampilkanPesan('Data KTP belum lengkap, silakan ulangi dari langkah sebelumnya');
+      return;
+    }
+
+    setState(() => _sedangKirim = true);
+
+    try {
+      await _authService.register(
+        namaLengkap: data.namaLengkap,
+        email: data.email,
+        noHp: data.noHp,
+        kota: data.kota,
+        password: data.password,
+        passwordConfirm: data.passwordConfirm,
+        nik: data.nik!,
+        tanggalLahir: data.tanggalLahir!,
+        alamat: data.alamat!,
+        golonganDarah: data.golonganDarah!,
+        profesi: data.profesi!,
+        jenisKelamin: data.jenisKelamin!,
+        fotoDiri: _fotoDiri,
+      );
+
+      if (!mounted) return;
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const RegisterSuksesPage()),
+        (route) => false,
+      );
+    } on ApiException catch (e) {
+      _tampilkanPesan(e.message);
+    } catch (e) {
+      _tampilkanPesan('Terjadi kesalahan tak terduga, coba lagi');
+    } finally {
+      if (mounted) setState(() => _sedangKirim = false);
+    }
+  }
+
+  void _tampilkanPesan(String pesan) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(pesan)));
   }
 
   @override
@@ -65,7 +111,6 @@ class _FotoDiriPageState extends State<FotoDiriPage> {
             const Text('Foto Diri', style: AppTextStyles.subheading),
             const SizedBox(height: 12),
 
-            // Kotak kamera / preview foto diri
             GestureDetector(
               onTap: _sedangMemproses ? null : _ambilFotoDiri,
               child: Container(
@@ -91,8 +136,14 @@ class _FotoDiriPageState extends State<FotoDiriPage> {
             const SizedBox(height: 24),
 
             ElevatedButton(
-              onPressed: _fotoDiri != null ? _buatAkun : null,
-              child: const Text('Buat Akun'),
+              onPressed: (_fotoDiri != null && !_sedangKirim) ? _buatAkun : null,
+              child: _sedangKirim
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Text('Buat Akun'),
             ),
             const SizedBox(height: 16),
 

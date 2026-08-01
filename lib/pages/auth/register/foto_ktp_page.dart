@@ -4,11 +4,14 @@ import 'package:flutter/gestures.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import '../../../theme/app_theme.dart';
+import '../../../model/data_register.dart';
 import 'foto_diri_page.dart';
 
 // (R-002).
 class FotoKtpPage extends StatefulWidget {
-  const FotoKtpPage({super.key});
+  final DataRegister data;
+
+  const FotoKtpPage({super.key, required this.data});
 
   @override
   State<FotoKtpPage> createState() => _FotoKtpPageState();
@@ -56,47 +59,25 @@ class _FotoKtpPageState extends State<FotoKtpPage> {
     try {
       final inputImage = InputImage.fromFilePath(foto.path);
       final RecognizedText hasil = await _textRecognizer.processImage(inputImage);
-
-      // NIK dicari dari seluruh teks mentah (pola 15-16 digit angka),
-      // ini tidak bergantung posisi/urutan baca, jadi paling stabil.
       final nikMatch =
           RegExp(r'\d{15,16}').firstMatch(hasil.text.replaceAll(' ', ''));
-
-      // Field lainnya (Nama, TTL, dst.) dicari dari baris yang sudah
-      // disusun ulang berdasarkan koordinat asli di foto, bukan urutan
-      // baca ML Kit (yang sering salah urutan untuk layout kolom KTP).
       final barisTersusun = _rekonstruksiBarisBerdasarkanPosisi(hasil);
       _isiOtomatisDariOcr(barisTersusun, nikMatch?.group(0));
     } catch (e) {
-      // Kalau OCR gagal (misal foto buram), field tetap kosong,
-      // user bisa isi manual sendiri.
       debugPrint('OCR gagal: $e');
     } finally {
       if (mounted) setState(() => _sedangMemproses = false);
     }
   }
 
-  /// Menyusun ulang semua baris teks hasil OCR berdasarkan POSISI ASLI
-  /// di foto (koordinat Y untuk menentukan baris, koordinat X untuk
-  /// urutan kiri-ke-kanan dalam baris yang sama).
-  ///
-  /// Ini penting karena ML Kit kadang membaca KTP per "blok" teks
-  /// (misal semua label duluan, baru semua isi kolom kanan), bukan
-  /// baris-per-baris sesuai tampilan visualnya. Dengan menyusun ulang
-  /// pakai koordinat, label & isinya yang sebaris secara visual akan
-  /// tergabung jadi satu baris logika juga.
   List<String> _rekonstruksiBarisBerdasarkanPosisi(RecognizedText hasil) {
-    // Kumpulkan semua baris (TextLine) dari semua block, beserta posisinya.
     final semuaBaris = <TextLine>[];
     for (final block in hasil.blocks) {
       semuaBaris.addAll(block.lines);
     }
 
-    // Urutkan dulu dari atas ke bawah (posisi Y).
     semuaBaris.sort((a, b) => a.boundingBox.top.compareTo(b.boundingBox.top));
 
-    // Kelompokkan baris-baris yang posisi Y-nya berdekatan (dianggap
-    // "sebaris" secara visual) jadi 1 grup.
     final List<List<TextLine>> grup = [];
     for (final baris in semuaBaris) {
       final tinggiBaris = baris.boundingBox.height;
@@ -113,17 +94,12 @@ class _FotoKtpPageState extends State<FotoKtpPage> {
       if (!masukGrup) grup.add([baris]);
     }
 
-    // Dalam tiap grup (baris visual yang sama), urutkan kiri ke kanan
-    // berdasarkan posisi X, lalu gabung jadi 1 string.
     return grup.map((g) {
       g.sort((a, b) => a.boundingBox.left.compareTo(b.boundingBox.left));
       return g.map((l) => l.text).join(' ');
     }).toList();
   }
 
-  /// Parsing baris-baris (yang sudah disusun ulang sesuai posisi visual)
-  /// jadi field-field KTP, dengan mencari baris yang mengandung label
-  /// tertentu (NAMA, LAHIR, dst.), lalu mengambil teks setelah label itu.
   void _isiOtomatisDariOcr(List<String> baris, String? nik) {
     String? cariNilai(List<String> label) {
       for (final line in baris) {
@@ -153,9 +129,91 @@ class _FotoKtpPageState extends State<FotoKtpPage> {
   }
 
   void _lanjutkan() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const FotoDiriPage()),
+    final nik = _nikController.text.trim();
+    final ttlText = _ttlController.text.trim();
+    final alamat = _alamatController.text.trim();
+    final goldar = _goldarController.text.trim();
+    final profesi = _profesiController.text.trim();
+
+    if (nik.length != 16 || int.tryParse(nik) == null) {
+      _tampilkanPesan('NIK harus 16 digit angka');
+      return;
+    }
+
+    final tanggalLahir = _parseTanggalLahir(ttlText);
+    if (tanggalLahir == null) {
+      _tampilkanPesan('Format TTL tidak dikenali, coba edit manual (contoh: 28-06-2006)');
+      return;
+    }
+
+    if (alamat.isEmpty || goldar.isEmpty || profesi.isEmpty) {
+      _tampilkanPesan('Lengkapi semua data hasil scan KTP dulu');
+      return;
+    }
+
+    final jenisKelamin = _tentukanJenisKelaminDariNik(nik);
+
+    final dataLengkap = widget.data.copyWith(
+      nik: nik,
+      tanggalLahir: tanggalLahir,
+      alamat: alamat,
+      golonganDarah: goldar,
+      profesi: profesi,
+      jenisKelamin: jenisKelamin,
     );
+
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => FotoDiriPage(data: dataLengkap)),
+    );
+  }
+
+  void _tampilkanPesan(String pesan) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(pesan)));
+  }
+
+  String _tentukanJenisKelaminDariNik(String nik) {
+    final tanggalDigit = int.tryParse(nik.substring(6, 8)) ?? 0;
+    return tanggalDigit > 40 ? 'Perempuan' : 'Laki-laki';
+  }
+
+  DateTime? _parseTanggalLahir(String teks) {
+    if (teks.isEmpty) return null;
+
+    final bagian = teks.split(',');
+    final tanggalSaja = (bagian.length > 1 ? bagian.last : teks).trim();
+
+    final polaAngka = RegExp(r'(\d{1,2})[-/](\d{1,2})[-/](\d{2,4})');
+    final cocokAngka = polaAngka.firstMatch(tanggalSaja);
+    if (cocokAngka != null) {
+      final tgl = int.parse(cocokAngka.group(1)!);
+      final bln = int.parse(cocokAngka.group(2)!);
+      var thn = int.parse(cocokAngka.group(3)!);
+      if (thn < 100) thn += 2000; 
+      try {
+        return DateTime(thn, bln, tgl);
+      } catch (_) {
+        return null;
+      }
+    }
+
+    const namaBulan = [
+      'januari', 'februari', 'maret', 'april', 'mei', 'juni',
+      'juli', 'agustus', 'september', 'oktober', 'november', 'desember',
+    ];
+    final polaNamaBulan = RegExp(r'(\d{1,2})\s+([a-zA-Z]+)\s+(\d{4})');
+    final cocokNama = polaNamaBulan.firstMatch(tanggalSaja);
+    if (cocokNama != null) {
+      final idxBulan = namaBulan.indexOf(cocokNama.group(2)!.toLowerCase());
+      if (idxBulan != -1) {
+        try {
+          return DateTime(int.parse(cocokNama.group(3)!), idxBulan + 1, int.parse(cocokNama.group(1)!));
+        } catch (_) {
+          return null;
+        }
+      }
+    }
+
+    return null;
   }
 
   Widget _buildFieldHasilOcr(String label, TextEditingController controller) {
@@ -208,7 +266,6 @@ class _FotoKtpPageState extends State<FotoKtpPage> {
             const Text('Fotokan KTPmu atau e-ktp', style: AppTextStyles.subheading),
             const SizedBox(height: 12),
 
-            // Kotak kamera / preview foto KTP
             GestureDetector(
               onTap: _sedangMemproses ? null : _ambilFotoKtp,
               child: Container(
@@ -233,7 +290,6 @@ class _FotoKtpPageState extends State<FotoKtpPage> {
             ),
             const SizedBox(height: 20),
 
-            // Field hasil OCR (bisa diedit manual kalau ada yang salah baca)
             _buildFieldHasilOcr('NIK', _nikController),
             _buildFieldHasilOcr('Nama', _namaController),
             _buildFieldHasilOcr('TTL', _ttlController),

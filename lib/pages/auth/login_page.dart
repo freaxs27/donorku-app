@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/main_layout.dart';
+import '../../services/auth/auth_service.dart';
+import '../../services/core/api_exception.dart';
+import '../../services/auth/session_service.dart';
 import '../beranda/beranda_page.dart';
 import '../lokasi/lokasi_page.dart';
 import '../pendaftaran/pendaftaran_page.dart';
@@ -10,7 +13,7 @@ import '../profil/profil_page.dart';
 import 'register/register_page.dart';
 import 'lupa_password/lupa_password_page.dart';
 
-/// Halaman Login (L-001).
+// (L-001).
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -19,7 +22,56 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final AuthService _authService = AuthService();
+
   bool _obscurePassword = true;
+  bool _sedangLogin = false;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _login() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    if (email.isEmpty || password.isEmpty) {
+      _tampilkanPesan('Email dan password wajib diisi');
+      return;
+    }
+
+    setState(() => _sedangLogin = true);
+
+    try {
+      final hasil = await _authService.login(email: email, password: password);
+
+      final pendonor = hasil['pendonor'] as Map<String, dynamic>;
+      await SessionService.simpanSesi(
+        token: hasil['access_token'] as String,
+        idPendonor: pendonor['id_pendonor'] as int,
+        namaLengkap: pendonor['nama_lengkap'] as String,
+        email: pendonor['email'] as String,
+      );
+
+      if (!mounted) return;
+      _goToDashboard();
+    } on ApiException catch (e) {
+      _tampilkanPesan(e.message);
+    } catch (e) {
+      _tampilkanPesan('Terjadi kesalahan tak terduga, coba lagi');
+    } finally {
+      if (mounted) setState(() => _sedangLogin = false);
+    }
+  }
+
+  void _tampilkanPesan(String pesan) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(pesan)));
+  }
 
   void _goToDashboard() {
     Navigator.of(context, rootNavigator: true).pushReplacement(
@@ -63,6 +115,7 @@ class _LoginPageState extends State<LoginPage> {
             children: [
               const SizedBox(height: 24),
 
+              // Logo Donorku
               Center(
                 child: Image.asset(
                   'assets/images/logo.png',
@@ -81,9 +134,10 @@ class _LoginPageState extends State<LoginPage> {
               // Email
               const Text('Email', style: AppTextStyles.body),
               const SizedBox(height: 8),
-              const TextField(
+              TextField(
+                controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
-                decoration: InputDecoration(hintText: 'Masukan email'),
+                decoration: const InputDecoration(hintText: 'Masukan email'),
               ),
               const SizedBox(height: 16),
 
@@ -91,6 +145,7 @@ class _LoginPageState extends State<LoginPage> {
               const Text('Password', style: AppTextStyles.body),
               const SizedBox(height: 8),
               TextField(
+                controller: _passwordController,
                 obscureText: _obscurePassword,
                 decoration: InputDecoration(
                   hintText: 'Masukan password',
@@ -131,14 +186,22 @@ class _LoginPageState extends State<LoginPage> {
                 children: [
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: _goToDashboard,
-                      child: const Text('Masuk'),
+                      onPressed: _sedangLogin ? null : _login,
+                      child: _sedangLogin
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            )
+                          : const Text('Masuk'),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () {
+                        _emailController.clear();
+                        _passwordController.clear();
                       },
                       child: const Text('Reset'),
                     ),
@@ -163,6 +226,7 @@ class _LoginPageState extends State<LoginPage> {
               // Login dengan Google
               OutlinedButton.icon(
                 onPressed: () {
+                  // TODO: integrasi login Google
                 },
                 icon: Image.asset(
                   'assets/icons/social/google.png',
@@ -176,6 +240,7 @@ class _LoginPageState extends State<LoginPage> {
               // Login dengan Facebook
               OutlinedButton.icon(
                 onPressed: () {
+                  // TODO: integrasi login Facebook
                 },
                 icon: Image.asset(
                   'assets/icons/social/facebook.png',

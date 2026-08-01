@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import '../../../theme/app_theme.dart';
+import '../../../model/data_register.dart';
 import 'foto_ktp_page.dart';
 
 // (R-001).
@@ -34,9 +35,46 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   void _lanjutkan() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const FotoKtpPage()),
+    final nama = _namaController.text.trim();
+    final email = _emailController.text.trim();
+    final noHp = _noHpController.text.trim();
+    final kota = _kotaController.text.trim();
+    final password = _passwordController.text;
+    final konfirmasi = _konfirmasiController.text;
+
+    if (nama.isEmpty || email.isEmpty || noHp.isEmpty || kota.isEmpty || password.isEmpty) {
+      _tampilkanPesan('Semua field wajib diisi');
+      return;
+    }
+    if (!email.contains('@') || !email.contains('.')) {
+      _tampilkanPesan('Format email tidak valid');
+      return;
+    }
+    if (password.length < 6) {
+      _tampilkanPesan('Password minimal 6 karakter');
+      return;
+    }
+    if (password != konfirmasi) {
+      _tampilkanPesan('Konfirmasi password tidak sama');
+      return;
+    }
+
+    final data = DataRegister(
+      namaLengkap: nama,
+      email: email,
+      noHp: noHp,
+      kota: kota,
+      password: password,
+      passwordConfirm: konfirmasi,
     );
+
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => FotoKtpPage(data: data)),
+    );
+  }
+
+  void _tampilkanPesan(String pesan) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(pesan)));
   }
 
   @override
@@ -139,7 +177,6 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
             const SizedBox(height: 20),
 
-            // Divider 
             Row(
               children: [
                 const Expanded(child: Divider(color: Colors.black26)),
@@ -154,6 +191,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
             OutlinedButton.icon(
               onPressed: () {
+                // TODO: integrasi daftar dengan Google
               },
               icon: Image.asset(
                 'assets/icons/social/google.png',
@@ -166,6 +204,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
             OutlinedButton.icon(
               onPressed: () {
+                // TODO: integrasi daftar dengan Facebook
               },
               icon: Image.asset(
                 'assets/icons/social/facebook.png',
