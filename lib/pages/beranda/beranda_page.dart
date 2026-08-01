@@ -1,103 +1,248 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import '../../theme/app_theme.dart';
+import '../../model/beranda_data.dart';
+import '../../services/beranda/beranda_service.dart';
+import '../../services/core/api_exception.dart';
+import '../../services/auth/session_service.dart';
+import '../../widgets/main_layout.dart';
+import '../auth/login_page.dart';
 import '../bantuan/reza_chatbot_page.dart';
 import '../bantuan/chat_cs.dart';
 
-// (D-001 / B-001).
-class BerandaPage extends StatelessWidget {
+/// Halaman Beranda (D-001 / B-001 - keduanya desain yang sama).
+class BerandaPage extends StatefulWidget {
   const BerandaPage({super.key});
+
+  @override
+  State<BerandaPage> createState() => _BerandaPageState();
+}
+
+class _BerandaPageState extends State<BerandaPage> {
+  final BerandaService _berandaService = BerandaService();
+
+  BerandaData? _data;
+  bool _sedangMuat = true;
+  String? _pesanError;
+  List<LokasiRingkas> _lokasiTerdekat = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _muatData();
+  }
+
+  Future<void> _muatData() async {
+    setState(() {
+      _sedangMuat = true;
+      _pesanError = null;
+    });
+
+    try {
+      final data = await _berandaService.ambilDataBeranda();
+      if (!mounted) return;
+
+      final posisi = await _ambilPosisiUser();
+      final terdekat = _urutkanTerdekat(data.lokasiTersedia, posisi);
+
+      if (!mounted) return;
+      setState(() {
+        _data = data;
+        _lokasiTerdekat = terdekat;
+        _sedangMuat = false;
+      });
+    } on ApiException catch (e) {
+      if (e.statusCode == 401) {
+        // Sesi habis -- balik paksa ke Login.
+        await SessionService.hapusSesi();
+        if (!mounted) return;
+        Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const LoginPage()),
+          (route) => false,
+        );
+        return;
+      }
+      if (!mounted) return;
+      setState(() {
+        _pesanError = e.message;
+        _sedangMuat = false;
+      });
+    } catch (e) {
+      debugPrint('Error ambil data beranda: $e');
+      if (!mounted) return;
+      setState(() {
+        _pesanError = 'Gagal memuat data, coba lagi';
+        _sedangMuat = false;
+      });
+    }
+  }
+
+  /// Ambil posisi GPS user saat ini. Return null kalau layanan lokasi
+  /// mati, izin ditolak, atau gagal (timeout dsb.) -- supaya halaman
+  /// tetap bisa jalan (fallback ke urutan apa adanya dari API) tanpa
+  /// bikin seluruh Beranda gagal cuma gara-gara lokasi tidak tersedia.
+  Future<Position?> _ambilPosisiUser() async {
+    try {
+      final layananAktif = await Geolocator.isLocationServiceEnabled();
+      if (!layananAktif) return null;
+
+      LocationPermission izin = await Geolocator.checkPermission();
+      if (izin == LocationPermission.denied) {
+        izin = await Geolocator.requestPermission();
+        if (izin == LocationPermission.denied) return null;
+      }
+      if (izin == LocationPermission.deniedForever) return null;
+
+      return await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(accuracy: LocationAccuracy.medium),
+      ).timeout(const Duration(seconds: 8));
+    } catch (e) {
+      debugPrint('Gagal ambil lokasi user: $e');
+      return null;
+    }
+  }
+
+  /// Urutkan lokasi berdasarkan jarak terdekat ke posisi user, ambil 2
+  /// teratas saja. Kalau posisi user tidak tersedia (null), atau lokasi
+  /// tidak punya koordinat, fallback ambil 2 pertama apa adanya dari API.
+  List<LokasiRingkas> _urutkanTerdekat(List<LokasiRingkas> semua, Position? posisi) {
+    if (posisi == null) return semua.take(2).toList();
+
+    final punyaKoordinat = semua.where((l) => l.latitude != null && l.longitude != null).toList();
+    if (punyaKoordinat.isEmpty) return semua.take(2).toList();
+
+    punyaKoordinat.sort((a, b) {
+      final jarakA = Geolocator.distanceBetween(
+        posisi.latitude, posisi.longitude, a.latitude!, a.longitude!,
+      );
+      final jarakB = Geolocator.distanceBetween(
+        posisi.latitude, posisi.longitude, b.latitude!, b.longitude!,
+      );
+      return jarakA.compareTo(jarakB);
+    });
+
+    return punyaKoordinat.take(2).toList();
+  }
 
   void _bukaNotifikasi(BuildContext context) async {
     await showDialog(
       context: context,
-      barrierDismissible: true, 
+      barrierDismissible: true, // tap di luar modal = otomatis menutup
       builder: (context) => const _NotifikasiModal(),
     );
+    // Setelah modal tertutup (baik lewat tombol X atau tap di luar),
+    // pastikan tidak ada widget yang otomatis dapat fokus keyboard.
     if (context.mounted) FocusScope.of(context).unfocus();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_sedangMuat) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_pesanError != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(AppDimens.paddingL),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(_pesanError!, textAlign: TextAlign.center, style: AppTextStyles.body),
+              const SizedBox(height: 12),
+              ElevatedButton(onPressed: _muatData, child: const Text('Coba Lagi')),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final data = _data!;
+
     return SafeArea(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppDimens.paddingL),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Expanded(
-                  child: Text('Halo, Kaka', style: AppTextStyles.heading),
-                ),
-                Image.asset('assets/images/logo.png', height: 28),
-                const SizedBox(width: 8),
-                GestureDetector(
-                  onTap: () => _bukaNotifikasi(context),
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppColors.surface,
-                    ),
-                    child: const Icon(Icons.notifications_none, size: 20),
+      child: RefreshIndicator(
+        onRefresh: _muatData,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(AppDimens.paddingL),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header: sapaan + logo kecil + icon notifikasi
+              Row(
+                children: [
+                  Expanded(
+                    child: Text('Halo, ${data.namaLengkap}', style: AppTextStyles.heading),
                   ),
+                  Image.asset('assets/images/logo.png', height: 28),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () => _bukaNotifikasi(context),
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.surface,
+                      ),
+                      child: const Icon(Icons.notifications_none, size: 20),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+
+              _KartuMulaiDonor(
+                onTapDaftar: () => MainLayoutScope.of(context)?.pindahTab(2),
+              ),
+              const SizedBox(height: 20),
+
+              _KartuAndaSudahDonor(
+                totalDonasi: data.totalDonasi,
+                totalMlDarah: data.totalMlDarah,
+                bolehDonorSekarang: data.bolehDonorSekarang,
+                tanggalBolehDonor: data.tanggalBolehDonor,
+              ),
+              const SizedBox(height: 20),
+
+              _KartuLokasiTersedia(
+                daftarLokasi: _lokasiTerdekat
+                    .map((l) => _DataLokasi(nama: l.namaLokasi, alamat: l.alamat, fotoUrl: l.fotoUrl))
+                    .toList(),
+              ),
+              const SizedBox(height: 20),
+
+              _KartuChat(
+                judul: 'Bicara Dengan Reza Chatbot',
+                subjudul: 'Silahkan bertanya kepada Reza seputar donor darah',
+                iconAssetPath: null,
+                onTapPanah: () => Navigator.of(context, rootNavigator: true).push(
+                  MaterialPageRoute(builder: (context) => const RezaChatbotPage()),
                 ),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            _KartuMulaiDonor(),
-            const SizedBox(height: 20),
-
-            const _KartuAndaSudahDonor(),
-            const SizedBox(height: 20),
-
-            const _KartuLokasiTersedia(
-              daftarLokasi: [
-                _DataLokasi(
-                  nama: 'Rumah Sakit Pasundan',
-                  alamat: 'Lebakgede, Coblong',
-                  fotoAsset: 'assets/images/lokasi/rs-pasundan.jpg',
+                onKirimPesan: (pesan) => Navigator.of(context, rootNavigator: true).push(
+                  MaterialPageRoute(builder: (context) => const RezaChatbotPage()),
                 ),
-                _DataLokasi(
-                  nama: 'Rumah Sakit Santo Boromeus',
-                  alamat: 'Lebakgede, Coblong',
-                  fotoAsset: 'assets/images/lokasi/rs-santo.jpg',
+              ),
+              const SizedBox(height: 12),
+              _KartuChat(
+                judul: 'Bicara Dengan Admin',
+                subjudul: 'Terhubung langsung dengan staf dukungan',
+                iconAssetPath: 'assets/icons/bantuan/admin.png',
+                onTapPanah: () => Navigator.of(context, rootNavigator: true).push(
+                  MaterialPageRoute(builder: (context) => const ChatCsPage()),
                 ),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            _KartuChat(
-              judul: 'Bicara Dengan Reza Chatbot',
-              subjudul: 'Silahkan bertanya kepada Reza seputar donor darah',
-              iconAssetPath: null,
-              onTapPanah: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const RezaChatbotPage()),
+                onKirimPesan: (pesan) => Navigator.of(context, rootNavigator: true).push(
+                  MaterialPageRoute(builder: (context) => ChatCsPage(pesanAwal: pesan)),
+                ),
               ),
-              onKirimPesan: (pesan) => Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const RezaChatbotPage()),
-              ),
-            ),
-            const SizedBox(height: 12),
-            _KartuChat(
-              judul: 'Bicara Dengan Admin',
-              subjudul: 'Terhubung langsung dengan staf dukungan',
-              iconAssetPath: 'assets/icons/bantuan/admin.png',
-              onTapPanah: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const ChatCsPage()),
-              ),
-              onKirimPesan: (pesan) => Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => ChatCsPage(pesanAwal: pesan)),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
+/// Judul seksi + panah kecil di kanan (mis. "Anda Sudah Donor  ->")
 class _JudulSeksi extends StatelessWidget {
   final String judul;
   const _JudulSeksi({required this.judul});
@@ -113,18 +258,23 @@ class _JudulSeksi extends StatelessWidget {
   }
 }
 
+/// Kartu "Mulai Donorkan Darahmu" dengan ilustrasi + tombol Daftar Donor.
 class _KartuMulaiDonor extends StatelessWidget {
-  const _KartuMulaiDonor();
+  final VoidCallback onTapDaftar;
+  const _KartuMulaiDonor({required this.onTapDaftar});
 
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppDimens.radiusM),
       child: Container(
-        width: double.infinity, 
+        width: double.infinity, // kartu selalu selebar induknya
         color: AppColors.surface,
         child: Stack(
           children: [
+            // Ilustrasi diperbesar & diposisikan "bleed" ke pojok
+            // kanan-bawah kartu, sebagian terpotong oleh ClipRRect
+            // di atas -- supaya kesannya penuh seperti di desain.
             Positioned(
               right: -16,
               bottom: -10,
@@ -138,6 +288,8 @@ class _KartuMulaiDonor extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Lebar teks dibatasi supaya tidak ketiban ilustrasi
+                  // yang sekarang lebih besar & nyender ke kanan.
                   const SizedBox(
                     width: 190,
                     child: Text('Mulai Donorkan Darahmu', style: AppTextStyles.subheading),
@@ -153,8 +305,7 @@ class _KartuMulaiDonor extends StatelessWidget {
                   const SizedBox(height: 12),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(minimumSize: const Size(140, 40)),
-                    onPressed: () {
-                    },
+                    onPressed: onTapDaftar,
                     child: const Text('Daftar Donor'),
                   ),
                 ],
@@ -167,8 +318,28 @@ class _KartuMulaiDonor extends StatelessWidget {
   }
 }
 
+/// Kartu besar "Anda Sudah Donor", di dalamnya ada 2 kartu kecil:
+/// (1) statistik Total Donasi + ml Darah, (2) info Dapat Donor Kembali
+/// (atau "boleh donor sekarang" kalau sudah waktunya).
 class _KartuAndaSudahDonor extends StatelessWidget {
-  const _KartuAndaSudahDonor();
+  final int totalDonasi;
+  final int totalMlDarah;
+  final bool bolehDonorSekarang;
+  final DateTime? tanggalBolehDonor;
+
+  const _KartuAndaSudahDonor({
+    required this.totalDonasi,
+    required this.totalMlDarah,
+    required this.bolehDonorSekarang,
+    required this.tanggalBolehDonor,
+  });
+
+  static const List<String> _namaBulan = [
+    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
+  ];
+
+  String _formatTanggal(DateTime t) => '${t.day} ${_namaBulan[t.month - 1]} ${t.year}';
 
   @override
   Widget build(BuildContext context) {
@@ -184,6 +355,7 @@ class _KartuAndaSudahDonor extends StatelessWidget {
           const _JudulSeksi(judul: 'Anda Sudah Donor'),
           const SizedBox(height: 12),
 
+          // Kartu kecil 1: statistik Total Donasi & ml Darah
           Container(
             padding: const EdgeInsets.all(AppDimens.paddingM),
             decoration: BoxDecoration(
@@ -195,7 +367,7 @@ class _KartuAndaSudahDonor extends StatelessWidget {
                 Expanded(
                   child: Column(
                     children: [
-                      const Text('8', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                      Text('$totalDonasi', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary)),
                       Text('Total Donasi', style: AppTextStyles.caption),
                     ],
                   ),
@@ -204,7 +376,7 @@ class _KartuAndaSudahDonor extends StatelessWidget {
                 Expanded(
                   child: Column(
                     children: [
-                      const Text('3600', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                      Text('$totalMlDarah', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary)),
                       Text('ml Darah', style: AppTextStyles.caption),
                     ],
                   ),
@@ -214,6 +386,7 @@ class _KartuAndaSudahDonor extends StatelessWidget {
           ),
           const SizedBox(height: 12),
 
+          // Kartu kecil 2: Dapat Donor Kembali (diperbesar sesuai desain)
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(20),
@@ -223,18 +396,29 @@ class _KartuAndaSudahDonor extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const Icon(Icons.calendar_today_outlined, size: 26),
+                Icon(
+                  bolehDonorSekarang ? Icons.check_circle_outline : Icons.calendar_today_outlined,
+                  size: 26,
+                  color: bolehDonorSekarang ? AppColors.success : AppColors.textPrimary,
+                ),
                 const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Dapat Donor Kembali', style: AppTextStyles.body),
-                    const SizedBox(height: 2),
-                    const Text(
-                      '20 Januari 2026',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary),
-                    ),
-                  ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        bolehDonorSekarang ? 'Anda Sudah Bisa Donor' : 'Dapat Donor Kembali',
+                        style: AppTextStyles.body,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        bolehDonorSekarang
+                            ? 'Sekarang!'
+                            : (tanggalBolehDonor != null ? _formatTanggal(tanggalBolehDonor!) : '-'),
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -245,13 +429,17 @@ class _KartuAndaSudahDonor extends StatelessWidget {
   }
 }
 
+/// Data sederhana untuk 1 lokasi donor.
 class _DataLokasi {
   final String nama;
   final String alamat;
-  final String fotoAsset;
-  const _DataLokasi({required this.nama, required this.alamat, required this.fotoAsset});
+  final String? fotoAsset; // null = pakai icon placeholder (foto lokal, belum dipakai)
+  final String? fotoUrl; // foto dari server (Image.network), prioritas di atas fotoAsset
+  const _DataLokasi({required this.nama, required this.alamat, this.fotoUrl}) : fotoAsset = null;
 }
 
+/// Kartu besar "Lokasi Tersedia Donor Darah", di dalamnya ada kartu kecil
+/// untuk tiap lokasi.
 class _KartuLokasiTersedia extends StatelessWidget {
   final List<_DataLokasi> daftarLokasi;
   const _KartuLokasiTersedia({required this.daftarLokasi});
@@ -279,14 +467,17 @@ class _KartuLokasiTersedia extends StatelessWidget {
   }
 }
 
+/// Kartu kecil untuk 1 lokasi donor darah (foto diambil dari asset lokal,
+/// lihat _DataLokasi.fotoAsset).
 class _KartuLokasiItem extends StatelessWidget {
   final _DataLokasi data;
   const _KartuLokasiItem({required this.data});
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('Render kartu lokasi: ${data.nama} | fotoUrl=${data.fotoUrl} | fotoAsset=${data.fotoAsset}');
     return Container(
-      width: double.infinity, 
+      width: double.infinity, // kartu selalu selebar induknya, tidak ikut ukuran konten
       padding: const EdgeInsets.all(AppDimens.paddingM),
       decoration: BoxDecoration(
         border: Border.all(color: AppColors.border),
@@ -305,14 +496,55 @@ class _KartuLokasiItem extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(AppDimens.radiusS),
-                  child: Image.asset(
-                    data.fotoAsset,
-                    width: 72,
-                    height: 72,
-                    fit: BoxFit.cover,
-                  ),
+                  child: data.fotoUrl != null
+                      ? Image.network(
+                          data.fotoUrl!,
+                          width: 72,
+                          height: 72,
+                          fit: BoxFit.cover,
+                          loadingBuilder: (context, child, progress) {
+                            if (progress == null) return child;
+                            return Container(
+                              width: 72,
+                              height: 72,
+                              color: AppColors.background,
+                              child: const Center(
+                                child: SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                ),
+                              ),
+                            );
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            debugPrint('Gagal load foto lokasi: ${data.fotoUrl} -> $error');
+                            return Container(
+                              width: 72,
+                              height: 72,
+                              color: AppColors.background,
+                              child: const Icon(Icons.local_hospital_outlined, color: AppColors.textSecondary),
+                            );
+                          },
+                        )
+                      : data.fotoAsset != null
+                          ? Image.asset(
+                              data.fotoAsset!,
+                              width: 72,
+                              height: 72,
+                              fit: BoxFit.cover,
+                            )
+                          : Container(
+                              width: 72,
+                              height: 72,
+                              color: AppColors.background,
+                              child: const Icon(Icons.local_hospital_outlined, color: AppColors.textSecondary),
+                            ),
                 ),
                 const SizedBox(width: 12),
+                // Lebar teks DIBUAT TETAP (tidak ikut panjang nama rumah sakit),
+                // supaya lebar total blok konten selalu sama di semua kartu.
+                // Ini kuncinya supaya hasil "center" tetap sejajar antar kartu.
                 SizedBox(
                   width: 190,
                   child: Column(
@@ -338,13 +570,14 @@ class _KartuLokasiItem extends StatelessWidget {
             ),
             const SizedBox(height: 14),
             SizedBox(
-              width: 274, 
+              width: 274, // sama dengan lebar Row foto+teks di atas (72+12+190)
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(36),
                   shape: const StadiumBorder(),
                 ),
                 onPressed: () {
+                  // TODO: navigasi ke halaman Detail Lokasi
                 },
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -364,12 +597,13 @@ class _KartuLokasiItem extends StatelessWidget {
   }
 }
 
+/// Kartu shortcut ke Chatbot Reza / Admin CS.
 class _KartuChat extends StatefulWidget {
   final String judul;
   final String subjudul;
-  final String? iconAssetPath; 
-  final VoidCallback onTapPanah; 
-  final ValueChanged<String> onKirimPesan; 
+  final String? iconAssetPath; // null = tanpa avatar kiri (mis. Reza Chatbot)
+  final VoidCallback onTapPanah; // panah kanan atas = redirect biasa
+  final ValueChanged<String> onKirimPesan; // tombol search = redirect + bawa teks
 
   const _KartuChat({
     required this.judul,
@@ -444,7 +678,7 @@ class _KartuChatState extends State<_KartuChat> {
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                   decoration: BoxDecoration(
                     color: AppColors.background,
-                    borderRadius: BorderRadius.circular(999), 
+                    borderRadius: BorderRadius.circular(999), // rounded penuh
                   ),
                   child: Row(
                     children: [
@@ -489,6 +723,7 @@ class _KartuChatState extends State<_KartuChat> {
   }
 }
 
+/// Modal Notifikasi (N-001), muncul sebagai popup di atas Beranda.
 class _NotifikasiModal extends StatelessWidget {
   const _NotifikasiModal();
 

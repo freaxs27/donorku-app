@@ -1,0 +1,75 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'api_config.dart';
+import 'api_exception.dart';
+import '../auth/session_service.dart';
+
+/// Helper terpusat untuk panggilan API yang BUTUH login (kirim token
+/// lewat header `Authorization: Bearer <token>`).
+///
+/// Dipakai oleh service manapun yang endpoint-nya pakai
+/// `getMobileTokenPayload(req)` di backend (Beranda, Profil, Riwayat,
+/// Pendaftaran, dst.) -- supaya logic ambil token & attach header tidak
+/// ditulis ulang di tiap service.
+class ApiClient {
+  ApiClient._();
+
+  static Future<Map<String, String>> _headerDenganToken() async {
+    final token = await SessionService.ambilToken();
+    return {
+      'Content-Type': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
+  }
+
+  static Future<Map<String, dynamic>> get(String path) async {
+    final uri = Uri.parse('${ApiConfig.baseUrl}$path');
+    late final http.Response response;
+    try {
+      response = await http
+          .get(uri, headers: await _headerDenganToken())
+          .timeout(const Duration(seconds: 20));
+    } catch (e) {
+      throw ApiException('Tidak bisa terhubung ke server. Cek koneksi internet Anda.');
+    }
+    return _prosesRespons(response);
+  }
+
+  static Future<Map<String, dynamic>> postJson(String path, Map<String, dynamic> data) async {
+    final uri = Uri.parse('${ApiConfig.baseUrl}$path');
+    late final http.Response response;
+    try {
+      response = await http
+          .post(uri, headers: await _headerDenganToken(), body: jsonEncode(data))
+          .timeout(const Duration(seconds: 20));
+    } catch (e) {
+      throw ApiException('Tidak bisa terhubung ke server. Cek koneksi internet Anda.');
+    }
+    return _prosesRespons(response);
+  }
+
+  static Map<String, dynamic> _prosesRespons(http.Response response) {
+    Map<String, dynamic> body;
+    try {
+      body = jsonDecode(response.body) as Map<String, dynamic>;
+    } catch (_) {
+      throw ApiException('Respons server tidak valid.', statusCode: response.statusCode);
+    }
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return body;
+    }
+
+    if (response.statusCode == 401) {
+      throw ApiException(
+        body['message'] as String? ?? 'Sesi login sudah habis, silakan login ulang',
+        statusCode: 401,
+      );
+    }
+
+    throw ApiException(
+      body['message'] as String? ?? 'Terjadi kesalahan',
+      statusCode: response.statusCode,
+    );
+  }
+}
