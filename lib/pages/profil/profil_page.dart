@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../auth/login_page.dart';
+import 'pengaturan_page.dart';
 
 /// Halaman Profil (P-001) — sesuai desain Figma.
 class ProfilPage extends StatelessWidget {
@@ -49,7 +50,13 @@ class ProfilPage extends StatelessWidget {
                 SizedBox(
                   width: 28,
                   child: GestureDetector(
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const PengaturanPage(),
+                        ),
+                      );
+                    },
                     child: const Icon(
                       Icons.settings_outlined,
                       size: 26,
