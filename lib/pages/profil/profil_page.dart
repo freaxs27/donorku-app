@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/main_layout.dart';
 import '../auth/login_page.dart';
 
 /// Halaman Profil (P-001) — sesuai desain Figma.
@@ -17,10 +16,6 @@ class ProfilPage extends StatelessWidget {
     totalDonasi: 8,
     totalMlDarah: 829,
   );
-
-  void _keRiwayat(BuildContext context) {
-    MainLayoutScope.of(context)?.pindahTab(3);
-  }
 
   void _keluar(BuildContext context) {
     Navigator.of(context).pushAndRemoveUntil(
@@ -83,8 +78,6 @@ class ProfilPage extends StatelessWidget {
             // ---- Section: Lainnya ----
             const _JudulSection(text: 'Lainnya'),
             const SizedBox(height: 8),
-            _KartuMenu(onRiwayatDonor: () => _keRiwayat(context)),
-            const SizedBox(height: 24),
 
             // ---- Section: Sertifikasi Pendonor ----
             const Text(
@@ -141,18 +134,6 @@ class _DataProfil {
     required this.golonganDarah,
     required this.totalDonasi,
     required this.totalMlDarah,
-  });
-}
-
-class _ItemMenu {
-  final IconData icon;
-  final String label;
-  final VoidCallback? onTap;
-
-  const _ItemMenu({
-    required this.icon,
-    required this.label,
-    this.onTap,
   });
 }
 
@@ -364,94 +345,6 @@ class _BarisInfo extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-/// Kartu menu "Lainnya".
-class _KartuMenu extends StatelessWidget {
-  final VoidCallback onRiwayatDonor;
-
-  const _KartuMenu({required this.onRiwayatDonor});
-
-  @override
-  Widget build(BuildContext context) {
-    final items = [
-      _ItemMenu(
-        icon: Icons.person_outline,
-        label: 'Informasi Pribadi',
-        onTap: () {},
-      ),
-      _ItemMenu(
-        icon: Icons.history,
-        label: 'Riwayat Donor',
-        onTap: onRiwayatDonor,
-      ),
-      _ItemMenu(
-        icon: Icons.workspace_premium_outlined,
-        label: 'Sertifikat',
-        onTap: () {},
-      ),
-      _ItemMenu(
-        icon: Icons.lock_outline,
-        label: 'Keamanan & Akun',
-        onTap: () {},
-      ),
-    ];
-
-    return Container(
-      decoration: _dekorasiKartu,
-      child: Column(
-        children: [
-          for (int i = 0; i < items.length; i++) ...[
-            _BarisMenu(item: items[i]),
-            if (i != items.length - 1)
-              const Divider(height: 1, color: AppColors.border, indent: 56),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _BarisMenu extends StatelessWidget {
-  final _ItemMenu item;
-
-  const _BarisMenu({required this.item});
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: item.onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-        child: Row(
-          children: [
-            Container(
-              width: 34,
-              height: 34,
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(item.icon, size: 18, color: AppColors.primary),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                item.label,
-                style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w500),
-              ),
-            ),
-            const Icon(
-              Icons.chevron_right,
-              size: 20,
-              color: AppColors.textSecondary,
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
