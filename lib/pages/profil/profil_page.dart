@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/header_halaman.dart';
 import '../../widgets/main_layout.dart';
 import '../auth/login_page.dart';
 
-/// Halaman Profil (P-001).
+/// Halaman Profil (P-001) — sesuai desain Figma.
 class ProfilPage extends StatelessWidget {
   const ProfilPage({super.key});
 
   static const _dataProfil = _DataProfil(
     nama: 'Kaka Muhamad Ridwan',
+    noTelepon: '081253041346',
+    tanggalLahir: '28 - 6 - 2006',
+    alamat: 'Wado, Sumedang',
     email: 'kakamr@gmail.com',
     golonganDarah: 'O+',
-    totalDonor: 8,
-    donorTerakhir: '5 Agustus 2025',
-    donorKembali: '2 Februari 2026',
+    totalDonasi: 8,
+    totalMlDarah: 829,
   );
 
   void _keRiwayat(BuildContext context) {
@@ -31,57 +32,87 @@ class ProfilPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Column(
-        children: [
-          const Padding(
-            padding: EdgeInsets.fromLTRB(
-              AppDimens.paddingL,
-              AppDimens.paddingM,
-              AppDimens.paddingL,
-              0,
-            ),
-            child: HeaderHalaman(judul: 'Profil'),
-          ),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(
-                AppDimens.paddingL,
-                20,
-                AppDimens.paddingL,
-                AppDimens.paddingL,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _KartuProfil(data: _dataProfil),
-                  const SizedBox(height: 12),
-                  _KartuStatistik(data: _dataProfil),
-                  const SizedBox(height: 12),
-                  _KartuMenu(
-                    onRiwayatDonor: () => _keRiwayat(context),
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {},
-                    child: const Text('Ubah Profil'),
-                  ),
-                  const SizedBox(height: 12),
-                  TextButton(
-                    onPressed: () => _keluar(context),
-                    child: const Text(
-                      'Keluar',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.primary,
-                      ),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // ---- Header: judul "Profil" + ikon settings ----
+            Row(
+              children: [
+                const SizedBox(width: 28),
+                Expanded(
+                  child: Text(
+                    'Profil',
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.subheading.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                ],
+                ),
+                SizedBox(
+                  width: 28,
+                  child: GestureDetector(
+                    onTap: () {},
+                    child: const Icon(
+                      Icons.settings_outlined,
+                      size: 26,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+
+            // ---- Foto profil ----
+            Center(child: _FotoProfil()),
+            const SizedBox(height: 28),
+
+            // ---- Kartu statistik (Total Donasi / ml Darah) ----
+            _KartuStatistik(data: _dataProfil),
+            const SizedBox(height: 24),
+
+            // ---- Section: Informasi Pribadi ----
+            const _JudulSection(text: 'Informasi Pribadi'),
+            const SizedBox(height: 8),
+            _KartuInfoPribadi(data: _dataProfil),
+            const SizedBox(height: 24),
+
+            // ---- Section: Lainnya ----
+            const _JudulSection(text: 'Lainnya'),
+            const SizedBox(height: 8),
+            _KartuMenu(onRiwayatDonor: () => _keRiwayat(context)),
+            const SizedBox(height: 24),
+
+            // ---- Section: Sertifikasi Pendonor ----
+            const Text(
+              'Sertifikasi Pendonor',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.normal,
+                color: AppColors.textPrimary,
               ),
             ),
-          ),
-        ],
+            const SizedBox(height: 8),
+            _KartuSertifikasi(),
+            const SizedBox(height: 24),
+
+            // ---- Tombol keluar ----
+            TextButton(
+              onPressed: () => _keluar(context),
+              child: const Text(
+                'Keluar',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.primary,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -93,19 +124,23 @@ class ProfilPage extends StatelessWidget {
 
 class _DataProfil {
   final String nama;
+  final String noTelepon;
+  final String tanggalLahir;
+  final String alamat;
   final String email;
   final String golonganDarah;
-  final int totalDonor;
-  final String donorTerakhir;
-  final String donorKembali;
+  final int totalDonasi;
+  final int totalMlDarah;
 
   const _DataProfil({
     required this.nama,
+    required this.noTelepon,
+    required this.tanggalLahir,
+    required this.alamat,
     required this.email,
     required this.golonganDarah,
-    required this.totalDonor,
-    required this.donorTerakhir,
-    required this.donorKembali,
+    required this.totalDonasi,
+    required this.totalMlDarah,
   });
 }
 
@@ -127,84 +162,64 @@ class _ItemMenu {
 
 BoxDecoration get _dekorasiKartu => BoxDecoration(
       color: AppColors.surface,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(20),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withValues(alpha: 0.12),
+          color: Colors.black.withValues(alpha: 0.25),
           blurRadius: 4,
           offset: Offset.zero,
         ),
       ],
     );
 
-class _KartuProfil extends StatelessWidget {
-  final _DataProfil data;
-
-  const _KartuProfil({required this.data});
-
+/// Foto profil bulat dengan border putih & drop shadow (159×159 di Figma).
+class _FotoProfil extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: _dekorasiKartu,
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 36,
-            backgroundColor: const Color(0xFFFFD8D8),
-            child: Icon(
-              Icons.person,
-              size: 40,
-              color: AppColors.primary,
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  data.nama,
-                  style: AppTextStyles.body.copyWith(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(data.email, style: AppTextStyles.caption),
-              ],
-            ),
-          ),
-          Container(
-            width: 48,
-            height: 24,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(8),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.12),
-                  blurRadius: 4,
-                  offset: Offset.zero,
-                ),
-              ],
-            ),
-            child: Text(
-              data.golonganDarah,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: AppColors.primary,
-              ),
-            ),
+      width: 159,
+      height: 159,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: const Color(0xFFFFD8D8),
+        border: Border.all(color: Colors.white, width: 4),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.25),
+            blurRadius: 4,
+            offset: Offset.zero,
           ),
         ],
+      ),
+      child: const Icon(
+        Icons.person,
+        size: 64,
+        color: AppColors.primary,
       ),
     );
   }
 }
 
+/// Judul section (Poppins Bold 16 di Figma).
+class _JudulSection extends StatelessWidget {
+  final String text;
+
+  const _JudulSection({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: const TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.bold,
+        color: AppColors.textPrimary,
+      ),
+    );
+  }
+}
+
+/// Kartu statistik: "Total Donasi" | "ml Darah" dipisah garis vertikal.
 class _KartuStatistik extends StatelessWidget {
   final _DataProfil data;
 
@@ -213,30 +228,31 @@ class _KartuStatistik extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      decoration: _dekorasiKartu,
+      height: 55,
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.25),
+            blurRadius: 4,
+            offset: Offset.zero,
+          ),
+        ],
+      ),
       child: Row(
         children: [
           Expanded(
             child: _KolomStat(
-              nilai: '${data.totalDonor}',
-              label: 'Total Donor',
+              nilai: '${data.totalDonasi}',
+              label: 'Total Donasi',
             ),
           ),
-          Container(width: 1, height: 48, color: AppColors.border),
+          Container(width: 1, height: 34, color: AppColors.border),
           Expanded(
             child: _KolomStat(
-              nilai: data.donorTerakhir,
-              label: 'Donor Terakhir',
-              nilaiKecil: true,
-            ),
-          ),
-          Container(width: 1, height: 48, color: AppColors.border),
-          Expanded(
-            child: _KolomStat(
-              nilai: data.donorKembali,
-              label: 'Donor Kembali',
-              nilaiKecil: true,
+              nilai: '${data.totalMlDarah}',
+              label: 'ml Darah',
             ),
           ),
         ],
@@ -248,44 +264,111 @@ class _KartuStatistik extends StatelessWidget {
 class _KolomStat extends StatelessWidget {
   final String nilai;
   final String label;
-  final bool nilaiKecil;
 
-  const _KolomStat({
-    required this.nilai,
-    required this.label,
-    this.nilaiKecil = false,
-  });
+  const _KolomStat({required this.nilai, required this.label});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 6),
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          nilai,
+          style: const TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: AppColors.primary,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.normal,
+            color: AppColors.textPrimary,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Kartu Informasi Pribadi: label di kiri, nilai di kanan.
+class _KartuInfoPribadi extends StatelessWidget {
+  final _DataProfil data;
+
+  const _KartuInfoPribadi({required this.data});
+
+  @override
+  Widget build(BuildContext context) {
+    final baris = [
+      ('Nama Lengkap', data.nama),
+      ('No Telepon', data.noTelepon),
+      ('Tanggal Lahir', data.tanggalLahir),
+      ('Alamat', data.alamat),
+      ('Email', data.email),
+      ('Golongan Darah', data.golonganDarah),
+    ];
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      decoration: _dekorasiKartu,
       child: Column(
         children: [
-          Text(
-            nilai,
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: nilaiKecil ? 11 : 28,
-              fontWeight: FontWeight.bold,
-              color: nilaiKecil ? AppColors.textPrimary : AppColors.primary,
-              height: 1.1,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: AppTextStyles.caption.copyWith(fontSize: 10),
-          ),
+          for (int i = 0; i < baris.length; i++) ...[
+            _BarisInfo(label: baris[i].$1, nilai: baris[i].$2),
+            if (i != baris.length - 1)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 6),
+                child: Divider(height: 1, color: AppColors.border),
+              ),
+          ],
         ],
       ),
     );
   }
 }
 
+class _BarisInfo extends StatelessWidget {
+  final String label;
+  final String nilai;
+
+  const _BarisInfo({required this.label, required this.nilai});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          flex: 2,
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.normal,
+              color: AppColors.textPrimary,
+            ),
+          ),
+        ),
+        Expanded(
+          flex: 3,
+          child: Text(
+            ': $nilai',
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.normal,
+              color: AppColors.textPrimary,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Kartu menu "Lainnya".
 class _KartuMenu extends StatelessWidget {
   final VoidCallback onRiwayatDonor;
 
@@ -340,7 +423,7 @@ class _BarisMenu extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: item.onTap,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(20),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         child: Row(
@@ -368,6 +451,60 @@ class _BarisMenu extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Kartu Sertifikasi Pendonor: ikon kamera + tombol "Buka Galeri".
+class _KartuSertifikasi extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 182,
+      padding: const EdgeInsets.symmetric(vertical: 20),
+      decoration: _dekorasiKartu,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: const BoxDecoration(
+              color: AppColors.surface,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.camera_alt_outlined,
+              size: 28,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: 112,
+            height: 27,
+            child: ElevatedButton(
+              onPressed: () {},
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.zero,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                elevation: 0,
+              ),
+              child: const Text(
+                'Buka Galeri',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.normal,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
