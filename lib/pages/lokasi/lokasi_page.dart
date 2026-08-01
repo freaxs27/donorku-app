@@ -4,9 +4,20 @@ import 'package:latlong2/latlong.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/header_halaman.dart';
 import '../../model/lokasi_donor.dart';
+import '../../services/lokasi/lokasi_service.dart';
+import '../../services/core/api_exception.dart';
+import '../../services/auth/session_service.dart';
+import '../auth/login_page.dart';
 
-// (LK-001 s/d LK-004).
+/// Halaman Lokasi (LK-001 s/d LK-004).
+/// Keempatnya sebenarnya 1 halaman yang sama, cuma beda STATE:
+/// - LK-001: peta polos + sheet collapsed, isi 2 lokasi teratas
+/// - LK-002: 1 lokasi dipilih -> peta fokus ke situ + marker merah + sheet 1 card
+/// - LK-003/LK-004: sheet digeser/diklik penuh -> semua lokasi
 class LokasiPage extends StatefulWidget {
+  /// Kalau diisi, halaman langsung dibuka dengan lokasi ini terpilih
+  /// (peta fokus ke situ, sheet 1 kartu) -- dipakai saat user datang dari
+  /// tombol "Cek Detail Lokasi" di halaman Jadwal & Lokasi Donor (D-002).
   final LokasiDonor? lokasiAwal;
 
   const LokasiPage({super.key, this.lokasiAwal});
@@ -19,21 +30,71 @@ class _LokasiPageState extends State<LokasiPage> with TickerProviderStateMixin {
   static const double _sheetMinAbsolut = 0.18; // batas paling kecil sheet bisa di-drag
   static const double _sheetAwal = 0.32; // tinggi saat tampil 2 kartu awal (LK-001)
   static const double _sheetSatuKartu = 0.25; // tinggi saat 1 lokasi terpilih (LK-002)
-  static const double _sheetMax = 1.0; // tinggi saat expand penuh (LK-003/004)
+  static const double _sheetMax = 1; // tinggi saat expand penuh (LK-003/004)
   static const LatLng _pusatDefault = LatLng(-6.9040, 107.6140);
 
   final MapController _mapController = MapController();
   final DraggableScrollableController _sheetController = DraggableScrollableController();
+  final LokasiService _lokasiService = LokasiService();
+  final TextEditingController _searchController = TextEditingController();
 
   LokasiDonor? _lokasiTerpilih;
   late double _sheetExtent;
   double _opasitasMarker = 1;
+
+  List<LokasiDonor> _semuaLokasi = [];
+  bool _sedangMuat = true;
+  String? _pesanError;
 
   @override
   void initState() {
     super.initState();
     _lokasiTerpilih = widget.lokasiAwal;
     _sheetExtent = widget.lokasiAwal != null ? _sheetSatuKartu : _sheetAwal;
+    _muatData();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _muatData({String? search}) async {
+    setState(() {
+      _sedangMuat = true;
+      _pesanError = null;
+    });
+
+    try {
+      final daftar = await _lokasiService.ambilDaftarLokasi(search: search);
+      if (!mounted) return;
+      setState(() {
+        _semuaLokasi = daftar;
+        _sedangMuat = false;
+      });
+    } on ApiException catch (e) {
+      if (e.statusCode == 401) {
+        await SessionService.hapusSesi();
+        if (!mounted) return;
+        Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const LoginPage()),
+          (route) => false,
+        );
+        return;
+      }
+      if (!mounted) return;
+      setState(() {
+        _pesanError = e.message;
+        _sedangMuat = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _pesanError = 'Gagal memuat data lokasi, coba lagi';
+        _sedangMuat = false;
+      });
+    }
   }
 
   bool get _sheetTerbuka => _sheetExtent > (_sheetAwal + _sheetMax) / 2;
@@ -50,7 +111,6 @@ class _LokasiPageState extends State<LokasiPage> with TickerProviderStateMixin {
 
     final controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 900));
     final animasi = CurvedAnimation(parent: controller, curve: Curves.easeInOutCubic);
-
     setState(() {
       _lokasiTerpilih = lokasi;
       _opasitasMarker = 0;
@@ -77,6 +137,7 @@ class _LokasiPageState extends State<LokasiPage> with TickerProviderStateMixin {
     );
   }
 
+
   void _kembaliKeAwal() {
     if (_lokasiTerpilih == null) return;
     setState(() => _lokasiTerpilih = null);
@@ -99,13 +160,34 @@ class _LokasiPageState extends State<LokasiPage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    if (_sedangMuat && _semuaLokasi.isEmpty) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    if (_pesanError != null && _semuaLokasi.isEmpty) {
+      return Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(AppDimens.paddingL),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(_pesanError!, textAlign: TextAlign.center, style: AppTextStyles.body),
+                const SizedBox(height: 12),
+                ElevatedButton(onPressed: () => _muatData(), child: const Text('Coba Lagi')),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       body: GestureDetector(
         onTap: _kembaliKeAwal,
         behavior: HitTestBehavior.translucent,
         child: Stack(
         children: [
-          // Peta asli (OpenStreetMap via flutter_map)
           FlutterMap(
             mapController: _mapController,
             options: MapOptions(
@@ -130,7 +212,7 @@ class _LokasiPageState extends State<LokasiPage> with TickerProviderStateMixin {
                           ),
                         ),
                       ]
-                    : daftarLokasiDonor
+                    : _semuaLokasi
                         .map(
                           (l) => Marker(
                             point: l.posisi,
@@ -164,9 +246,11 @@ class _LokasiPageState extends State<LokasiPage> with TickerProviderStateMixin {
                   children: [
                     const Icon(Icons.search, color: AppColors.textSecondary, size: 20),
                     const SizedBox(width: 8),
-                    const Expanded(
+                    Expanded(
                       child: TextField(
-                        decoration: InputDecoration(
+                        controller: _searchController,
+                        onSubmitted: (teks) => _muatData(search: teks),
+                        decoration: const InputDecoration(
                           hintText: 'Cari Disini',
                           filled: false,
                           border: InputBorder.none,
@@ -177,7 +261,14 @@ class _LokasiPageState extends State<LokasiPage> with TickerProviderStateMixin {
                         ),
                       ),
                     ),
-                    const Icon(Icons.close, color: AppColors.textSecondary, size: 18),
+                    GestureDetector(
+                      onTap: () {
+                        _searchController.clear();
+                        FocusScope.of(context).unfocus();
+                        _muatData();
+                      },
+                      child: const Icon(Icons.close, color: AppColors.textSecondary, size: 18),
+                    ),
                   ],
                 ),
               ),
@@ -197,15 +288,15 @@ class _LokasiPageState extends State<LokasiPage> with TickerProviderStateMixin {
               builder: (context, scrollController) {
                 final List<LokasiDonor> daftarDitampilkan;
                 if (_sheetTerbuka) {
-                  daftarDitampilkan = daftarLokasiDonor; 
+                  daftarDitampilkan = _semuaLokasi; 
                 } else if (_lokasiTerpilih != null) {
                   daftarDitampilkan = [_lokasiTerpilih!]; 
                 } else {
-                  daftarDitampilkan = daftarLokasiDonor.take(2).toList(); 
+                  daftarDitampilkan = _semuaLokasi.take(2).toList();
                 }
 
                 return Container(
-                  padding: EdgeInsets.only(top: _sheetTerbuka ? 25 : 0), // padding cuma aktif saat sheet penuh
+                  padding: EdgeInsets.only(top: _sheetTerbuka ? 25 : 0), 
                   decoration: const BoxDecoration(
                     color: AppColors.background,
                     borderRadius: BorderRadius.vertical(top: Radius.circular(AppDimens.radiusL)),
@@ -321,14 +412,42 @@ class _KartuLokasiPeta extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(AppDimens.radiusS),
-                child: data.fotoAsset != null
-                    ? Image.asset(data.fotoAsset!, width: 72, height: 72, fit: BoxFit.cover)
-                    : Container(
+                child: data.fotoUrl != null
+                    ? Image.network(
+                        data.fotoUrl!,
                         width: 72,
                         height: 72,
-                        color: AppColors.background,
-                        child: const Icon(Icons.local_hospital_outlined, color: AppColors.textSecondary),
-                      ),
+                        fit: BoxFit.cover,
+                        loadingBuilder: (context, child, progress) {
+                          if (progress == null) return child;
+                          return Container(
+                            width: 72,
+                            height: 72,
+                            color: AppColors.background,
+                            child: const Center(
+                              child: SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              ),
+                            ),
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          width: 72,
+                          height: 72,
+                          color: AppColors.background,
+                          child: const Icon(Icons.local_hospital_outlined, color: AppColors.textSecondary),
+                        ),
+                      )
+                    : data.fotoAsset != null
+                        ? Image.asset(data.fotoAsset!, width: 72, height: 72, fit: BoxFit.cover)
+                        : Container(
+                            width: 72,
+                            height: 72,
+                            color: AppColors.background,
+                            child: const Icon(Icons.local_hospital_outlined, color: AppColors.textSecondary),
+                          ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -346,7 +465,16 @@ class _KartuLokasiPeta extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 2),
-                    const Text('Open Donor Darah', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                    Text(
+                      data.statusDonor ?? 'Open Donor Darah',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                        color: data.statusDonor == 'Belum Ada Jadwal'
+                            ? AppColors.textSecondary
+                            : AppColors.textPrimary,
+                      ),
+                    ),
                   ],
                 ),
               ),

@@ -4,13 +4,6 @@ import 'api_config.dart';
 import 'api_exception.dart';
 import '../auth/session_service.dart';
 
-/// Helper terpusat untuk panggilan API yang BUTUH login (kirim token
-/// lewat header `Authorization: Bearer <token>`).
-///
-/// Dipakai oleh service manapun yang endpoint-nya pakai
-/// `getMobileTokenPayload(req)` di backend (Beranda, Profil, Riwayat,
-/// Pendaftaran, dst.) -- supaya logic ambil token & attach header tidak
-/// ditulis ulang di tiap service.
 class ApiClient {
   ApiClient._();
 
@@ -33,6 +26,45 @@ class ApiClient {
       throw ApiException('Tidak bisa terhubung ke server. Cek koneksi internet Anda.');
     }
     return _prosesRespons(response);
+  }
+
+  static Future<List<dynamic>> getList(String path) async {
+    final uri = Uri.parse('${ApiConfig.baseUrl}$path');
+    late final http.Response response;
+    try {
+      response = await http
+          .get(uri, headers: await _headerDenganToken())
+          .timeout(const Duration(seconds: 20));
+    } catch (e) {
+      throw ApiException('Tidak bisa terhubung ke server. Cek koneksi internet Anda.');
+    }
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      try {
+        return jsonDecode(response.body) as List<dynamic>;
+      } catch (_) {
+        throw ApiException('Respons server tidak valid.', statusCode: response.statusCode);
+      }
+    }
+
+    Map<String, dynamic> body = {};
+    try {
+      body = jsonDecode(response.body) as Map<String, dynamic>;
+    } catch (_) {
+
+    }
+
+    if (response.statusCode == 401) {
+      throw ApiException(
+        body['message'] as String? ?? 'Sesi login sudah habis, silakan login ulang',
+        statusCode: 401,
+      );
+    }
+
+    throw ApiException(
+      body['message'] as String? ?? 'Terjadi kesalahan',
+      statusCode: response.statusCode,
+    );
   }
 
   static Future<Map<String, dynamic>> postJson(String path, Map<String, dynamic> data) async {
