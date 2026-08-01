@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import '../../../theme/app_theme.dart';
@@ -59,8 +60,10 @@ class _FotoKtpPageState extends State<FotoKtpPage> {
     try {
       final inputImage = InputImage.fromFilePath(foto.path);
       final RecognizedText hasil = await _textRecognizer.processImage(inputImage);
+
       final nikMatch =
           RegExp(r'\d{15,16}').firstMatch(hasil.text.replaceAll(' ', ''));
+
       final barisTersusun = _rekonstruksiBarisBerdasarkanPosisi(hasil);
       _isiOtomatisDariOcr(barisTersusun, nikMatch?.group(0));
     } catch (e) {
@@ -121,8 +124,10 @@ class _FotoKtpPageState extends State<FotoKtpPage> {
       _namaController.text = cariNilai(['NAMA']) ?? _namaController.text;
       _ttlController.text = cariNilai(['LAHIR']) ?? _ttlController.text;
       _alamatController.text = cariNilai(['ALAMAT']) ?? _alamatController.text;
-      _goldarController.text = cariNilai(['GOL. DARAH', 'GOL DARAH', 'GOLDAR']) ??
-          _goldarController.text;
+      _goldarController.text = (cariNilai(['GOL. DARAH', 'GOL DARAH', 'GOLDAR']) ??
+              _goldarController.text)
+          .replaceAll(RegExp(r'[+\-]'), '')
+          .trim();
       _profesiController.text =
           cariNilai(['PEKERJAAN', 'PROFESI']) ?? _profesiController.text;
     });
@@ -151,13 +156,19 @@ class _FotoKtpPageState extends State<FotoKtpPage> {
       return;
     }
 
+    final golonganDarahLengkap = goldar.toUpperCase();
+    if (!RegExp(r'^(A|B|AB|O)[+-]$').hasMatch(golonganDarahLengkap)) {
+      _tampilkanPesan('Golongan darah harus diakhiri + atau - (contoh: O+, AB-)');
+      return;
+    }
+
     final jenisKelamin = _tentukanJenisKelaminDariNik(nik);
 
     final dataLengkap = widget.data.copyWith(
       nik: nik,
       tanggalLahir: tanggalLahir,
       alamat: alamat,
-      golonganDarah: goldar,
+      golonganDarah: golonganDarahLengkap,
       profesi: profesi,
       jenisKelamin: jenisKelamin,
     );
@@ -216,6 +227,39 @@ class _FotoKtpPageState extends State<FotoKtpPage> {
     return null;
   }
 
+  Widget _buildFieldGoldar() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 70,
+            child: Text('Goldar', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
+          ),
+          const Text(': ', style: AppTextStyles.body),
+          Expanded(
+            child: TextField(
+              controller: _goldarController,
+              textCapitalization: TextCapitalization.characters,
+              inputFormatters: [_FormatGolonganDarah()],
+              style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold),
+              decoration: const InputDecoration(
+                isDense: true,
+                filled: false,
+                contentPadding: EdgeInsets.zero,
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                hintText: '-',
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildFieldHasilOcr(String label, TextEditingController controller) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -265,7 +309,6 @@ class _FotoKtpPageState extends State<FotoKtpPage> {
 
             const Text('Fotokan KTPmu atau e-ktp', style: AppTextStyles.subheading),
             const SizedBox(height: 12),
-
             GestureDetector(
               onTap: _sedangMemproses ? null : _ambilFotoKtp,
               child: Container(
@@ -294,7 +337,7 @@ class _FotoKtpPageState extends State<FotoKtpPage> {
             _buildFieldHasilOcr('Nama', _namaController),
             _buildFieldHasilOcr('TTL', _ttlController),
             _buildFieldHasilOcr('Alamat', _alamatController),
-            _buildFieldHasilOcr('Goldar', _goldarController),
+            _buildFieldGoldar(),
             _buildFieldHasilOcr('Profesi', _profesiController),
             const SizedBox(height: 12),
 
@@ -327,5 +370,21 @@ class _FotoKtpPageState extends State<FotoKtpPage> {
         ),
       ),
     );
+  }
+}
+
+class _FormatGolonganDarah extends TextInputFormatter {
+  static final _polaValid = RegExp(r'^(A|B|AB|O)?[+-]?$', caseSensitive: false);
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final teks = newValue.text.toUpperCase();
+    if (_polaValid.hasMatch(teks)) {
+      return newValue.copyWith(text: teks);
+    }
+    return oldValue; 
   }
 }
