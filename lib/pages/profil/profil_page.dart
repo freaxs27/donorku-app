@@ -20,7 +20,7 @@ class ProfilPage extends StatelessWidget {
   );
 
   void _keluar(BuildContext context) {
-    Navigator.of(context).pushAndRemoveUntil(
+    Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
       MaterialPageRoute(builder: (context) => const LoginPage()),
       (route) => false,
     );

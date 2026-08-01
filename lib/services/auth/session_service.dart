@@ -31,6 +31,16 @@ class SessionService {
     return token != null && token.isNotEmpty;
   }
 
+  static Future<String?> ambilNama() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_keyNama);
+  }
+
+  static Future<String?> ambilEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_keyEmail);
+  }
+
   static Future<void> hapusSesi() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_keyToken);

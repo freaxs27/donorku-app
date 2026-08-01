@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/header_halaman.dart';
-import '../../model/lokasi_donor.dart';
-import '../lokasi/lokasi_page.dart';
+import '../../model/jadwal_ringkas.dart';
+import '../../services/jadwal/jadwal_service.dart';
+import '../../services/core/api_exception.dart';
 import 'kuisioner_kesehatan_page.dart';
 
 // (D-002).
@@ -14,15 +15,56 @@ class JadwalLokasiPage extends StatefulWidget {
 }
 
 class _JadwalLokasiPageState extends State<JadwalLokasiPage> {
-  DateTime _bulanDitampilkan = DateTime(2025, 12);
-  DateTime? _tanggalDipilih = DateTime(2025, 12, 28);
-  LokasiDonor? _lokasiDipilih;
+  DateTime _bulanDitampilkan = DateTime(DateTime.now().year, DateTime.now().month);
+  DateTime? _tanggalDipilih = DateTime.now();
+  JadwalRingkas? _jadwalDipilih;
+
+  final JadwalService _jadwalService = JadwalService();
+  List<JadwalRingkas> _daftarJadwal = [];
+  bool _sedangMemuat = false;
+  String? _pesanError;
 
   static const List<String> _namaBulan = [
     'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
     'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
   ];
   static const List<String> _namaHari = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+  @override
+  void initState() {
+    super.initState();
+    _muatJadwal();
+  }
+
+  Future<void> _muatJadwal() async {
+    if (_tanggalDipilih == null) return;
+
+    setState(() {
+      _sedangMemuat = true;
+      _pesanError = null;
+      _jadwalDipilih = null;
+    });
+
+    try {
+      final hasil = await _jadwalService.ambilJadwalByTanggal(_tanggalDipilih!);
+      setState(() {
+        _daftarJadwal = hasil;
+        _sedangMemuat = false;
+      });
+    } on ApiException catch (e) {
+      setState(() {
+        _daftarJadwal = [];
+        _sedangMemuat = false;
+        _pesanError = e.message;
+      });
+    } catch (e) {
+      setState(() {
+        _daftarJadwal = [];
+        _sedangMemuat = false;
+        _pesanError = 'Terjadi kesalahan tak terduga, coba lagi.';
+      });
+    }
+  }
 
   void _gantiBulan(int delta) {
     setState(() {
@@ -44,18 +86,63 @@ class _JadwalLokasiPageState extends State<JadwalLokasiPage> {
     }
   }
 
-  void _bukaLokasiDiPeta(LokasiDonor lokasi) {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => LokasiPage(lokasiAwal: lokasi)),
+  void _pilihTanggal(DateTime tanggal) {
+    setState(() => _tanggalDipilih = tanggal);
+    _muatJadwal();
+  }
+
+  void _lihatDetailLokasi(JadwalRingkas jadwal) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppDimens.radiusL)),
+      ),
+      builder: (context) => Padding(
+        padding: const EdgeInsets.all(AppDimens.paddingL),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(jadwal.lokasi.namaLokasi,
+                style: AppTextStyles.subheading.copyWith(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(Icons.location_on_outlined, size: 16, color: AppColors.textSecondary),
+                const SizedBox(width: 4),
+                Expanded(child: Text(jadwal.lokasi.alamat, style: AppTextStyles.body)),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.access_time, size: 16, color: AppColors.textSecondary),
+                const SizedBox(width: 4),
+                Text('${jadwal.jamMulaiFormat} - ${jadwal.jamSelesaiFormat}', style: AppTextStyles.body),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.people_outline, size: 16, color: AppColors.textSecondary),
+                const SizedBox(width: 4),
+                Text('Sisa kuota: ${jadwal.sisaKuota} dari ${jadwal.kuota}', style: AppTextStyles.body),
+              ],
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
     );
   }
 
   void _selanjutnya() {
+    if (_jadwalDipilih == null) return;
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => KuisionerKesehatanPage(
-          tanggalDonor: _tanggalDipilih,
-          lokasiDonor: _lokasiDipilih,
+          jadwalTerpilih: _jadwalDipilih!,
         ),
       ),
     );
@@ -106,7 +193,7 @@ class _JadwalLokasiPageState extends State<JadwalLokasiPage> {
                             namaHari: _namaHari,
                             onGantiBulan: _gantiBulan,
                             onTapNamaBulan: _pilihBulanTahun,
-                            onPilihTanggal: (t) => setState(() => _tanggalDipilih = t),
+                            onPilihTanggal: _pilihTanggal,
                           ),
                         ),
                       ],
@@ -124,29 +211,11 @@ class _JadwalLokasiPageState extends State<JadwalLokasiPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Silahkan pilih lokasi anda ingin melakukan donor :', style: AppTextStyles.caption),
+                        Text('Silahkan pilih jadwal donor :', style: AppTextStyles.caption),
                         const SizedBox(height: 12),
-
                         SizedBox(
                           height: 340,
-                          child: Scrollbar(
-                            thumbVisibility: true,
-                            child: ListView.separated(
-                              padding: const EdgeInsets.only(right: 8),
-                              itemCount: daftarLokasiDonor.length,
-                              separatorBuilder: (context, i) => const SizedBox(height: 12),
-                              itemBuilder: (context, i) {
-                                final lokasi = daftarLokasiDonor[i];
-                                final terpilih = _lokasiDipilih == lokasi;
-                                return _KartuPilihLokasi(
-                                  data: lokasi,
-                                  terpilih: terpilih,
-                                  onTapKartu: () => setState(() => _lokasiDipilih = lokasi),
-                                  onCekDetail: () => _bukaLokasiDiPeta(lokasi),
-                                );
-                              },
-                            ),
-                          ),
+                          child: _buildDaftarJadwal(),
                         ),
                       ],
                     ),
@@ -159,12 +228,60 @@ class _JadwalLokasiPageState extends State<JadwalLokasiPage> {
           Padding(
             padding: const EdgeInsets.fromLTRB(AppDimens.paddingL, 0, AppDimens.paddingL, 16),
             child: ElevatedButton(
-              onPressed: _selanjutnya,
+              onPressed: _jadwalDipilih == null ? null : _selanjutnya,
               child: const Text('Selanjutnya'),
             ),
           ),
         ],
       ),
+      ),
+    );
+  }
+
+  Widget _buildDaftarJadwal() {
+    if (_sedangMemuat) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_pesanError != null) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(_pesanError!, style: AppTextStyles.caption, textAlign: TextAlign.center),
+            const SizedBox(height: 8),
+            TextButton(onPressed: _muatJadwal, child: const Text('Coba lagi')),
+          ],
+        ),
+      );
+    }
+
+    if (_daftarJadwal.isEmpty) {
+      return const Center(
+        child: Text(
+          'Tidak ada jadwal donor tersedia untuk tanggal ini',
+          style: AppTextStyles.caption,
+          textAlign: TextAlign.center,
+        ),
+      );
+    }
+
+    return Scrollbar(
+      thumbVisibility: true,
+      child: ListView.separated(
+        padding: const EdgeInsets.only(right: 8),
+        itemCount: _daftarJadwal.length,
+        separatorBuilder: (context, i) => const SizedBox(height: 12),
+        itemBuilder: (context, i) {
+          final jadwal = _daftarJadwal[i];
+          final terpilih = _jadwalDipilih?.idJadwal == jadwal.idJadwal;
+          return _KartuPilihJadwal(
+            data: jadwal,
+            terpilih: terpilih,
+            onTapKartu: () => setState(() => _jadwalDipilih = jadwal),
+            onCekDetail: () => _lihatDetailLokasi(jadwal),
+          );
+        },
       ),
     );
   }
@@ -281,13 +398,13 @@ class _KalenderDonor extends StatelessWidget {
   }
 }
 
-class _KartuPilihLokasi extends StatelessWidget {
-  final LokasiDonor data;
+class _KartuPilihJadwal extends StatelessWidget {
+  final JadwalRingkas data;
   final bool terpilih;
   final VoidCallback onTapKartu;
   final VoidCallback onCekDetail;
 
-  const _KartuPilihLokasi({
+  const _KartuPilihJadwal({
     required this.data,
     required this.terpilih,
     required this.onTapKartu,
@@ -317,8 +434,34 @@ class _KartuPilihLokasi extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(AppDimens.radiusS),
-                  child: data.fotoAsset != null
-                      ? Image.asset(data.fotoAsset!, width: 56, height: 56, fit: BoxFit.cover)
+                  child: data.lokasi.fotoUrl != null
+                      ? Image.network(
+                          data.lokasi.fotoUrl!,
+                          width: 56,
+                          height: 56,
+                          fit: BoxFit.cover,
+                          loadingBuilder: (context, child, progress) {
+                            if (progress == null) return child;
+                            return Container(
+                              width: 56,
+                              height: 56,
+                              color: AppColors.background,
+                              child: const Center(
+                                child: SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                ),
+                              ),
+                            );
+                          },
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            width: 56,
+                            height: 56,
+                            color: AppColors.background,
+                            child: const Icon(Icons.local_hospital_outlined, color: AppColors.textSecondary),
+                          ),
+                        )
                       : Container(
                           width: 56,
                           height: 56,
@@ -332,13 +475,25 @@ class _KartuPilihLokasi extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(data.nama, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
+                      Text(data.lokasi.namaLokasi,
+                          style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
                       const SizedBox(height: 2),
                       Row(
                         children: [
                           const Icon(Icons.location_on_outlined, size: 13, color: AppColors.textSecondary),
                           const SizedBox(width: 2),
-                          Expanded(child: Text(data.alamat, style: AppTextStyles.caption)),
+                          Expanded(child: Text(data.lokasi.alamat, style: AppTextStyles.caption)),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          const Icon(Icons.access_time, size: 13, color: AppColors.textSecondary),
+                          const SizedBox(width: 2),
+                          Text('${data.jamMulaiFormat} - ${data.jamSelesaiFormat}',
+                              style: AppTextStyles.caption),
+                          const SizedBox(width: 8),
+                          Text('Sisa ${data.sisaKuota} kuota', style: AppTextStyles.caption),
                         ],
                       ),
                     ],
@@ -394,7 +549,6 @@ class _ModalPilihBulanTahunState extends State<_ModalPilihBulanTahun> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Navigasi tahun
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -413,7 +567,6 @@ class _ModalPilihBulanTahunState extends State<_ModalPilihBulanTahun> {
             ),
             const SizedBox(height: 16),
 
-            // Grid 12 bulan
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),

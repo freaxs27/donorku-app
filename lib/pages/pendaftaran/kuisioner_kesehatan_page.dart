@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/header_halaman.dart';
-import '../../model/lokasi_donor.dart';
+import '../../model/jadwal_ringkas.dart';
 import 'donor_konfirmasi_page.dart';
 
 // (D-003).
 class KuisionerKesehatanPage extends StatefulWidget {
-  final DateTime? tanggalDonor;
-  final LokasiDonor? lokasiDonor;
+  final JadwalRingkas jadwalTerpilih;
 
-  const KuisionerKesehatanPage({super.key, this.tanggalDonor, this.lokasiDonor});
+  const KuisionerKesehatanPage({super.key, required this.jadwalTerpilih});
 
   @override
   State<KuisionerKesehatanPage> createState() => _KuisionerKesehatanPageState();
@@ -32,16 +31,40 @@ class _KuisionerKesehatanPageState extends State<KuisionerKesehatanPage> {
     'Apakah Anda bersedia mendonorkan darah secara sukarela tanpa paksaan?',
   ];
 
+  /// Urutan key ini WAJIB sama persis urutannya dengan [pertanyaanKuisioner]
+  /// di atas, dan HARUS sama persis dengan nama kolom di
+  /// `KuesionerKesehatan` (schema.prisma) / body yang dibaca backend
+  /// (`route.ts` pendaftaran: `...jawaban` di-spread langsung ke Prisma).
+  static const List<String> _keyKuisioner = [
+    'demam_flu_batuk',
+    'sehat_hari_ini',
+    'pernah_dirawat',
+    'sudah_makan',
+    'konsumsi_alkohol',
+    'konsumsi_obat',
+    'pernah_pingsan_donor',
+    'riwayat_jantung_diabetes',
+    'riwayat_hepatitis_hiv',
+    'hamil_menyusui',
+    'baru_operasi',
+    'baru_vaksin',
+    'bersedia_sukarela',
+  ];
+
   late final List<bool> _jawaban = List.filled(pertanyaanKuisioner.length, true);
 
   void _selanjutnya() {
+    final jawabanMap = <String, bool>{
+      for (int i = 0; i < _keyKuisioner.length; i++) _keyKuisioner[i]: _jawaban[i],
+    };
+
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => DonorKonfirmasiPage(
-          tanggalDonor: widget.tanggalDonor,
-          lokasiDonor: widget.lokasiDonor,
+          jadwalTerpilih: widget.jadwalTerpilih,
           pertanyaan: pertanyaanKuisioner,
           jawaban: _jawaban,
+          jawabanMap: jawabanMap,
         ),
       ),
     );
