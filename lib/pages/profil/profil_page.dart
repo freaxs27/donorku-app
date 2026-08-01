@@ -19,7 +19,12 @@ class ProfilPage extends StatelessWidget {
   );
 
   void _keluar(BuildContext context) {
-    Navigator.of(context).pushAndRemoveUntil(
+    // rootNavigator: true -- WAJIB, karena halaman ini dirender di dalam
+    // Navigator lokal milik tab Profil (lihat main_layout.dart). Tanpa
+    // ini, cuma riwayat di dalam tab Profil yang ke-clear, MainLayout
+    // yang lama tetap nyangkut di bawahnya (itu penyebab bottom nav
+    // numpuk-numpuk setiap logout lalu login lagi).
+    Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
       MaterialPageRoute(builder: (context) => const LoginPage()),
       (route) => false,
     );

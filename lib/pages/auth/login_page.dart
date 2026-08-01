@@ -22,9 +22,7 @@ class _LoginPageState extends State<LoginPage> {
   bool _obscurePassword = true;
 
   void _goToDashboard() {
-    // Sementara: langsung ke MainLayout tanpa validasi/backend.
-    // Nanti di sini ditambahkan logic autentikasi yang sesungguhnya.
-    Navigator.of(context).pushReplacement(
+    Navigator.of(context, rootNavigator: true).pushReplacement(
       MaterialPageRoute(
         builder: (context) => const MainLayout(
           pages: [

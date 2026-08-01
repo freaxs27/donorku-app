@@ -20,7 +20,8 @@ class _PengaturanPageState extends State<PengaturanPage> {
   }
 
   void _keluar() {
-    Navigator.of(context).pushAndRemoveUntil(
+    // rootNavigator: true -- lihat penjelasan di profil_page.dart
+    Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
       MaterialPageRoute(builder: (context) => const LoginPage()),
       (route) => false,
     );
@@ -222,7 +223,7 @@ class _BarisSwitch extends StatelessWidget {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: const Color(0xFF34C759),
+            activeThumbColor: const Color(0xFF34C759),
             activeTrackColor: const Color(0xFF34C759).withValues(alpha: 0.5),
             inactiveThumbColor: Colors.white,
             inactiveTrackColor: const Color(0xFFE6E0EC),
