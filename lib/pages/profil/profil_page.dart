@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../auth/login_page.dart';
+import 'galeri_sertifikat_page.dart';
 import 'pengaturan_page.dart';
 
 /// Halaman Profil (P-001) — sesuai desain Figma.
@@ -19,12 +20,7 @@ class ProfilPage extends StatelessWidget {
   );
 
   void _keluar(BuildContext context) {
-    // rootNavigator: true -- WAJIB, karena halaman ini dirender di dalam
-    // Navigator lokal milik tab Profil (lihat main_layout.dart). Tanpa
-    // ini, cuma riwayat di dalam tab Profil yang ke-clear, MainLayout
-    // yang lama tetap nyangkut di bawahnya (itu penyebab bottom nav
-    // numpuk-numpuk setiap logout lalu login lagi).
-    Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+    Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (context) => const LoginPage()),
       (route) => false,
     );
@@ -390,7 +386,13 @@ class _KartuSertifikasi extends StatelessWidget {
             width: 112,
             height: 27,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const GaleriSertifikatPage(),
+                  ),
+                );
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
