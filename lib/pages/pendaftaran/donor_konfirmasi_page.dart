@@ -5,7 +5,6 @@ import '../../model/jadwal_ringkas.dart';
 import '../../services/pendaftaran/pendaftaran_service.dart';
 import '../../services/core/api_exception.dart';
 import '../../services/auth/session_service.dart';
-import '../auth/login_page.dart';
 import 'donor_sukses_page.dart';
 
 /// Halaman Donor - Konfirmasi (D-004).
@@ -81,15 +80,8 @@ class _DonorKonfirmasiPageState extends State<DonorKonfirmasiPage> {
         (route) => route.isFirst,
       );
     } on ApiException catch (e) {
-      if (e.statusCode == 401) {
-        await SessionService.hapusSesi();
-        if (!mounted) return;
-        Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const LoginPage()),
-          (route) => false,
-        );
-        return;
-      }
+      // 401 sudah diurus ApiClient (clear sesi + redirect Login).
+      if (e.statusCode == 401) return;
       _tampilkanPesan(e.message);
     } catch (e) {
       _tampilkanPesan('Terjadi kesalahan tak terduga, coba lagi');

@@ -7,12 +7,33 @@ import '../auth/session_service.dart';
 class ApiClient {
   ApiClient._();
 
+  /// Dipasang dari [DonorkuApp] agar 401 bisa redirect ke Login tanpa
+  /// bergantung ke BuildContext di tiap halaman.
+  static void Function()? onUnauthorized;
+
+  /// Cegah double-redirect kalau beberapa request gagal 401 bersamaan.
+  static bool _sedangRedirect401 = false;
+
   static Future<Map<String, String>> _headerDenganToken() async {
     final token = await SessionService.ambilToken();
     return {
       'Content-Type': 'application/json',
       if (token != null) 'Authorization': 'Bearer $token',
     };
+  }
+
+  /// Hapus sesi + panggil [onUnauthorized] (sekali saja per gelombang 401).
+  static Future<void> _tangani401(String pesan) async {
+    if (!_sedangRedirect401) {
+      _sedangRedirect401 = true;
+      await SessionService.hapusSesi();
+      onUnauthorized?.call();
+      // Izinkan redirect lagi setelah user sempat login ulang.
+      Future<void>.delayed(const Duration(seconds: 2), () {
+        _sedangRedirect401 = false;
+      });
+    }
+    throw ApiException(pesan, statusCode: 401);
   }
 
   static Future<Map<String, dynamic>> get(String path) async {
@@ -50,14 +71,11 @@ class ApiClient {
     Map<String, dynamic> body = {};
     try {
       body = jsonDecode(response.body) as Map<String, dynamic>;
-    } catch (_) {
-
-    }
+    } catch (_) {}
 
     if (response.statusCode == 401) {
-      throw ApiException(
+      await _tangani401(
         body['message'] as String? ?? 'Sesi login sudah habis, silakan login ulang',
-        statusCode: 401,
       );
     }
 
@@ -93,7 +111,7 @@ class ApiClient {
     return _prosesRespons(response);
   }
 
-  static Map<String, dynamic> _prosesRespons(http.Response response) {
+  static Future<Map<String, dynamic>> _prosesRespons(http.Response response) async {
     Map<String, dynamic> body;
     try {
       body = jsonDecode(response.body) as Map<String, dynamic>;
@@ -106,9 +124,8 @@ class ApiClient {
     }
 
     if (response.statusCode == 401) {
-      throw ApiException(
+      await _tangani401(
         body['message'] as String? ?? 'Sesi login sudah habis, silakan login ulang',
-        statusCode: 401,
       );
     }
 

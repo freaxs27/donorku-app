@@ -52,6 +52,7 @@ class _JadwalLokasiPageState extends State<JadwalLokasiPage> {
         _sedangMemuat = false;
       });
     } on ApiException catch (e) {
+      if (e.statusCode == 401) return;
       setState(() {
         _daftarJadwal = [];
         _sedangMemuat = false;

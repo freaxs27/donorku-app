@@ -6,8 +6,6 @@ import '../../widgets/header_halaman.dart';
 import '../../model/lokasi_donor.dart';
 import '../../services/lokasi/lokasi_service.dart';
 import '../../services/core/api_exception.dart';
-import '../../services/auth/session_service.dart';
-import '../auth/login_page.dart';
 
 /// Halaman Lokasi (LK-001 s/d LK-004).
 /// Keempatnya sebenarnya 1 halaman yang sama, cuma beda STATE:
@@ -74,16 +72,8 @@ class _LokasiPageState extends State<LokasiPage> with TickerProviderStateMixin {
         _sedangMuat = false;
       });
     } on ApiException catch (e) {
-      if (e.statusCode == 401) {
-        await SessionService.hapusSesi();
-        if (!mounted) return;
-        Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const LoginPage()),
-          (route) => false,
-        );
-        return;
-      }
-      if (!mounted) return;
+      // 401 sudah diurus ApiClient (clear sesi + redirect Login).
+      if (e.statusCode == 401 || !mounted) return;
       setState(() {
         _pesanError = e.message;
         _sedangMuat = false;

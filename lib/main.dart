@@ -1,10 +1,19 @@
 import 'package:flutter/material.dart';
 import 'theme/app_theme.dart';
 import 'services/auth/session_service.dart';
+import 'services/core/api_client.dart';
 import 'pages/auth/login_page.dart';
 import 'widgets/main_shell.dart';
 
+final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+
 void main() {
+  ApiClient.onUnauthorized = () {
+    _navigatorKey.currentState?.pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginPage()),
+      (_) => false,
+    );
+  };
   runApp(const DonorkuApp());
 }
 
@@ -15,6 +24,7 @@ class DonorkuApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Donorku',
+      navigatorKey: _navigatorKey,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       home: const _AuthGate(),

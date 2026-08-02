@@ -4,9 +4,7 @@ import '../../theme/app_theme.dart';
 import '../../model/beranda_data.dart';
 import '../../services/beranda/beranda_service.dart';
 import '../../services/core/api_exception.dart';
-import '../../services/auth/session_service.dart';
 import '../../widgets/main_layout.dart';
-import '../auth/login_page.dart';
 import '../bantuan/reza_chatbot_page.dart';
 import '../bantuan/chat_cs.dart';
 
@@ -52,17 +50,8 @@ class _BerandaPageState extends State<BerandaPage> {
         _sedangMuat = false;
       });
     } on ApiException catch (e) {
-      if (e.statusCode == 401) {
-        // Sesi habis -- balik paksa ke Login.
-        await SessionService.hapusSesi();
-        if (!mounted) return;
-        Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const LoginPage()),
-          (route) => false,
-        );
-        return;
-      }
-      if (!mounted) return;
+      // 401 sudah diurus ApiClient (clear sesi + redirect Login).
+      if (e.statusCode == 401 || !mounted) return;
       setState(() {
         _pesanError = e.message;
         _sedangMuat = false;
