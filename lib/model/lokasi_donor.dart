@@ -2,13 +2,17 @@ import 'package:latlong2/latlong.dart';
 import '../services/core/api_config.dart';
 
 class LokasiDonor {
-  final int? idLokasi; 
+  final int? idLokasi;
   final String nama;
   final String alamat;
-  final String? fotoAsset; 
-  final String? fotoUrl; 
+  final String? fotoAsset;
+  final String? fotoUrl;
   final LatLng posisi;
   final String? statusDonor;
+  
+  final String? jamMulai;
+  final String? jamSelesai;
+  final int? sisaKuota;
 
   const LokasiDonor({
     this.idLokasi,
@@ -18,6 +22,9 @@ class LokasiDonor {
     this.fotoUrl,
     required this.posisi,
     this.statusDonor,
+    this.jamMulai,
+    this.jamSelesai,
+    this.sisaKuota,
   });
 
   factory LokasiDonor.fromJson(Map<String, dynamic> json) {
@@ -31,7 +38,17 @@ class LokasiDonor {
         _keDouble(json['longitude']) ?? 0,
       ),
       statusDonor: json['status_donor'] as String?,
+      jamMulai: json['jam_mulai'] as String?,
+      jamSelesai: json['jam_selesai'] as String?,
+      sisaKuota: _keInt(json['sisa_kuota']),
     );
+  }
+
+  /// Label jam + sisa kuota untuk ditampilkan di kartu
+  String? get jadwalLabel {
+    if (jamMulai == null || jamSelesai == null) return null;
+    final kuota = sisaKuota != null ? '  Sisa $sisaKuota kuota' : '';
+    return '$jamMulai - $jamSelesai$kuota';
   }
 }
 
@@ -65,32 +82,4 @@ String? _ekstrakPathFoto(dynamic raw) {
   return teks;
 }
 
-const List<LokasiDonor> daftarLokasiDonor = [
-  LokasiDonor(
-    nama: 'Rumah Sakit Pasundan',
-    alamat: 'Lebakgede, Coblong',
-    fotoAsset: 'assets/images/lokasi/rs-pasundan.jpg',
-    posisi: LatLng(-6.8916, 107.6107),
-  ),
-  LokasiDonor(
-    nama: 'Rumah Sakit Santo Boromeus',
-    alamat: 'Lebakgede, Coblong',
-    fotoAsset: 'assets/images/lokasi/rs-santo.jpg',
-    posisi: LatLng(-6.8975, 107.6100),
-  ),
-  LokasiDonor(
-    nama: 'Rumah Sakit Kartini Bandung',
-    alamat: 'Negiasari, Cibeunying Kaler',
-    posisi: LatLng(-6.9012, 107.6205),
-  ),
-  LokasiDonor(
-    nama: 'RSKB Helmahera Siaga',
-    alamat: 'Citarum, Bandung Wetan',
-    posisi: LatLng(-6.9068, 107.6152),
-  ),
-  LokasiDonor(
-    nama: 'Rumah Sakit Veteran',
-    alamat: 'Kb. Pisang, Sumur Bandung',
-    posisi: LatLng(-6.9143, 107.6098),
-  ),
-];
+const List<LokasiDonor> daftarLokasiDonor = [];

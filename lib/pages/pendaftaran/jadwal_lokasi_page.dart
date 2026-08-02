@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/header_halaman.dart';
 import '../../model/jadwal_ringkas.dart';
+import '../../model/lokasi_donor.dart';
 import '../../services/jadwal/jadwal_service.dart';
 import '../../services/core/api_exception.dart';
+import '../lokasi/lokasi_page.dart';
 import 'kuisioner_kesehatan_page.dart';
 
 // (D-002).
@@ -93,47 +96,24 @@ class _JadwalLokasiPageState extends State<JadwalLokasiPage> {
   }
 
   void _lihatDetailLokasi(JadwalRingkas jadwal) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppDimens.radiusL)),
+    final lokasiDonor = LokasiDonor(
+      idLokasi: jadwal.lokasi.idLokasi,
+      nama: jadwal.lokasi.namaLokasi,
+      alamat: jadwal.lokasi.alamat,
+      fotoUrl: jadwal.lokasi.fotoUrl,
+      posisi: LatLng(
+        jadwal.lokasi.latitude ?? 0,
+        jadwal.lokasi.longitude ?? 0,
       ),
-      builder: (context) => Padding(
-        padding: const EdgeInsets.all(AppDimens.paddingL),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(jadwal.lokasi.namaLokasi,
-                style: AppTextStyles.subheading.copyWith(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(Icons.location_on_outlined, size: 16, color: AppColors.textSecondary),
-                const SizedBox(width: 4),
-                Expanded(child: Text(jadwal.lokasi.alamat, style: AppTextStyles.body)),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                const Icon(Icons.access_time, size: 16, color: AppColors.textSecondary),
-                const SizedBox(width: 4),
-                Text('${jadwal.jamMulaiFormat} - ${jadwal.jamSelesaiFormat}', style: AppTextStyles.body),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                const Icon(Icons.people_outline, size: 16, color: AppColors.textSecondary),
-                const SizedBox(width: 4),
-                Text('Sisa kuota: ${jadwal.sisaKuota} dari ${jadwal.kuota}', style: AppTextStyles.body),
-              ],
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
+      statusDonor: 'Open Donor Darah',
+      jamMulai: jadwal.jamMulaiFormat,
+      jamSelesai: jadwal.jamSelesaiFormat,
+      sisaKuota: jadwal.sisaKuota,
+    );
+
+    Navigator.of(context, rootNavigator: true).push(
+      MaterialPageRoute(
+        builder: (context) => LokasiPage(lokasiAwal: lokasiDonor),
       ),
     );
   }
