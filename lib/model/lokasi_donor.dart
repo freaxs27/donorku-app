@@ -9,10 +9,11 @@ class LokasiDonor {
   final String? fotoUrl;
   final LatLng posisi;
   final String? statusDonor;
-  
+  // Data jadwal aktif — diambil dari jadwal_donor, bukan lokasi_donor
   final String? jamMulai;
   final String? jamSelesai;
   final int? sisaKuota;
+  final DateTime? tanggalPelaksanaan;
 
   const LokasiDonor({
     this.idLokasi,
@@ -25,6 +26,7 @@ class LokasiDonor {
     this.jamMulai,
     this.jamSelesai,
     this.sisaKuota,
+    this.tanggalPelaksanaan,
   });
 
   factory LokasiDonor.fromJson(Map<String, dynamic> json) {
@@ -41,7 +43,20 @@ class LokasiDonor {
       jamMulai: json['jam_mulai'] as String?,
       jamSelesai: json['jam_selesai'] as String?,
       sisaKuota: _keInt(json['sisa_kuota']),
+      tanggalPelaksanaan: json['tanggal_pelaksanaan'] != null
+          ? DateTime.tryParse(json['tanggal_pelaksanaan'] as String)
+          : null,
     );
+  }
+
+  /// Format tanggal "5 Agustus 2026"
+  String? get tanggalFormat {
+    if (tanggalPelaksanaan == null) return null;
+    const bulan = [
+      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
+    ];
+    return '${tanggalPelaksanaan!.day} ${bulan[tanggalPelaksanaan!.month - 1]} ${tanggalPelaksanaan!.year}';
   }
 
   /// Label jam + sisa kuota untuk ditampilkan di kartu

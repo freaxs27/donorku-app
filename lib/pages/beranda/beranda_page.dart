@@ -195,7 +195,15 @@ class _BerandaPageState extends State<BerandaPage> {
 
               _KartuLokasiTersedia(
                 daftarLokasi: _lokasiTerdekat
-                    .map((l) => _DataLokasi(nama: l.namaLokasi, alamat: l.alamat, fotoUrl: l.fotoUrl))
+                    .map((l) => _DataLokasi(
+                          nama: l.namaLokasi,
+                          alamat: l.alamat,
+                          fotoUrl: l.fotoUrl,
+                          jamMulai: l.jamMulai,
+                          jamSelesai: l.jamSelesai,
+                          sisaKuota: l.sisaKuota,
+                          tanggalPelaksanaan: l.tanggalFormat,
+                        ))
                     .toList(),
               ),
               const SizedBox(height: 20),
@@ -422,9 +430,22 @@ class _KartuAndaSudahDonor extends StatelessWidget {
 class _DataLokasi {
   final String nama;
   final String alamat;
-  final String? fotoAsset; // null = pakai icon placeholder (foto lokal, belum dipakai)
-  final String? fotoUrl; // foto dari server (Image.network), prioritas di atas fotoAsset
-  const _DataLokasi({required this.nama, required this.alamat, this.fotoUrl}) : fotoAsset = null;
+  final String? fotoAsset;
+  final String? fotoUrl;
+  final String? jamMulai;
+  final String? jamSelesai;
+  final int? sisaKuota;
+  final String? tanggalPelaksanaan; // format "5 Agustus 2026"
+
+  const _DataLokasi({
+    required this.nama,
+    required this.alamat,
+    this.fotoUrl,
+    this.jamMulai,
+    this.jamSelesai,
+    this.sisaKuota,
+    this.tanggalPelaksanaan,
+  }) : fotoAsset = null;
 }
 
 /// Kartu besar "Lokasi Tersedia Donor Darah", di dalamnya ada kartu kecil
@@ -559,6 +580,32 @@ class _KartuLokasiItem extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       const Text('Open Donor Darah', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                      if (data.tanggalPelaksanaan != null) ...[
+                        const SizedBox(height: 2),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.calendar_today_outlined, size: 13, color: AppColors.textSecondary),
+                            const SizedBox(width: 2),
+                            Text(data.tanggalPelaksanaan!, style: AppTextStyles.caption),
+                          ],
+                        ),
+                      ],
+                      if (data.jamMulai != null && data.jamSelesai != null) ...[
+                        const SizedBox(height: 2),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.access_time, size: 13, color: AppColors.textSecondary),
+                            const SizedBox(width: 2),
+                            Text(
+                              '${data.jamMulai} - ${data.jamSelesai}'
+                              '${data.sisaKuota != null ? '  Sisa ${data.sisaKuota} kuota' : ''}',
+                              style: AppTextStyles.caption,
+                            ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),

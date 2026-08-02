@@ -40,7 +40,11 @@ class LokasiRingkas {
   final String alamat;
   final double? latitude;
   final double? longitude;
-  final String? fotoUrl; 
+  final String? fotoUrl;
+  final String? jamMulai;
+  final String? jamSelesai;
+  final int? sisaKuota;
+  final DateTime? tanggalPelaksanaan;
 
   const LokasiRingkas({
     required this.idLokasi,
@@ -49,6 +53,10 @@ class LokasiRingkas {
     required this.latitude,
     required this.longitude,
     required this.fotoUrl,
+    this.jamMulai,
+    this.jamSelesai,
+    this.sisaKuota,
+    this.tanggalPelaksanaan,
   });
 
   factory LokasiRingkas.fromJson(Map<String, dynamic> json) {
@@ -59,7 +67,25 @@ class LokasiRingkas {
       latitude: _keDouble(json['latitude']),
       longitude: _keDouble(json['longitude']),
       fotoUrl: ApiConfig.urlMedia(_ekstrakPathFoto(json['foto_lokasi'])),
+      jamMulai: json['jam_mulai'] as String?,
+      jamSelesai: json['jam_selesai'] as String?,
+      sisaKuota: _keInt(json['sisa_kuota']),
+      tanggalPelaksanaan: json['tanggal_pelaksanaan'] != null
+          ? DateTime.tryParse(json['tanggal_pelaksanaan'].toString())
+          : null,
     );
+  }
+
+  /// Format "5 Agustus 2026"
+  String? get tanggalFormat {
+    if (tanggalPelaksanaan == null) return null;
+    const bulan = [
+      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
+    ];
+    return '${tanggalPelaksanaan!.day} '
+        '${bulan[tanggalPelaksanaan!.month - 1]} '
+        '${tanggalPelaksanaan!.year}';
   }
 }
 
@@ -90,9 +116,9 @@ String? _ekstrakPathFoto(dynamic raw) {
       if (hasil is List && hasil.isNotEmpty) {
         return hasil.first?.toString();
       }
-      return null; 
+      return null;
     } catch (_) {
-      return null; 
+      return null;
     }
   }
 

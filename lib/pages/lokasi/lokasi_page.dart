@@ -7,8 +7,15 @@ import '../../model/lokasi_donor.dart';
 import '../../services/lokasi/lokasi_service.dart';
 import '../../services/core/api_exception.dart';
 
-// (LK-001 - LK-004).
+/// Halaman Lokasi (LK-001 s/d LK-004).
+/// Keempatnya sebenarnya 1 halaman yang sama, cuma beda STATE:
+/// - LK-001: peta polos + sheet collapsed, isi 2 lokasi teratas
+/// - LK-002: 1 lokasi dipilih -> peta fokus ke situ + marker merah + sheet 1 card
+/// - LK-003/LK-004: sheet digeser/diklik penuh -> semua lokasi
 class LokasiPage extends StatefulWidget {
+  /// Kalau diisi, halaman langsung dibuka dengan lokasi ini terpilih
+  /// (peta fokus ke situ, sheet 1 kartu) -- dipakai saat user datang dari
+  /// tombol "Cek Detail Lokasi" di halaman Jadwal & Lokasi Donor (D-002).
   final LokasiDonor? lokasiAwal;
 
   const LokasiPage({super.key, this.lokasiAwal});
@@ -65,6 +72,7 @@ class _LokasiPageState extends State<LokasiPage> with TickerProviderStateMixin {
         _sedangMuat = false;
       });
     } on ApiException catch (e) {
+      // 401 sudah diurus ApiClient (clear sesi + redirect Login).
       if (e.statusCode == 401 || !mounted) return;
       setState(() {
         _pesanError = e.message;
@@ -457,6 +465,18 @@ class _KartuLokasiPeta extends StatelessWidget {
                             : AppColors.textPrimary,
                       ),
                     ),
+                    if (data.tanggalFormat != null) ...[
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          const Icon(Icons.calendar_today_outlined,
+                              size: 13, color: AppColors.textSecondary),
+                          const SizedBox(width: 2),
+                          Text(data.tanggalFormat!,
+                              style: AppTextStyles.caption),
+                        ],
+                      ),
+                    ],
                     if (data.jadwalLabel != null) ...[
                       const SizedBox(height: 2),
                       Row(
