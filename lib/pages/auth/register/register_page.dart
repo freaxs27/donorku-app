@@ -180,44 +180,6 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
             const SizedBox(height: 20),
 
-            Row(
-              children: [
-                const Expanded(child: Divider(color: Colors.black26)),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Text('Atau', style: AppTextStyles.caption),
-                ),
-                const Expanded(child: Divider(color: Colors.black26)),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            OutlinedButton.icon(
-              onPressed: () {
-                // TODO: integrasi daftar dengan Google
-              },
-              icon: Image.asset(
-                'assets/icons/social/google.png',
-                width: 20,
-                height: 20,
-              ),
-              label: const Text('Daftar dengan Google'),
-            ),
-            const SizedBox(height: 12),
-
-            OutlinedButton.icon(
-              onPressed: () {
-                // TODO: integrasi daftar dengan Facebook
-              },
-              icon: Image.asset(
-                'assets/icons/social/facebook.png',
-                width: 20,
-                height: 20,
-              ),
-              label: const Text('Daftar dengan Facebook'),
-            ),
-            const SizedBox(height: 16),
-
             Center(
               child: RichText(
                 text: TextSpan(

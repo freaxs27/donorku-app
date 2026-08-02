@@ -229,8 +229,8 @@ class _BerandaPageState extends State<BerandaPage> {
                 onTapPanah: () => Navigator.of(context, rootNavigator: true).push(
                   MaterialPageRoute(builder: (context) => const ChatCsPage()),
                 ),
-                onKirimPesan: (pesan) => Navigator.of(context, rootNavigator: true).push(
-                  MaterialPageRoute(builder: (context) => ChatCsPage(pesanAwal: pesan)),
+                onKirimPesan: (_) => Navigator.of(context, rootNavigator: true).push(
+                  MaterialPageRoute(builder: (context) => const ChatCsPage()),
                 ),
               ),
             ],
