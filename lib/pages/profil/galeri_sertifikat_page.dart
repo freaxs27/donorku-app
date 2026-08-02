@@ -1,5 +1,3 @@
-// ignore_for_file: curly_braces_in_flow_control_structures, deprecated_member_use
-
 import 'package:flutter/material.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -13,7 +11,7 @@ import '../../model/data_sertifikat.dart';
 import '../../services/sertifikat/sertifikat_service.dart';
 import '../../services/core/api_exception.dart';
 
-/// Halaman Galeri Sertifikat (P-003).
+// (P-003).
 class GaleriSertifikatPage extends StatefulWidget {
   const GaleriSertifikatPage({super.key});
 
@@ -64,7 +62,7 @@ class _GaleriSertifikatPageState extends State<GaleriSertifikatPage> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Gagal membuat PDF')));
+            const SnackBar(content: Text('Gagal membuat PDF')));
       }
     } finally {
       if (mounted) setState(() => _sedangUnduh = false);
@@ -81,13 +79,17 @@ class _GaleriSertifikatPageState extends State<GaleriSertifikatPage> {
       final file = File(
           '${dir.path}/sertifikat_${data.nomorSertifikat.replaceAll('/', '_')}.pdf');
       await file.writeAsBytes(bytes);
-      await Share.shareXFiles(
-        [XFile(file.path, mimeType: 'application/pdf')],
-        subject: 'Sertifikat Donor Darah - ${data.namaPendonor}',
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path, mimeType: 'application/pdf')],
+          subject: 'Sertifikat Donor Darah - ${data.namaPendonor}',
+        ),
       );
     } catch (_) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Gagal membagikan PDF')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Gagal membagikan PDF')));
+      }
     } finally {
       if (mounted) setState(() => _sedangBagi = false);
     }
@@ -115,7 +117,6 @@ class _GaleriSertifikatPageState extends State<GaleriSertifikatPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            // Header
                             Row(children: [
                               GestureDetector(
                                 onTap: () => Navigator.of(context).pop(),
@@ -134,7 +135,6 @@ class _GaleriSertifikatPageState extends State<GaleriSertifikatPage> {
                             ]),
                             const SizedBox(height: 16),
 
-                            // Kartu utama
                             Center(
                               child: _KartuSertifikatUtama(
                                 data: _sertifikatTerpilih!,
@@ -183,10 +183,6 @@ class _GaleriSertifikatPageState extends State<GaleriSertifikatPage> {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Preview sertifikat — dipakai di kartu utama & grid
-// Identik dengan tampilan PDF (termasuk TTD placeholder)
-// ---------------------------------------------------------------------------
 class _PreviewSertifikat extends StatelessWidget {
   final DataSertifikat data;
 
@@ -238,7 +234,6 @@ class _PreviewSertifikat extends StatelessWidget {
             ],
           ),
 
-          // Kalimat apresiasi
           const Text(
             'Terima kasih atas kontribusi sukarela Anda yang\ntak ternilai dalam menyelamatkan nyawa sesama.',
             textAlign: TextAlign.center,
@@ -248,7 +243,6 @@ class _PreviewSertifikat extends StatelessWidget {
                 color: Colors.black54),
           ),
 
-          // TTD
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -284,7 +278,6 @@ class _PreviewSertifikat extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // TTD random (kurva sederhana pakai CustomPaint)
         SizedBox(
           width: 60,
           height: 20,
@@ -304,7 +297,6 @@ class _PreviewSertifikat extends StatelessWidget {
   }
 }
 
-/// CustomPainter untuk TTD random berdasarkan seed (hashCode nama)
 class _TtdPainter extends CustomPainter {
   final int seed;
   const _TtdPainter(this.seed);
@@ -317,7 +309,6 @@ class _TtdPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
-    // Generate kurva pseudo-random berdasarkan seed
     final r = seed.abs() % 1000;
     final path = Path();
     path.moveTo(4, size.height * 0.7);
@@ -344,9 +335,6 @@ class _TtdPainter extends CustomPainter {
   bool shouldRepaint(_TtdPainter old) => old.seed != seed;
 }
 
-// ---------------------------------------------------------------------------
-// Kartu sertifikat utama
-// ---------------------------------------------------------------------------
 class _KartuSertifikatUtama extends StatelessWidget {
   final DataSertifikat data;
   final bool sedangUnduh;
@@ -379,9 +367,8 @@ class _KartuSertifikatUtama extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.fromLTRB(18, 12, 18, 16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Preview sertifikat
             Center(
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(8),
@@ -399,13 +386,15 @@ class _KartuSertifikatUtama extends StatelessWidget {
             ),
             const SizedBox(height: 12),
 
-            Text(
-              'Donor Darah Sukarela - ${data.lokasiDonor}',
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary),
+            Center(
+              child: Text(
+                'Donor Darah Sukarela - ${data.lokasiDonor}',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary),
+              ),
             ),
             const SizedBox(height: 4),
 
@@ -455,9 +444,6 @@ class _KartuSertifikatUtama extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Item grid galeri
-// ---------------------------------------------------------------------------
 class _ItemGaleri extends StatelessWidget {
   final String label;
   final bool terpilih;
@@ -521,9 +507,6 @@ class _ItemGaleri extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Tombol aksi
-// ---------------------------------------------------------------------------
 class _TombolAksi extends StatelessWidget {
   final String label;
   final IconData icon;
@@ -588,9 +571,6 @@ class _TombolAksi extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------------
-// PDF generator
-// ---------------------------------------------------------------------------
 Future<Uint8List> _buildPdfBytes(DataSertifikat data) async {
   final pdf = pw.Document();
   final fontRegular = await PdfGoogleFonts.poppinsRegular();
