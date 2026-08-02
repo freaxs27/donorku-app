@@ -98,6 +98,19 @@ class ApiClient {
     return _prosesRespons(response);
   }
 
+  static Future<Map<String, dynamic>> put(String path, Map<String, dynamic> data) async {
+    final uri = Uri.parse('${ApiConfig.baseUrl}$path');
+    late final http.Response response;
+    try {
+      response = await http
+          .put(uri, headers: await _headerDenganToken(), body: jsonEncode(data))
+          .timeout(const Duration(seconds: 20));
+    } catch (e) {
+      throw ApiException('Tidak bisa terhubung ke server. Cek koneksi internet Anda.');
+    }
+    return _prosesRespons(response);
+  }
+
   static Future<Map<String, dynamic>> patch(String path, Map<String, dynamic> data) async {
     final uri = Uri.parse('${ApiConfig.baseUrl}$path');
     late final http.Response response;
