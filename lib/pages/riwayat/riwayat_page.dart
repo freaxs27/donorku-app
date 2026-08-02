@@ -54,6 +54,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
       final hasil = await _service.ambilRiwayat(_filterAktif);
       setState(() => _dataDonor = hasil);
     } on ApiException catch (e) {
+      if (e.statusCode == 401) return;
       setState(() => _pesanErrorDonor = e.message);
     } catch (e) {
       setState(() => _pesanErrorDonor = 'Terjadi kesalahan, coba lagi.');
@@ -69,6 +70,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
       final hasil = await _service.ambilDaftarPendaftaran();
       setState(() => _dataDaftar = hasil);
     } on ApiException catch (e) {
+      if (e.statusCode == 401) return;
       setState(() => _pesanErrorDaftar = e.message);
     } catch (_) {
       setState(() => _pesanErrorDaftar = 'Terjadi kesalahan, coba lagi.');
@@ -112,10 +114,9 @@ class _RiwayatPageState extends State<RiwayatPage> {
       await _service.batalkanPendaftaran(item.idPendaftaran);
       await _muatDaftar();
     } on ApiException catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(e.message)));
-      }
+      if (e.statusCode == 401 || !mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.message)));
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

@@ -26,6 +26,12 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Donorku membutuhkan akses kamera untuk mengambil foto KTP dan foto diri saat pendaftaran.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Donorku membutuhkan akses galeri untuk memilih foto KTP dan foto diri saat pendaftaran.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Donorku membutuhkan akses lokasi untuk menampilkan lokasi donor darah terdekat.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

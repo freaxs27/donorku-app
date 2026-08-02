@@ -1,15 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/main_layout.dart';
+import '../../widgets/main_shell.dart';
 import '../../services/auth/auth_service.dart';
 import '../../services/core/api_exception.dart';
 import '../../services/auth/session_service.dart';
-import '../beranda/beranda_page.dart';
-import '../lokasi/lokasi_page.dart';
-import '../pendaftaran/pendaftaran_page.dart';
-import '../riwayat/riwayat_page.dart';
-import '../profil/profil_page.dart';
 import 'register/register_page.dart';
 import 'lupa_password/lupa_password_page.dart';
 
@@ -75,17 +70,7 @@ class _LoginPageState extends State<LoginPage> {
 
   void _goToDashboard() {
     Navigator.of(context, rootNavigator: true).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => const MainLayout(
-          pages: [
-            BerandaPage(),
-            LokasiPage(),
-            PendaftaranPage(),
-            RiwayatPage(),
-            ProfilPage(),
-          ],
-        ),
-      ),
+      MaterialPageRoute(builder: (context) => const MainShell()),
     );
   }
 

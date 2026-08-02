@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
+import '../../services/auth/session_service.dart';
 import '../auth/login_page.dart';
 
 /// Halaman Pengaturan (P-002) — sesuai desain Figma.
@@ -19,7 +20,9 @@ class _PengaturanPageState extends State<PengaturanPage> {
     Navigator.of(context).pop();
   }
 
-  void _keluar() {
+  Future<void> _keluar() async {
+    await SessionService.hapusSesi();
+    if (!mounted) return;
     // rootNavigator: true -- lihat penjelasan di profil_page.dart
     Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
       MaterialPageRoute(builder: (context) => const LoginPage()),
