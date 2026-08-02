@@ -297,7 +297,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
       child: ListView.separated(
         padding: const EdgeInsets.all(AppDimens.paddingL),
         itemCount: _dataDaftar.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 12),
+        separatorBuilder: (_, _) => const SizedBox(height: 12),
         itemBuilder: (context, i) {
           final item = _dataDaftar[i];
           return _KartuPendaftaran(

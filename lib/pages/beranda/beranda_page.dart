@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../theme/app_theme.dart';
 import '../../model/beranda_data.dart';
+import '../../model/data_notifikasi.dart';
 import '../../services/beranda/beranda_service.dart';
+import '../../services/notifikasi/notifikasi_service.dart';
 import '../../services/core/api_exception.dart';
 import '../../widgets/main_layout.dart';
 import '../bantuan/reza_chatbot_page.dart';
@@ -435,7 +437,7 @@ class _DataLokasi {
   final String? jamMulai;
   final String? jamSelesai;
   final int? sisaKuota;
-  final String? tanggalPelaksanaan; // format "5 Agustus 2026"
+  final String? tanggalPelaksanaan;
 
   const _DataLokasi({
     required this.nama,
@@ -767,31 +769,41 @@ class _KartuChatState extends State<_KartuChat> {
 }
 
 /// Modal Notifikasi (N-001), muncul sebagai popup di atas Beranda.
-class _NotifikasiModal extends StatelessWidget {
+class _NotifikasiModal extends StatefulWidget {
   const _NotifikasiModal();
 
-  static const List<_ItemNotifikasi> _daftarNotifikasi = [
-    _ItemNotifikasi(
-      tipe: _TipeNotifikasi.info,
-      pesan: 'Kaka, Jadwal donor anda akan dimulai besok',
-      waktu: '1 Jam yang lalu',
-    ),
-    _ItemNotifikasi(
-      tipe: _TipeNotifikasi.info,
-      pesan: 'Hari ini anda bisa mendonorkan darah anda di Lokasi [...]',
-      waktu: '1 Jam yang lalu',
-    ),
-    _ItemNotifikasi(
-      tipe: _TipeNotifikasi.sukses,
-      pesan: 'Anda telah daftar donor di Lokasi [...] untuk tanggal [...]',
-      waktu: '6 Hari yang lalu',
-    ),
-    _ItemNotifikasi(
-      tipe: _TipeNotifikasi.peringatan,
-      pesan: 'Kaka, kamu belum menyalakan notifikasi anda',
-      waktu: '1 Jam yang lalu',
-    ),
-  ];
+  @override
+  State<_NotifikasiModal> createState() => _NotifikasiModalState();
+}
+
+class _NotifikasiModalState extends State<_NotifikasiModal> {
+  final NotifikasiService _service = NotifikasiService();
+  List<DataNotifikasi> _daftar = [];
+  bool _sedangMuat = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _muatData();
+  }
+
+  Future<void> _muatData() async {
+    try {
+      final hasil = await _service.ambilNotifikasi();
+      if (mounted) setState(() { _daftar = hasil; _sedangMuat = false; });
+    } catch (_) {
+      if (mounted) setState(() => _sedangMuat = false);
+    }
+  }
+
+  Future<void> _tandaiBaca(DataNotifikasi item) async {
+    try {
+      await _service.tandaiBaca(item.idNotifikasi);
+      if (mounted) {
+        setState(() => _daftar.removeWhere((n) => n.idNotifikasi == item.idNotifikasi));
+      }
+    } catch (_) {}
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -816,26 +828,31 @@ class _NotifikasiModal extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            ..._daftarNotifikasi.map((n) => _kartuNotifikasi(n)),
+            if (_sedangMuat)
+              const Padding(
+                padding: EdgeInsets.all(24),
+                child: CircularProgressIndicator(),
+              )
+            else if (_daftar.isEmpty)
+              const Padding(
+                padding: EdgeInsets.all(24),
+                child: Text('Belum ada notifikasi',
+                    style: TextStyle(color: AppColors.textSecondary)),
+              )
+            else
+              ..._daftar.map((n) => _kartuNotifikasi(n)),
           ],
         ),
       ),
     );
   }
 
-  Widget _kartuNotifikasi(_ItemNotifikasi item) {
-    late final String assetPath;
-    switch (item.tipe) {
-      case _TipeNotifikasi.info:
-        assetPath = 'assets/icons/notifikasi/info.png';
-        break;
-      case _TipeNotifikasi.sukses:
-        assetPath = 'assets/icons/notifikasi/success.png';
-        break;
-      case _TipeNotifikasi.peringatan:
-        assetPath = 'assets/icons/notifikasi/danger.png';
-        break;
-    }
+  Widget _kartuNotifikasi(DataNotifikasi item) {
+    final String assetPath = switch (item.tipe) {
+      'success' => 'assets/icons/notifikasi/success.png',
+      'warning' => 'assets/icons/notifikasi/danger.png',
+      _ => 'assets/icons/notifikasi/info.png',
+    };
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -859,19 +876,12 @@ class _NotifikasiModal extends StatelessWidget {
               ],
             ),
           ),
-          const Icon(Icons.close, size: 16, color: AppColors.textSecondary),
+          GestureDetector(
+            onTap: () => _tandaiBaca(item),
+            child: const Icon(Icons.close, size: 16, color: AppColors.textSecondary),
+          ),
         ],
       ),
     );
   }
-}
-
-enum _TipeNotifikasi { info, sukses, peringatan }
-
-class _ItemNotifikasi {
-  final _TipeNotifikasi tipe;
-  final String pesan;
-  final String waktu;
-
-  const _ItemNotifikasi({required this.tipe, required this.pesan, required this.waktu});
 }
