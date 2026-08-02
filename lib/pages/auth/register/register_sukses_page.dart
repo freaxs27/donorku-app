@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../theme/app_theme.dart';
 import '../../../core/locale/app_strings.dart';
 import '../login_page.dart';
+import '../../../widgets/theme_sync.dart';
 
 // (R-004).
 class RegisterSuksesPage extends StatelessWidget {
@@ -9,7 +10,7 @@ class RegisterSuksesPage extends StatelessWidget {
 
   void _kembaliKeLogin(BuildContext context) {
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (context) => const LoginPage()),
+      AppPageRoute(builder: (context) => const LoginPage()),
       (route) => false,
     );
   }
@@ -44,7 +45,7 @@ class RegisterSuksesPage extends StatelessWidget {
 
               Text(
                 s.accountCreatedSuccess,
-                style: AppTextStyles.subheading,
+                style: AppTextStyles.subheading(context),
               ),
               const SizedBox(height: 32),
 

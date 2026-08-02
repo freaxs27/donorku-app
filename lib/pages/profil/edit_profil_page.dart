@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../core/locale/app_strings.dart';
 import '../../theme/app_theme.dart';
 import '../../model/data_profil.dart';
 import '../../services/profil/profil_service.dart';
@@ -104,7 +105,7 @@ class _EditProfilPageState extends State<EditProfilPage> {
       barrierDismissible: false,
       builder: (context) => Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.of(context).background,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
           child: Column(
@@ -112,12 +113,12 @@ class _EditProfilPageState extends State<EditProfilPage> {
             children: [
               Image.asset('assets/images/icon-tanya.png', width: 72, height: 72),
               const SizedBox(height: 16),
-              const Text('Konfirmasi Ubah',
+              Text('Konfirmasi Ubah',
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               const SizedBox(height: 10),
-              const Text('Apakah anda yakin ingin mengubah data profil?',
+              Text('Apakah anda yakin ingin mengubah data profil?',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                  style: TextStyle(fontSize: 13, color: AppColors.of(context).textSecondary)),
               const SizedBox(height: 24),
               Row(
                 children: [
@@ -125,8 +126,8 @@ class _EditProfilPageState extends State<EditProfilPage> {
                     child: OutlinedButton(
                       onPressed: () => Navigator.of(context).pop(false),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.textPrimary,
-                        side: const BorderSide(color: AppColors.border),
+                        foregroundColor: AppColors.of(context).textPrimary,
+                        side: BorderSide(color: AppColors.of(context).border),
                         minimumSize: const Size.fromHeight(44),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12)),
@@ -186,7 +187,7 @@ class _EditProfilPageState extends State<EditProfilPage> {
         builder: (context) => Dialog(
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          backgroundColor: AppColors.background,
+          backgroundColor: AppColors.of(context).background,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
             child: Column(
@@ -203,16 +204,16 @@ class _EditProfilPageState extends State<EditProfilPage> {
                       size: 36, color: AppColors.primary),
                 ),
                 const SizedBox(height: 16),
-                const Text('Data Profile Berhasil Diganti',
+                Text('Data Profile Berhasil Diganti',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                         fontSize: 18, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 10),
-                const Text(
+                Text(
                   'Anda telah berhasil mengganti data profile baru. Silahkan coba buka kembali',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                      fontSize: 13, color: AppColors.textSecondary),
+                      fontSize: 13, color: AppColors.of(context).textSecondary),
                 ),
                 const SizedBox(height: 24),
                 SizedBox(
@@ -255,6 +256,7 @@ class _EditProfilPageState extends State<EditProfilPage> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -267,15 +269,15 @@ class _EditProfilPageState extends State<EditProfilPage> {
                 children: [
                   GestureDetector(
                     onTap: () => Navigator.of(context).pop(),
-                    child: const Icon(Icons.arrow_back,
-                        size: 28, color: AppColors.textPrimary),
+                    child: Icon(Icons.arrow_back,
+                        size: 28, color: AppColors.of(context).textPrimary),
                   ),
-                  const Expanded(
+                  Expanded(
                     child: Text('Edit Profil',
                         textAlign: TextAlign.center,
                         style: TextStyle(fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary)),
+                            color: AppColors.of(context).textPrimary)),
                   ),
                   const SizedBox(width: 28),
                 ],
@@ -320,17 +322,17 @@ class _EditProfilPageState extends State<EditProfilPage> {
                         child: Container(
                           width: 30, height: 30,
                           decoration: BoxDecoration(
-                            color: AppColors.surface,
+                            color: AppColors.of(context).surface,
                             shape: BoxShape.circle,
-                            border: Border.all(color: AppColors.border),
+                            border: Border.all(color: AppColors.of(context).border),
                             boxShadow: [
                               BoxShadow(
                                   color: Colors.black.withValues(alpha: 0.15),
                                   blurRadius: 4),
                             ],
                           ),
-                          child: const Icon(Icons.edit,
-                              size: 16, color: AppColors.textPrimary),
+                          child: Icon(Icons.edit,
+                              size: 16, color: AppColors.of(context).textPrimary),
                         ),
                       ),
                     ),
@@ -345,7 +347,7 @@ class _EditProfilPageState extends State<EditProfilPage> {
                   child: Container(
                     height: 55,
                     decoration: BoxDecoration(
-                      color: AppColors.surface,
+                      color: AppColors.of(context).surface,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
@@ -366,13 +368,13 @@ class _EditProfilPageState extends State<EditProfilPage> {
                                       fontWeight: FontWeight.bold,
                                       color: AppColors.primary)),
                               const SizedBox(height: 2),
-                              const Text('Total Donasi',
+                              Text(s.totalDonations,
                                   style: TextStyle(fontSize: 10,
-                                      color: AppColors.textPrimary)),
+                                      color: AppColors.of(context).textPrimary)),
                             ],
                           ),
                         ),
-                        Container(width: 1, height: 34, color: AppColors.border),
+                        Container(width: 1, height: 34, color: AppColors.of(context).border),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 24),
                           child: Column(
@@ -383,9 +385,9 @@ class _EditProfilPageState extends State<EditProfilPage> {
                                       fontWeight: FontWeight.bold,
                                       color: AppColors.primary)),
                               const SizedBox(height: 2),
-                              const Text('ml Darah',
+                              Text(s.mlBlood,
                                   style: TextStyle(fontSize: 10,
-                                      color: AppColors.textPrimary)),
+                                      color: AppColors.of(context).textPrimary)),
                             ],
                           ),
                         ),
@@ -397,15 +399,15 @@ class _EditProfilPageState extends State<EditProfilPage> {
               const SizedBox(height: 20),
 
               // Form
-              const Text('Informasi Pribadi',
+              Text(s.personalInfoSection,
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary)),
+                      color: AppColors.of(context).textPrimary)),
               const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.symmetric(
                     horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
+                  color: AppColors.of(context).surface,
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
@@ -416,29 +418,28 @@ class _EditProfilPageState extends State<EditProfilPage> {
                 child: Column(
                   children: [
                     // Nama Lengkap — bisa diedit
-                    _BarisEdit(label: 'Nama Lengkap', ctrl: _namaCtrl),
-                    const Divider(height: 1, color: AppColors.border),
+                    _BarisEdit(label: s.fullNameLabel, ctrl: _namaCtrl),
+                    Divider(height: 1, color: AppColors.of(context).border),
 
                     // No Telepon — bisa diedit
-                    _BarisEdit(label: 'No Telepon', ctrl: _noTelpCtrl,
+                    _BarisEdit(label: s.phoneProfilLabel, ctrl: _noTelpCtrl,
                         tipe: TextInputType.phone),
-                    const Divider(height: 1, color: AppColors.border),
+                    Divider(height: 1, color: AppColors.of(context).border),
 
                     // Tanggal Lahir — tap buka date picker
                     _BarisTanggalLahir(
                       nilai: _tanggalLahirFormat,
                       onTap: _pilihTanggalLahir,
                     ),
-                    const Divider(height: 1, color: AppColors.border),
+                    Divider(height: 1, color: AppColors.of(context).border),
 
-                    // Alamat — bisa diedit
-                    _BarisEdit(label: 'Alamat', ctrl: _alamatCtrl, maxLines: 2),
-                    const Divider(height: 1, color: AppColors.border),
+                    _BarisEdit(label: s.addressLabel, ctrl: _alamatCtrl, maxLines: 2),
+                    Divider(height: 1, color: AppColors.of(context).border),
 
                     // Email — bisa diedit
-                    _BarisEdit(label: 'Email', ctrl: _emailCtrl,
+                    _BarisEdit(label: s.emailLabel, ctrl: _emailCtrl,
                         tipe: TextInputType.emailAddress),
-                    const Divider(height: 1, color: AppColors.border),
+                    Divider(height: 1, color: AppColors.of(context).border),
 
                     // Golongan Darah — textfield dengan formatter, ketik manual
                     _BarisGolonganDarah(ctrl: _golDarahCtrl),
@@ -454,8 +455,8 @@ class _EditProfilPageState extends State<EditProfilPage> {
                     child: OutlinedButton(
                       onPressed: () => Navigator.of(context).pop(),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.textPrimary,
-                        side: const BorderSide(color: AppColors.border),
+                        foregroundColor: AppColors.of(context).textPrimary,
+                        side: BorderSide(color: AppColors.of(context).border),
                         minimumSize: const Size.fromHeight(44),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12)),
@@ -525,15 +526,15 @@ class _BarisEdit extends StatelessWidget {
                 style: TextStyle(
                     fontSize: 14,
                     color: readOnly
-                        ? AppColors.textSecondary
-                        : AppColors.textPrimary)),
+                        ? AppColors.of(context).textSecondary
+                        : AppColors.of(context).textPrimary)),
           ),
           Text(': ',
               style: TextStyle(
                   fontSize: 14,
                   color: readOnly
-                      ? AppColors.textSecondary
-                      : AppColors.textPrimary)),
+                      ? AppColors.of(context).textSecondary
+                      : AppColors.of(context).textPrimary)),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(left: 4),
@@ -545,8 +546,8 @@ class _BarisEdit extends StatelessWidget {
                 style: TextStyle(
                     fontSize: 14,
                     color: readOnly
-                        ? AppColors.textSecondary
-                        : AppColors.textPrimary),
+                        ? AppColors.of(context).textSecondary
+                        : AppColors.of(context).textPrimary),
                 decoration: const InputDecoration(
                   border: InputBorder.none,
                   isDense: true,
@@ -578,13 +579,13 @@ class _BarisTanggalLahir extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const SizedBox(
+          SizedBox(
             width: 110,
-            child: Text('Tanggal Lahir',
-                style: TextStyle(fontSize: 14, color: AppColors.textPrimary)),
+            child: Text(AppStrings.of(context).dobLabel,
+                style: TextStyle(fontSize: 14, color: AppColors.of(context).textPrimary)),
           ),
-          const Text(': ',
-              style: TextStyle(fontSize: 14, color: AppColors.textPrimary)),
+          Text(': ',
+              style: TextStyle(fontSize: 14, color: AppColors.of(context).textPrimary)),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(left: 4),
@@ -594,8 +595,8 @@ class _BarisTanggalLahir extends StatelessWidget {
                   child: TextField(
                     controller: TextEditingController(text: nilai),
                     readOnly: true,
-                    style: const TextStyle(
-                        fontSize: 14, color: AppColors.textPrimary),
+                    style: TextStyle(
+                        fontSize: 14, color: AppColors.of(context).textPrimary),
                     decoration: const InputDecoration(
                       border: InputBorder.none,
                       isDense: true,
@@ -627,13 +628,13 @@ class _BarisGolonganDarah extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
-          const SizedBox(
+          SizedBox(
             width: 110,
-            child: Text('Golongan Darah',
-                style: TextStyle(fontSize: 14, color: AppColors.textPrimary)),
+            child: Text(AppStrings.of(context).bloodTypeLabel,
+                style: TextStyle(fontSize: 14, color: AppColors.of(context).textPrimary)),
           ),
-          const Text(': ',
-              style: TextStyle(fontSize: 14, color: AppColors.textPrimary)),
+          Text(': ',
+              style: TextStyle(fontSize: 14, color: AppColors.of(context).textPrimary)),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(left: 4),
@@ -641,14 +642,14 @@ class _BarisGolonganDarah extends StatelessWidget {
                 controller: ctrl,
                 textCapitalization: TextCapitalization.characters,
                 inputFormatters: [_FormatGolonganDarah()],
-                style: const TextStyle(
-                    fontSize: 14, color: AppColors.textPrimary),
-                decoration: const InputDecoration(
+                style: TextStyle(
+                    fontSize: 14, color: AppColors.of(context).textPrimary),
+                decoration: InputDecoration(
                   border: InputBorder.none,
                   isDense: true,
                   contentPadding:
-                      EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-                  hintText: 'Contoh: O+',
+                      const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                  hintText: AppStrings.of(context).bloodTypeExampleHint,
                 ),
               ),
             ),

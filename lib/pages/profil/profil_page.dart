@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/locale/app_strings.dart';
+import '../../core/theme/app_tema.dart';
 import '../../theme/app_theme.dart';
 import '../../model/data_profil.dart';
 import '../../services/profil/profil_service.dart';
@@ -8,6 +9,7 @@ import 'galeri_sertifikat_page.dart';
 import 'pengaturan_page.dart';
 import 'edit_profil_page.dart';
 import 'edit_password_page.dart';
+import '../../widgets/theme_sync.dart';
 
 class ProfilPage extends StatefulWidget {
   const ProfilPage({super.key});
@@ -45,23 +47,28 @@ class _ProfilPageState extends State<ProfilPage> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppStrings.of(context);
-    return SafeArea(
-      child: _sedangMemuat
-          ? const Center(child: CircularProgressIndicator())
-          : _pesanError != null
-              ? Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(_pesanError!, style: AppTextStyles.caption,
-                          textAlign: TextAlign.center),
-                      const SizedBox(height: 8),
-                      TextButton(onPressed: _muatData, child: Text(s.tryAgain)),
-                    ],
-                  ),
-                )
-              : _buildKonten(s),
+    return ListenableBuilder(
+      listenable: ThemeController.instance,
+      builder: (context, _) {
+        final s = AppStrings.of(context);
+        return SafeArea(
+          child: _sedangMemuat
+              ? const Center(child: CircularProgressIndicator())
+              : _pesanError != null
+                  ? Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(_pesanError!, style: AppTextStyles.caption(context),
+                              textAlign: TextAlign.center),
+                          const SizedBox(height: 8),
+                          TextButton(onPressed: _muatData, child: Text(s.tryAgain)),
+                        ],
+                      ),
+                    )
+                  : _buildKonten(s),
+        );
+      },
     );
   }
 
@@ -84,18 +91,18 @@ class _ProfilPageState extends State<ProfilPage> {
                 Expanded(
                   child: Text(s.profileTitle,
                       textAlign: TextAlign.center,
-                      style: AppTextStyles.subheading.copyWith(
+                      style: AppTextStyles.subheading(context).copyWith(
                           fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
                 SizedBox(
                   width: 28,
                   child: GestureDetector(
                     onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(
+                      AppPageRoute(
                           builder: (context) => const PengaturanPage()),
                     ),
-                    child: const Icon(Icons.settings_outlined,
-                        size: 26, color: AppColors.textPrimary),
+                    child: Icon(Icons.settings_outlined,
+                        size: 26, color: AppColors.of(context).textPrimary),
                   ),
                 ),
               ],
@@ -112,7 +119,7 @@ class _ProfilPageState extends State<ProfilPage> {
                 child: Container(
                   height: 55,
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
+                    color: AppColors.of(context).surface,
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
@@ -135,12 +142,12 @@ class _ProfilPageState extends State<ProfilPage> {
                                     color: AppColors.primary)),
                             const SizedBox(height: 2),
                             Text(s.totalDonations,
-                                style: const TextStyle(fontSize: 10,
-                                    color: AppColors.textPrimary)),
+                                style: TextStyle(fontSize: 10,
+                                    color: AppColors.of(context).textPrimary)),
                           ],
                         ),
                       ),
-                      Container(width: 1, height: 34, color: AppColors.border),
+                      Container(width: 1, height: 34, color: AppColors.of(context).border),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 24),
                         child: Column(
@@ -152,8 +159,8 @@ class _ProfilPageState extends State<ProfilPage> {
                                     color: AppColors.primary)),
                             const SizedBox(height: 2),
                             Text(s.mlBlood,
-                                style: const TextStyle(fontSize: 10,
-                                    color: AppColors.textPrimary)),
+                                style: TextStyle(fontSize: 10,
+                                    color: AppColors.of(context).textPrimary)),
                           ],
                         ),
                       ),
@@ -177,28 +184,31 @@ class _ProfilPageState extends State<ProfilPage> {
                   child: OutlinedButton(
                     onPressed: () async {
                       await Navigator.of(context).push(
-                        MaterialPageRoute(
+                        AppPageRoute(
                             builder: (context) => EditProfilPage(data: data)),
                       );
                       // Refresh setelah kembali dari edit
                       _muatData();
                     },
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.textPrimary,
-                      side: const BorderSide(color: AppColors.border),
+                      foregroundColor: AppColors.of(context).textPrimary,
+                      side: BorderSide(color: AppColors.of(context).border),
                       minimumSize: const Size.fromHeight(44),
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12)),
                     ),
                     child: Text(s.editProfileButton,
-                        style: const TextStyle(fontSize: 14)),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppColors.of(context).textPrimary,
+                        )),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute(
+                      AppPageRoute(
                           builder: (context) => const EditPasswordPage()),
                     ),
                     style: ElevatedButton.styleFrom(
@@ -210,7 +220,7 @@ class _ProfilPageState extends State<ProfilPage> {
                       elevation: 0,
                     ),
                     child: Text(s.editPasswordButton,
-                        style: const TextStyle(fontSize: 14)),
+                        style: const TextStyle(fontSize: 14, color: Colors.white)),
                   ),
                 ),
               ],
@@ -221,7 +231,7 @@ class _ProfilPageState extends State<ProfilPage> {
             _JudulSection(text: s.otherSection),
             const SizedBox(height: 8),
             Text(s.donorCertification,
-                style: const TextStyle(fontSize: 16, color: AppColors.textPrimary)),
+                style: TextStyle(fontSize: 16, color: AppColors.of(context).textPrimary)),
             const SizedBox(height: 8),
             _KartuSertifikasi(openGalleryLabel: s.openGalleryButton),
           ],
@@ -271,8 +281,8 @@ class _JudulSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Text(text,
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary));
+        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,
+            color: AppColors.of(context).textPrimary));
   }
 }
 
@@ -295,7 +305,7 @@ class _KartuInfoPribadi extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.of(context).surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(color: Colors.black.withValues(alpha: 0.25),
@@ -310,18 +320,18 @@ class _KartuInfoPribadi extends StatelessWidget {
               children: [
                 Expanded(flex: 2,
                     child: Text(baris[i].$1,
-                        style: const TextStyle(fontSize: 14,
-                            color: AppColors.textPrimary))),
+                        style: TextStyle(fontSize: 14,
+                            color: AppColors.of(context).textPrimary))),
                 Expanded(flex: 3,
                     child: Text(': ${baris[i].$2}',
-                        style: const TextStyle(fontSize: 14,
-                            color: AppColors.textPrimary))),
+                        style: TextStyle(fontSize: 14,
+                            color: AppColors.of(context).textPrimary))),
               ],
             ),
             if (i != baris.length - 1)
-              const Padding(
+              Padding(
                 padding: EdgeInsets.symmetric(vertical: 6),
-                child: Divider(height: 1, color: AppColors.border),
+                child: Divider(height: 1, color: AppColors.of(context).border),
               ),
           ],
         ],
@@ -339,7 +349,7 @@ class _KartuSertifikasi extends StatelessWidget {
     return Container(
       height: 150,
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.of(context).surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(color: Colors.black.withValues(alpha: 0.25),
@@ -349,14 +359,14 @@ class _KartuSertifikasi extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.camera_alt_outlined, size: 32,
-              color: AppColors.textPrimary),
+          Icon(Icons.camera_alt_outlined, size: 32,
+              color: AppColors.of(context).textPrimary),
           const SizedBox(height: 12),
           SizedBox(
             width: 112, height: 32,
             child: ElevatedButton(
               onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(
+                AppPageRoute(
                     builder: (context) => const GaleriSertifikatPage()),
               ),
               style: ElevatedButton.styleFrom(

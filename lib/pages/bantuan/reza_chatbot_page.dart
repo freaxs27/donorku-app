@@ -34,8 +34,8 @@ class _RezaChatbotPageState extends State<RezaChatbotPage> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
-        leading: const BackButton(color: AppColors.textPrimary),
-        title: Text(s.rezaChatbotTitle, style: AppTextStyles.subheading),
+        leading: BackButton(color: AppColors.of(context).textPrimary),
+        title: Text(s.rezaChatbotTitle, style: AppTextStyles.subheading(context)),
         titleSpacing: 0,
       ),
       body: SafeArea(
@@ -50,16 +50,16 @@ class _RezaChatbotPageState extends State<RezaChatbotPage> {
                     const SizedBox(height: 40),
                     Text(
                       s.rezaGreeting,
-                      style: AppTextStyles.body.copyWith(fontSize: 16, color: AppColors.textSecondary),
+                      style: AppTextStyles.body(context).copyWith(fontSize: 16, color: AppColors.of(context).textSecondary),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       s.rezaIntroLine1,
-                      style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                      style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: AppColors.of(context).textPrimary),
                     ),
                     Text(
                       s.rezaIntroLine2,
-                      style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                      style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: AppColors.of(context).textPrimary),
                     ),
                     const SizedBox(height: 20),
 
@@ -90,9 +90,9 @@ class _RezaChatbotPageState extends State<RezaChatbotPage> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
+                  color: AppColors.of(context).surface,
                   borderRadius: BorderRadius.circular(AppDimens.radiusL),
-                  border: Border.all(color: AppColors.border),
+                  border: Border.all(color: AppColors.of(context).border),
                 ),
                 child: Row(
                   children: [
@@ -110,7 +110,7 @@ class _RezaChatbotPageState extends State<RezaChatbotPage> {
                     ),
                     GestureDetector(
                       onTap: _kirimPesan,
-                      child: const Icon(Icons.send, color: AppColors.textSecondary),
+                      child: Icon(Icons.send, color: AppColors.of(context).textSecondary),
                     ),
                   ],
                 ),
@@ -138,7 +138,7 @@ class _TombolSaran extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 20),
       ),
       onPressed: onTap,
-      child: Text(label, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
+      child: Text(label, style: AppTextStyles.body(context).copyWith(fontWeight: FontWeight.bold)),
     );
   }
 }

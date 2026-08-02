@@ -115,7 +115,7 @@ class _GaleriSertifikatPageState extends State<GaleriSertifikatPage> {
                 : _daftar.isEmpty
                     ? Center(
                         child: Text(s.noCertificates,
-                            style: const TextStyle(color: AppColors.textSecondary)))
+                            style: TextStyle(color: AppColors.of(context).textSecondary)))
                     : SingleChildScrollView(
                         padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
                         child: Column(
@@ -125,16 +125,16 @@ class _GaleriSertifikatPageState extends State<GaleriSertifikatPage> {
                             Row(children: [
                               GestureDetector(
                                 onTap: () => Navigator.of(context).pop(),
-                                child: const Icon(Icons.arrow_back,
-                                    size: 28, color: AppColors.textPrimary),
+                                child: Icon(Icons.arrow_back,
+                                    size: 28, color: AppColors.of(context).textPrimary),
                               ),
                               Expanded(
                                 child: Text(s.certificateGalleryTitle,
                                     textAlign: TextAlign.center,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
-                                        color: AppColors.textPrimary)),
+                                        color: AppColors.of(context).textPrimary)),
                               ),
                               const SizedBox(width: 28),
                             ]),
@@ -154,10 +154,10 @@ class _GaleriSertifikatPageState extends State<GaleriSertifikatPage> {
                             const SizedBox(height: 24),
 
                             Text(s.certificateHistoryTitle,
-                                style: const TextStyle(
+                                style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
-                                    color: AppColors.textPrimary)),
+                                    color: AppColors.of(context).textPrimary)),
                             const SizedBox(height: 12),
 
                             GridView.builder(
@@ -373,7 +373,7 @@ class _KartuSertifikatUtama extends StatelessWidget {
     return Container(
       width: 338,
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.of(context).surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -409,10 +409,10 @@ class _KartuSertifikatUtama extends StatelessWidget {
               child: Text(
                 s.voluntaryDonorTitle(data.lokasiDonor),
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary),
+                    color: AppColors.of(context).textPrimary),
               ),
             ),
             const SizedBox(height: 4),
@@ -429,7 +429,7 @@ class _KartuSertifikatUtama extends StatelessWidget {
               ]),
             ),
             const SizedBox(height: 10),
-            const Divider(height: 1, color: AppColors.textPrimary),
+            Divider(height: 1, color: AppColors.of(context).textPrimary),
             const SizedBox(height: 10),
 
             Row(
@@ -447,12 +447,12 @@ class _KartuSertifikatUtama extends StatelessWidget {
                 _TombolAksi(
                   label: s.shareButton,
                   icon: Icons.share_outlined,
-                  warnaBackground: AppColors.surface,
+                  warnaBackground: AppColors.of(context).surface,
                   warnaTeks: AppColors.primary,
                   warnaIcon: AppColors.primary,
                   sedangProses: sedangBagi,
                   onTap: onBagi,
-                  border: Border.all(color: AppColors.border),
+                  border: Border.all(color: AppColors.of(context).border),
                 ),
               ],
             ),
@@ -519,10 +519,10 @@ class _ItemGaleri extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(label,
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.normal,
-                  color: AppColors.textPrimary),
+                  color: AppColors.of(context).textPrimary),
               maxLines: 1,
               overflow: TextOverflow.ellipsis),
         ],

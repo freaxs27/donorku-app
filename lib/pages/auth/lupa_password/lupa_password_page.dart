@@ -4,6 +4,7 @@ import '../../../core/locale/app_strings.dart';
 import '../../../services/auth/auth_service.dart';
 import '../../../services/core/api_exception.dart';
 import 'verifikasi_email_page.dart';
+import '../../../widgets/theme_sync.dart';
 
 // (LP-001).
 class LupaPasswordPage extends StatefulWidget {
@@ -36,7 +37,7 @@ class _LupaPasswordPageState extends State<LupaPasswordPage> {
       await _authService.kirimOtpLupaPassword(email: email);
       if (!mounted) return;
       Navigator.of(context).push(
-        MaterialPageRoute(
+        AppPageRoute(
           builder: (context) => VerifikasiEmailPage(email: email),
         ),
       );
@@ -58,22 +59,22 @@ class _LupaPasswordPageState extends State<LupaPasswordPage> {
     final s = AppStrings.of(context);
     return Scaffold(
       appBar: AppBar(
-        leading: const BackButton(color: AppColors.textPrimary),
+        leading: BackButton(color: AppColors.of(context).textPrimary),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: AppDimens.paddingL),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(s.forgotPasswordTitle, style: AppTextStyles.heading),
+            Text(s.forgotPasswordTitle, style: AppTextStyles.heading(context)),
             const SizedBox(height: 4),
             Text(
               s.forgotPasswordSubtitle,
-              style: AppTextStyles.caption,
+              style: AppTextStyles.caption(context),
             ),
             const SizedBox(height: 24),
 
-            Text(s.emailLabel, style: AppTextStyles.body),
+            Text(s.emailLabel, style: AppTextStyles.body(context)),
             const SizedBox(height: 8),
             TextField(
               controller: _emailController,

@@ -5,6 +5,7 @@ import '../../../core/locale/app_strings.dart';
 import '../../../core/validators/app_validators.dart';
 import '../../../model/data_register.dart';
 import 'foto_ktp_page.dart';
+import '../../../widgets/theme_sync.dart';
 
 // (R-001).
 class RegisterPage extends StatefulWidget {
@@ -74,7 +75,7 @@ class _RegisterPageState extends State<RegisterPage> {
     );
 
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => FotoKtpPage(data: data)),
+      AppPageRoute(builder: (context) => FotoKtpPage(data: data)),
     );
   }
 
@@ -87,7 +88,7 @@ class _RegisterPageState extends State<RegisterPage> {
     final s = AppStrings.of(context);
     return Scaffold(
       appBar: AppBar(
-        leading: const BackButton(color: AppColors.textPrimary),
+        leading: BackButton(color: AppColors.of(context).textPrimary),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: AppDimens.paddingL),
@@ -95,11 +96,11 @@ class _RegisterPageState extends State<RegisterPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Center(
-              child: Text(s.createAccountTitle, style: AppTextStyles.heading),
+              child: Text(s.createAccountTitle, style: AppTextStyles.heading(context)),
             ),
             const SizedBox(height: 20),
 
-            Text(s.fullNameLabel, style: AppTextStyles.body),
+            Text(s.fullNameLabel, style: AppTextStyles.body(context)),
             const SizedBox(height: 8),
             TextField(
               controller: _namaController,
@@ -107,7 +108,7 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
             const SizedBox(height: 16),
 
-            Text(s.emailLabel, style: AppTextStyles.body),
+            Text(s.emailLabel, style: AppTextStyles.body(context)),
             const SizedBox(height: 8),
             TextField(
               controller: _emailController,
@@ -116,7 +117,7 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
             const SizedBox(height: 16),
 
-            Text(s.phoneLabel, style: AppTextStyles.body),
+            Text(s.phoneLabel, style: AppTextStyles.body(context)),
             const SizedBox(height: 8),
             TextField(
               controller: _noHpController,
@@ -125,7 +126,7 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
             const SizedBox(height: 16),
 
-            Text(s.cityLabel, style: AppTextStyles.body),
+            Text(s.cityLabel, style: AppTextStyles.body(context)),
             const SizedBox(height: 8),
             TextField(
               controller: _kotaController,
@@ -133,7 +134,7 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
             const SizedBox(height: 16),
 
-            Text(s.passwordLabel, style: AppTextStyles.body),
+            Text(s.passwordLabel, style: AppTextStyles.body(context)),
             const SizedBox(height: 8),
             TextField(
               controller: _passwordController,
@@ -145,7 +146,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     _obscurePassword
                         ? Icons.visibility_off_outlined
                         : Icons.visibility_outlined,
-                    color: AppColors.textSecondary,
+                    color: AppColors.of(context).textSecondary,
                   ),
                   onPressed: () {
                     setState(() => _obscurePassword = !_obscurePassword);
@@ -155,7 +156,7 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
             const SizedBox(height: 16),
 
-            Text(s.confirmPasswordLabel, style: AppTextStyles.body),
+            Text(s.confirmPasswordLabel, style: AppTextStyles.body(context)),
             const SizedBox(height: 8),
             TextField(
               controller: _konfirmasiController,
@@ -167,7 +168,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     _obscureKonfirmasi
                         ? Icons.visibility_off_outlined
                         : Icons.visibility_outlined,
-                    color: AppColors.textSecondary,
+                    color: AppColors.of(context).textSecondary,
                   ),
                   onPressed: () {
                     setState(() => _obscureKonfirmasi = !_obscureKonfirmasi);
@@ -188,7 +189,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 const Expanded(child: Divider(color: Colors.black26)),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Text(s.orDivider, style: AppTextStyles.caption),
+                  child: Text(s.orDivider, style: AppTextStyles.caption(context)),
                 ),
                 const Expanded(child: Divider(color: Colors.black26)),
               ],
@@ -198,7 +199,7 @@ class _RegisterPageState extends State<RegisterPage> {
             Center(
               child: RichText(
                 text: TextSpan(
-                  style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
+                  style: AppTextStyles.body(context).copyWith(color: AppColors.of(context).textSecondary),
                   children: [
                     TextSpan(text: s.haveAccountPrompt),
                     TextSpan(

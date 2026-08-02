@@ -4,7 +4,9 @@ import 'package:http/http.dart' as http;
 import '../../theme/app_theme.dart';
 import '../../widgets/header_halaman.dart';
 import '../../services/core/api_config.dart';
+import '../../core/locale/app_strings.dart';
 import 'jadwal_lokasi_page.dart';
+import '../../widgets/theme_sync.dart';
 
 /// Halaman Pendaftaran / Daftar - Step 1 (D-001).
 /// Aturan & Tips Donor, dengan tombol lampu di kanan atas yang membuka
@@ -79,7 +81,7 @@ class _PendaftaranPageState extends State<PendaftaranPage> {
     // Push biasa saja -- bottom nav otomatis tetap ada karena MainLayout
     // sekarang kasih tiap tab Navigator sendiri (lihat main_layout.dart).
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const JadwalLokasiPage()),
+      AppPageRoute(builder: (context) => const JadwalLokasiPage()),
     );
   }
 
@@ -154,7 +156,7 @@ class _KartuAturan extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(11),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.of(context).surface,
         borderRadius: BorderRadius.circular(AppDimens.radiusM),
       ),
       child: Column(
@@ -164,7 +166,7 @@ class _KartuAturan extends StatelessWidget {
           const SizedBox(height: 7),
           for (int i = 0; i < items.length; i++) ...[
             _baris1Utama(i + 1, items[i].judul),
-            ...items[i].subItem.map(_barisSub),
+            ...items[i].subItem.map((t) => _barisSub(context, t)),
             if (i != items.length - 1) const SizedBox(height: 5),
           ],
         ],
@@ -179,17 +181,17 @@ class _KartuAturan extends StatelessWidget {
     );
   }
 
-  Widget _barisSub(String teks) {
+  Widget _barisSub(BuildContext context, String teks) {
     return Padding(
       padding: const EdgeInsets.only(left: 14, bottom: 2),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('•  ', style: TextStyle(fontSize: 10.5, color: AppColors.textSecondary)),
+          Text('•  ', style: TextStyle(fontSize: 10.5, color: AppColors.of(context).textSecondary)),
           Expanded(
             child: Text(
               teks,
-              style: const TextStyle(fontSize: 10.5, color: AppColors.textSecondary, height: 1.28),
+              style: TextStyle(fontSize: 10.5, color: AppColors.of(context).textSecondary, height: 1.28),
             ),
           ),
         ],
@@ -204,8 +206,9 @@ class _ModalEdukasiDonor extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Dialog(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.of(context).background,
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 60),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimens.radiusL)),
       child: Padding(
@@ -219,8 +222,8 @@ class _ModalEdukasiDonor extends StatelessWidget {
                 children: [
                   Image.asset('assets/icons/edukasi/book.png', width: 22, height: 22),
                   const SizedBox(width: 8),
-                  const Expanded(
-                    child: Text('Edukasi & Manfaat Donor', style: AppTextStyles.subheading),
+                  Expanded(
+                    child: Text(s.educationModalTitle, style: AppTextStyles.subheading(context)),
                   ),
                   GestureDetector(
                     onTap: () => Navigator.of(context).pop(),
@@ -299,16 +302,16 @@ class _KartuEdukasi extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimens.paddingM),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.of(context).surface,
         borderRadius: BorderRadius.circular(AppDimens.radiusM),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(judul, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
+          Text(judul, style: AppTextStyles.body(context).copyWith(fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
           for (int i = 0; i < items.length; i++) ...[
-            _baris(items[i]),
+            _baris(context, items[i]),
             if (i != items.length - 1) const SizedBox(height: 14),
           ],
         ],
@@ -316,7 +319,7 @@ class _KartuEdukasi extends StatelessWidget {
     );
   }
 
-  Widget _baris(_ItemEdukasi item) {
+  Widget _baris(BuildContext context, _ItemEdukasi item) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -326,9 +329,9 @@ class _KartuEdukasi extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(item.judul, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
+              Text(item.judul, style: AppTextStyles.body(context).copyWith(fontWeight: FontWeight.bold)),
               const SizedBox(height: 2),
-              Text(item.deskripsi, style: AppTextStyles.caption),
+              Text(item.deskripsi, style: AppTextStyles.caption(context)),
             ],
           ),
         ),

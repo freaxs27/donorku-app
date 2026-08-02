@@ -8,6 +8,7 @@ import '../../services/core/api_exception.dart';
 import '../../services/auth/session_service.dart';
 import 'register/register_page.dart';
 import 'lupa_password/lupa_password_page.dart';
+import '../../widgets/theme_sync.dart';
 
 // (L-001).
 class LoginPage extends StatefulWidget {
@@ -71,19 +72,19 @@ class _LoginPageState extends State<LoginPage> {
 
   void _goToDashboard() {
     Navigator.of(context, rootNavigator: true).pushReplacement(
-      MaterialPageRoute(builder: (context) => const MainShell()),
+      AppPageRoute(builder: (context) => const MainShell()),
     );
   }
 
   void _goToRegister() {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const RegisterPage()),
+      AppPageRoute(builder: (context) => const RegisterPage()),
     );
   }
 
   void _goToForgotPassword() {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const LupaPasswordPage()),
+      AppPageRoute(builder: (context) => const LupaPasswordPage()),
     );
   }
 
@@ -114,12 +115,12 @@ class _LoginPageState extends State<LoginPage> {
               Text(
                 s.loginTitle,
                 textAlign: TextAlign.center,
-                style: AppTextStyles.subheading,
+                style: AppTextStyles.subheading(context),
               ),
               const SizedBox(height: 24),
 
               // Email
-              Text(s.emailLabel, style: AppTextStyles.body),
+              Text(s.emailLabel, style: AppTextStyles.body(context)),
               const SizedBox(height: 8),
               TextField(
                 controller: _emailController,
@@ -129,7 +130,7 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 16),
 
               // Password
-              Text(s.passwordLabel, style: AppTextStyles.body),
+              Text(s.passwordLabel, style: AppTextStyles.body(context)),
               const SizedBox(height: 8),
               TextField(
                 controller: _passwordController,
@@ -141,7 +142,7 @@ class _LoginPageState extends State<LoginPage> {
                       _obscurePassword
                           ? Icons.visibility_off_outlined
                           : Icons.visibility_outlined,
-                      color: AppColors.textSecondary,
+                      color: AppColors.of(context).textSecondary,
                     ),
                     onPressed: () {
                       setState(() => _obscurePassword = !_obscurePassword);
@@ -158,9 +159,9 @@ class _LoginPageState extends State<LoginPage> {
                   onTap: _goToForgotPassword,
                   child: Text(
                     s.forgotPasswordLink,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
-                      color: AppColors.textPrimary,
+                      color: AppColors.of(context).textPrimary,
                       decoration: TextDecoration.underline,
                     ),
                   ),
@@ -201,7 +202,7 @@ class _LoginPageState extends State<LoginPage> {
               Center(
                 child: RichText(
                   text: TextSpan(
-                    style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
+                    style: AppTextStyles.body(context).copyWith(color: AppColors.of(context).textSecondary),
                     children: [
                       TextSpan(text: s.noAccountPrompt),
                       TextSpan(

@@ -9,6 +9,7 @@ import '../../services/jadwal/jadwal_service.dart';
 import '../../services/core/api_exception.dart';
 import '../lokasi/lokasi_page.dart';
 import 'kuisioner_kesehatan_page.dart';
+import '../../widgets/theme_sync.dart';
 
 // (D-002).
 class JadwalLokasiPage extends StatefulWidget {
@@ -110,7 +111,7 @@ class _JadwalLokasiPageState extends State<JadwalLokasiPage> {
     );
 
     Navigator.of(context, rootNavigator: true).push(
-      MaterialPageRoute(
+      AppPageRoute(
         builder: (context) => LokasiPage(lokasiAwal: lokasiDonor),
       ),
     );
@@ -119,7 +120,7 @@ class _JadwalLokasiPageState extends State<JadwalLokasiPage> {
   void _selanjutnya() {
     if (_jadwalDipilih == null) return;
     Navigator.of(context).push(
-      MaterialPageRoute(
+      AppPageRoute(
         builder: (context) => KuisionerKesehatanPage(
           jadwalTerpilih: _jadwalDipilih!,
         ),
@@ -151,19 +152,19 @@ class _JadwalLokasiPageState extends State<JadwalLokasiPage> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(AppDimens.paddingM),
                     decoration: BoxDecoration(
-                      color: AppColors.surface,
+                      color: AppColors.of(context).surface,
                       borderRadius: BorderRadius.circular(AppDimens.radiusM),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(s.selectDatePrompt, style: AppTextStyles.caption),
+                        Text(s.selectDatePrompt, style: AppTextStyles.caption(context)),
                         const SizedBox(height: 12),
                         Container(
                           width: double.infinity,
                           padding: const EdgeInsets.all(AppDimens.paddingM),
                           decoration: BoxDecoration(
-                            border: Border.all(color: AppColors.border),
+                            border: Border.all(color: AppColors.of(context).border),
                             borderRadius: BorderRadius.circular(AppDimens.radiusM),
                           ),
                           child: _KalenderDonor(
@@ -185,13 +186,13 @@ class _JadwalLokasiPageState extends State<JadwalLokasiPage> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(AppDimens.paddingM),
                     decoration: BoxDecoration(
-                      color: AppColors.surface,
+                      color: AppColors.of(context).surface,
                       borderRadius: BorderRadius.circular(AppDimens.radiusM),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(s.selectSchedulePrompt, style: AppTextStyles.caption),
+                        Text(s.selectSchedulePrompt, style: AppTextStyles.caption(context)),
                         const SizedBox(height: 12),
                         SizedBox(
                           height: 340,
@@ -229,7 +230,7 @@ class _JadwalLokasiPageState extends State<JadwalLokasiPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(_pesanError!, style: AppTextStyles.caption, textAlign: TextAlign.center),
+            Text(_pesanError!, style: AppTextStyles.caption(context), textAlign: TextAlign.center),
             const SizedBox(height: 8),
             TextButton(onPressed: _muatJadwal, child: Text(s.tryAgain)),
           ],
@@ -241,7 +242,7 @@ class _JadwalLokasiPageState extends State<JadwalLokasiPage> {
       return Center(
         child: Text(
           s.noScheduleForDate,
-          style: AppTextStyles.caption,
+          style: AppTextStyles.caption(context),
           textAlign: TextAlign.center,
         ),
       );
@@ -311,7 +312,7 @@ class _KalenderDonor extends StatelessWidget {
               child: Row(
                 children: [
                   Text('${namaBulan[bulan - 1]} $tahun',
-                      style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
+                      style: AppTextStyles.body(context).copyWith(fontWeight: FontWeight.bold)),
                   const Icon(Icons.chevron_right, size: 18, color: AppColors.primary),
                 ],
               ),
@@ -333,7 +334,7 @@ class _KalenderDonor extends StatelessWidget {
           children: namaHari
               .map((h) => Expanded(
                     child: Center(
-                      child: Text(h, style: AppTextStyles.caption.copyWith(fontSize: 11)),
+                      child: Text(h, style: AppTextStyles.caption(context).copyWith(fontSize: 11)),
                     ),
                   ))
               .toList(),
@@ -364,8 +365,8 @@ class _KalenderDonor extends StatelessWidget {
                           color: terpilih
                               ? AppColors.primary
                               : bulanBeda
-                                  ? AppColors.textHint
-                                  : AppColors.textPrimary,
+                                  ? AppColors.of(context).textHint
+                                  : AppColors.of(context).textPrimary,
                         ),
                       ),
                     ),
@@ -401,10 +402,10 @@ class _KartuPilihJadwal extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(AppDimens.paddingM),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: AppColors.of(context).surface,
           borderRadius: BorderRadius.circular(AppDimens.radiusM),
           border: Border.all(
-            color: terpilih ? AppColors.primary : AppColors.border,
+            color: terpilih ? AppColors.primary : AppColors.of(context).border,
             width: terpilih ? 2 : 1,
           ),
         ),
@@ -427,7 +428,7 @@ class _KartuPilihJadwal extends StatelessWidget {
                             return Container(
                               width: 56,
                               height: 56,
-                              color: AppColors.background,
+                              color: AppColors.of(context).background,
                               child: const Center(
                                 child: SizedBox(
                                   width: 18,
@@ -440,15 +441,15 @@ class _KartuPilihJadwal extends StatelessWidget {
                           errorBuilder: (context, error, stackTrace) => Container(
                             width: 56,
                             height: 56,
-                            color: AppColors.background,
-                            child: const Icon(Icons.local_hospital_outlined, color: AppColors.textSecondary),
+                            color: AppColors.of(context).background,
+                            child: Icon(Icons.local_hospital_outlined, color: AppColors.of(context).textSecondary),
                           ),
                         )
                       : Container(
                           width: 56,
                           height: 56,
-                          color: AppColors.background,
-                          child: const Icon(Icons.local_hospital_outlined, color: AppColors.textSecondary),
+                          color: AppColors.of(context).background,
+                          child: Icon(Icons.local_hospital_outlined, color: AppColors.of(context).textSecondary),
                         ),
                 ),
                 const SizedBox(width: 12),
@@ -458,24 +459,24 @@ class _KartuPilihJadwal extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(data.lokasi.namaLokasi,
-                          style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
+                          style: AppTextStyles.body(context).copyWith(fontWeight: FontWeight.bold)),
                       const SizedBox(height: 2),
                       Row(
                         children: [
-                          const Icon(Icons.location_on_outlined, size: 13, color: AppColors.textSecondary),
+                          Icon(Icons.location_on_outlined, size: 13, color: AppColors.of(context).textSecondary),
                           const SizedBox(width: 2),
-                          Expanded(child: Text(data.lokasi.alamat, style: AppTextStyles.caption)),
+                          Expanded(child: Text(data.lokasi.alamat, style: AppTextStyles.caption(context))),
                         ],
                       ),
                       const SizedBox(height: 2),
                       Row(
                         children: [
-                          const Icon(Icons.access_time, size: 13, color: AppColors.textSecondary),
+                          Icon(Icons.access_time, size: 13, color: AppColors.of(context).textSecondary),
                           const SizedBox(width: 2),
                           Text('${data.jamMulaiFormat} - ${data.jamSelesaiFormat}',
-                              style: AppTextStyles.caption),
+                              style: AppTextStyles.caption(context)),
                           const SizedBox(width: 8),
-                          Text(s.quotaRemaining(data.sisaKuota), style: AppTextStyles.caption),
+                          Text(s.quotaRemaining(data.sisaKuota), style: AppTextStyles.caption(context)),
                         ],
                       ),
                     ],
@@ -523,7 +524,7 @@ class _ModalPilihBulanTahunState extends State<_ModalPilihBulanTahun> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.of(context).background,
       insetPadding: const EdgeInsets.symmetric(horizontal: 32, vertical: 100),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimens.radiusL)),
       child: Padding(
@@ -539,7 +540,7 @@ class _ModalPilihBulanTahunState extends State<_ModalPilihBulanTahun> {
                   child: const Icon(Icons.chevron_left, color: AppColors.primary),
                 ),
                 const SizedBox(width: 16),
-                Text('$_tahun', style: AppTextStyles.subheading),
+                Text('$_tahun', style: AppTextStyles.subheading(context)),
                 const SizedBox(width: 16),
                 GestureDetector(
                   onTap: () => setState(() => _tahun++),
@@ -567,16 +568,16 @@ class _ModalPilihBulanTahunState extends State<_ModalPilihBulanTahun> {
                   child: Container(
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: terpilih ? AppColors.primary : AppColors.surface,
+                      color: terpilih ? AppColors.primary : AppColors.of(context).surface,
                       borderRadius: BorderRadius.circular(AppDimens.radiusS),
-                      border: Border.all(color: terpilih ? AppColors.primary : AppColors.border),
+                      border: Border.all(color: terpilih ? AppColors.primary : AppColors.of(context).border),
                     ),
                     child: Text(
                       widget.namaBulan[i].substring(0, 3),
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
-                        color: terpilih ? Colors.white : AppColors.textPrimary,
+                        color: terpilih ? Colors.white : AppColors.of(context).textPrimary,
                       ),
                     ),
                   ),

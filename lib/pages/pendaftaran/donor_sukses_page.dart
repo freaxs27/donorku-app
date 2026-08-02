@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/locale/app_strings.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/main_layout.dart';
 import '../../services/feedback/feedback_service.dart';
@@ -23,13 +24,14 @@ class _DonorSuksesPageState extends State<DonorSuksesPage> {
     showDialog(
       context: context,
       useRootNavigator: false,
-      barrierDismissible: true, 
+      barrierDismissible: true,
       builder: (context) => const _ModalFeedback(),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Scaffold(
       body: SafeArea(
         child: Center(
@@ -47,9 +49,9 @@ class _DonorSuksesPageState extends State<DonorSuksesPage> {
                 child: const Icon(Icons.check, color: AppColors.primary, size: 40),
               ),
               const SizedBox(height: 24),
-              const Text(
-                'Berhasil melakukan pendaftaran',
-                style: AppTextStyles.subheading,
+              Text(
+                s.registrationSuccess,
+                style: AppTextStyles.subheading(context),
               ),
             ],
           ),
@@ -99,8 +101,9 @@ class _ModalFeedbackState extends State<_ModalFeedback> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Dialog(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.of(context).background,
       insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 120),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimens.radiusL)),
       child: Padding(
@@ -111,8 +114,10 @@ class _ModalFeedbackState extends State<_ModalFeedback> {
           children: [
             Row(
               children: [
-                const Expanded(
-                  child: Text('FeedBack', textAlign: TextAlign.center, style: AppTextStyles.subheading),
+                Expanded(
+                  child: Text(s.feedbackTitle,
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.subheading(context)),
                 ),
                 GestureDetector(
                   onTap: () => Navigator.of(context).pop(),
@@ -122,14 +127,14 @@ class _ModalFeedbackState extends State<_ModalFeedback> {
             ),
             const SizedBox(height: 16),
 
-            const Text('Bagaimana Pengalaman Anda?', style: AppTextStyles.body),
+            Text(s.experienceQuestion, style: AppTextStyles.body(context)),
             const SizedBox(height: 10),
 
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: AppColors.of(context).surface,
                 borderRadius: BorderRadius.circular(AppDimens.radiusM),
               ),
               child: Row(
@@ -149,7 +154,7 @@ class _ModalFeedbackState extends State<_ModalFeedback> {
             ),
             const SizedBox(height: 16),
 
-            const Text('Tulis Saran atau Keluhan Anda', style: AppTextStyles.body),
+            Text(s.feedbackHintLabel, style: AppTextStyles.body(context)),
             const SizedBox(height: 10),
 
             TextField(
@@ -157,7 +162,7 @@ class _ModalFeedbackState extends State<_ModalFeedback> {
               maxLines: 4,
               decoration: InputDecoration(
                 filled: true,
-                fillColor: AppColors.surface,
+                fillColor: AppColors.of(context).surface,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppDimens.radiusM),
                   borderSide: BorderSide.none,
@@ -178,11 +183,12 @@ class _ModalFeedbackState extends State<_ModalFeedback> {
               onPressed: _sedangKirim ? null : _kirimFeedback,
               child: _sedangKirim
                   ? const SizedBox(
-                      width: 18, height: 18,
+                      width: 18,
+                      height: 18,
                       child: CircularProgressIndicator(
                           strokeWidth: 2, color: Colors.white),
                     )
-                  : const Text('Kirim FeedBack'),
+                  : Text(s.sendFeedbackButton),
             ),
           ],
         ),

@@ -5,6 +5,7 @@ import '../../../core/validators/app_validators.dart';
 import '../../../services/auth/auth_service.dart';
 import '../../../services/core/api_exception.dart';
 import 'reset_sukses_page.dart';
+import '../../../widgets/theme_sync.dart';
 
 // (LP-003).
 class AturPasswordPage extends StatefulWidget {
@@ -57,7 +58,7 @@ class _AturPasswordPageState extends State<AturPasswordPage> {
       );
       if (!mounted) return;
       Navigator.of(context).push(
-        MaterialPageRoute(builder: (context) => const ResetSuksesPage()),
+        AppPageRoute(builder: (context) => const ResetSuksesPage()),
       );
     } on ApiException catch (e) {
       _tampilkanPesan(e.message);
@@ -77,22 +78,22 @@ class _AturPasswordPageState extends State<AturPasswordPage> {
     final s = AppStrings.of(context);
     return Scaffold(
       appBar: AppBar(
-        leading: const BackButton(color: AppColors.textPrimary),
+        leading: BackButton(color: AppColors.of(context).textPrimary),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: AppDimens.paddingL),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(s.setNewPasswordTitle, style: AppTextStyles.heading),
+            Text(s.setNewPasswordTitle, style: AppTextStyles.heading(context)),
             const SizedBox(height: 4),
             Text(
               s.setNewPasswordSubtitle,
-              style: AppTextStyles.caption,
+              style: AppTextStyles.caption(context),
             ),
             const SizedBox(height: 24),
 
-            Text(s.passwordLabel, style: AppTextStyles.body),
+            Text(s.passwordLabel, style: AppTextStyles.body(context)),
             const SizedBox(height: 8),
             TextField(
               controller: _passwordController,
@@ -104,7 +105,7 @@ class _AturPasswordPageState extends State<AturPasswordPage> {
                     _obscurePassword
                         ? Icons.visibility_off_outlined
                         : Icons.visibility_outlined,
-                    color: AppColors.textSecondary,
+                    color: AppColors.of(context).textSecondary,
                   ),
                   onPressed: () {
                     setState(() => _obscurePassword = !_obscurePassword);
@@ -114,7 +115,7 @@ class _AturPasswordPageState extends State<AturPasswordPage> {
             ),
             const SizedBox(height: 16),
 
-            Text(s.confirmPasswordLabel, style: AppTextStyles.body),
+            Text(s.confirmPasswordLabel, style: AppTextStyles.body(context)),
             const SizedBox(height: 8),
             TextField(
               controller: _konfirmasiController,
@@ -126,7 +127,7 @@ class _AturPasswordPageState extends State<AturPasswordPage> {
                     _obscureKonfirmasi
                         ? Icons.visibility_off_outlined
                         : Icons.visibility_outlined,
-                    color: AppColors.textSecondary,
+                    color: AppColors.of(context).textSecondary,
                   ),
                   onPressed: () {
                     setState(() => _obscureKonfirmasi = !_obscureKonfirmasi);

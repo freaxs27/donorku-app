@@ -7,6 +7,7 @@ import '../../../core/locale/app_strings.dart';
 import '../../../services/auth/auth_service.dart';
 import '../../../services/core/api_exception.dart';
 import 'atur_password_page.dart';
+import '../../../widgets/theme_sync.dart';
 
 // (LP-002).
 class VerifikasiEmailPage extends StatefulWidget {
@@ -61,7 +62,7 @@ class _VerifikasiEmailPageState extends State<VerifikasiEmailPage> {
       await _authService.verifikasiOtp(email: widget.email, otp: kode);
       if (!mounted) return;
       Navigator.of(context).push(
-        MaterialPageRoute(
+        AppPageRoute(
           builder: (context) => AturPasswordPage(email: widget.email, otp: kode),
         ),
       );
@@ -97,18 +98,18 @@ class _VerifikasiEmailPageState extends State<VerifikasiEmailPage> {
     final s = AppStrings.of(context);
     return Scaffold(
       appBar: AppBar(
-        leading: const BackButton(color: AppColors.textPrimary),
+        leading: BackButton(color: AppColors.of(context).textPrimary),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: AppDimens.paddingL),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(s.verifyEmailTitle, style: AppTextStyles.heading),
+            Text(s.verifyEmailTitle, style: AppTextStyles.heading(context)),
             const SizedBox(height: 4),
             Text(
               s.verifyEmailSubtitle(widget.email),
-              style: AppTextStyles.caption,
+              style: AppTextStyles.caption(context),
             ),
             const SizedBox(height: 24),
 
@@ -124,7 +125,7 @@ class _VerifikasiEmailPageState extends State<VerifikasiEmailPage> {
                     textAlign: TextAlign.center,
                     keyboardType: TextInputType.number,
                     maxLength: 1,
-                    style: AppTextStyles.subheading,
+                    style: AppTextStyles.subheading(context),
                     decoration: const InputDecoration(
                       counterText: '', 
                       contentPadding: EdgeInsets.zero,
@@ -151,7 +152,7 @@ class _VerifikasiEmailPageState extends State<VerifikasiEmailPage> {
             Center(
               child: RichText(
                 text: TextSpan(
-                  style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
+                  style: AppTextStyles.body(context).copyWith(color: AppColors.of(context).textSecondary),
                   children: [
                     TextSpan(text: s.noCodePrompt),
                     TextSpan(

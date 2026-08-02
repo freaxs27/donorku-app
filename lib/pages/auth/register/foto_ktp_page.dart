@@ -8,6 +8,7 @@ import '../../../theme/app_theme.dart';
 import '../../../core/locale/app_strings.dart';
 import '../../../model/data_register.dart';
 import 'foto_diri_page.dart';
+import '../../../widgets/theme_sync.dart';
 
 // (R-002).
 class FotoKtpPage extends StatefulWidget {
@@ -176,7 +177,7 @@ class _FotoKtpPageState extends State<FotoKtpPage> {
     );
 
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => FotoDiriPage(data: dataLengkap)),
+      AppPageRoute(builder: (context) => FotoDiriPage(data: dataLengkap)),
     );
   }
 
@@ -237,15 +238,15 @@ class _FotoKtpPageState extends State<FotoKtpPage> {
         children: [
           SizedBox(
             width: 70,
-            child: Text(s.bloodTypeShort, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
+            child: Text(s.bloodTypeShort, style: AppTextStyles.body(context).copyWith(fontWeight: FontWeight.bold)),
           ),
-          const Text(': ', style: AppTextStyles.body),
+          Text(': ', style: AppTextStyles.body(context)),
           Expanded(
             child: TextField(
               controller: _goldarController,
               textCapitalization: TextCapitalization.characters,
               inputFormatters: [_FormatGolonganDarah()],
-              style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold),
+              style: AppTextStyles.body(context).copyWith(fontWeight: FontWeight.bold),
               decoration: const InputDecoration(
                 isDense: true,
                 filled: false,
@@ -270,13 +271,13 @@ class _FotoKtpPageState extends State<FotoKtpPage> {
         children: [
           SizedBox(
             width: 70,
-            child: Text(label, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
+            child: Text(label, style: AppTextStyles.body(context).copyWith(fontWeight: FontWeight.bold)),
           ),
-          const Text(': ', style: AppTextStyles.body),
+          Text(': ', style: AppTextStyles.body(context)),
           Expanded(
             child: TextField(
               controller: controller,
-              style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold),
+              style: AppTextStyles.body(context).copyWith(fontWeight: FontWeight.bold),
               decoration: const InputDecoration(
                 isDense: true,
                 filled: false,
@@ -298,7 +299,7 @@ class _FotoKtpPageState extends State<FotoKtpPage> {
     final s = AppStrings.of(context);
     return Scaffold(
       appBar: AppBar(
-        leading: const BackButton(color: AppColors.textPrimary),
+        leading: BackButton(color: AppColors.of(context).textPrimary),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: AppDimens.paddingL),
@@ -306,11 +307,11 @@ class _FotoKtpPageState extends State<FotoKtpPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Center(
-              child: Text(s.createAccountTitle, style: AppTextStyles.heading),
+              child: Text(s.createAccountTitle, style: AppTextStyles.heading(context)),
             ),
             const SizedBox(height: 20),
 
-            Text(s.photoKtpTitle, style: AppTextStyles.subheading),
+            Text(s.photoKtpTitle, style: AppTextStyles.subheading(context)),
             const SizedBox(height: 12),
             GestureDetector(
               onTap: _sedangMemproses ? null : _ambilFotoKtp,
@@ -353,7 +354,7 @@ class _FotoKtpPageState extends State<FotoKtpPage> {
             Center(
               child: Text.rich(
                 TextSpan(
-                  style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
+                  style: AppTextStyles.body(context).copyWith(color: AppColors.of(context).textSecondary),
                   children: [
                     TextSpan(text: s.haveAccountPrompt),
                     TextSpan(

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import '../core/locale/app_strings.dart';
+import '../core/theme/app_tema.dart';
+import '../theme/app_theme.dart';
+import 'theme_sync.dart';
 
 class MainLayoutScope extends InheritedWidget {
   final void Function(int index) pindahTab;
@@ -71,36 +74,42 @@ class _MainLayoutState extends State<MainLayout> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppStrings.of(context);
-    final navLabels = [
-      s.navBeranda,
-      s.navLokasi,
-      s.navDaftar,
-      s.navRiwayat,
-      s.navProfil,
-    ];
+    return ListenableBuilder(
+      listenable: ThemeController.instance,
+      builder: (context, _) {
+        final s = AppStrings.of(context);
+        final navLabels = [
+          s.navBeranda,
+          s.navLokasi,
+          s.navDaftar,
+          s.navRiwayat,
+          s.navProfil,
+        ];
 
-    assert(
-      widget.pages.length == _navAssetPaths.length,
-      'Jumlah halaman (${widget.pages.length}) harus sama dengan jumlah item nav (${_navAssetPaths.length})',
-    );
+        assert(
+          widget.pages.length == _navAssetPaths.length,
+          'Jumlah halaman (${widget.pages.length}) harus sama dengan jumlah item nav (${_navAssetPaths.length})',
+        );
 
-    return MainLayoutScope(
-      pindahTab: _onTapNav,
-      child: Scaffold(
-        body: IndexedStack(
-          index: _currentIndex,
-          children: List.generate(widget.pages.length, (i) {
-            return Navigator(
-              key: _navigatorKeys[i],
-              onGenerateRoute: (settings) => MaterialPageRoute(
-                builder: (context) => widget.pages[i],
-              ),
-            );
-          }),
-        ),
-        bottomNavigationBar: _buildBottomNav(context, navLabels),
-      ),
+        return MainLayoutScope(
+          pindahTab: _onTapNav,
+          child: Scaffold(
+            backgroundColor: AppColors.of(context).background,
+            body: IndexedStack(
+              index: _currentIndex,
+              children: List.generate(widget.pages.length, (i) {
+                return Navigator(
+                  key: _navigatorKeys[i],
+                  onGenerateRoute: (settings) => AppPageRoute(
+                    builder: (context) => widget.pages[i],
+                  ),
+                );
+              }),
+            ),
+            bottomNavigationBar: _buildBottomNav(context, navLabels),
+          ),
+        );
+      },
     );
   }
 
@@ -153,7 +162,7 @@ class _NavItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Color activeBg = Theme.of(context).colorScheme.primary;
-    final Color inactiveColor = Colors.black87;
+    final Color inactiveColor = AppColors.of(context).textPrimary;
 
     return InkWell(
       onTap: onTap,

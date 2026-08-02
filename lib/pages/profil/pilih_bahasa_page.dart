@@ -13,7 +13,7 @@ class PilihBahasaPage extends StatelessWidget {
     final terpilih = LocaleController.instance.bahasa;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.of(context).background,
       body: SafeArea(
         child: Column(
           children: [
@@ -23,20 +23,20 @@ class PilihBahasaPage extends StatelessWidget {
                 children: [
                   GestureDetector(
                     onTap: () => Navigator.of(context).pop(),
-                    child: const Icon(
+                    child: Icon(
                       Icons.arrow_back,
                       size: 28,
-                      color: AppColors.textPrimary,
+                      color: AppColors.of(context).textPrimary,
                     ),
                   ),
                   Expanded(
                     child: Text(
                       s.judulPilihBahasa,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
+                        color: AppColors.of(context).textPrimary,
                       ),
                     ),
                   ),
@@ -52,14 +52,14 @@ class PilihBahasaPage extends StatelessWidget {
                   children: [
                     Text(
                       s.deskripsiPilihBahasa,
-                      style: AppTextStyles.body.copyWith(
-                        color: AppColors.textSecondary,
+                      style: AppTextStyles.body(context).copyWith(
+                        color: AppColors.of(context).textSecondary,
                       ),
                     ),
                     const SizedBox(height: 16),
                     Container(
                       decoration: BoxDecoration(
-                        color: AppColors.surface,
+                        color: AppColors.of(context).surface,
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
@@ -75,9 +75,9 @@ class PilihBahasaPage extends StatelessWidget {
                               i < AppBahasa.values.length;
                               i++) ...[
                             if (i > 0)
-                              const Divider(
+                              Divider(
                                 height: 1,
-                                color: AppColors.border,
+                                color: AppColors.of(context).border,
                                 indent: 56,
                               ),
                             _BarisBahasa(
@@ -137,7 +137,7 @@ class _BarisBahasa extends StatelessWidget {
             Icon(
               Icons.language,
               size: 24,
-              color: terpilih ? AppColors.primary : AppColors.textPrimary,
+              color: terpilih ? AppColors.primary : AppColors.of(context).textPrimary,
             ),
             const SizedBox(width: 8),
             Expanded(
@@ -150,13 +150,13 @@ class _BarisBahasa extends StatelessWidget {
                       fontSize: 16,
                       fontWeight:
                           terpilih ? FontWeight.w600 : FontWeight.normal,
-                      color: AppColors.textPrimary,
+                      color: AppColors.of(context).textPrimary,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     bahasa.deskripsi,
-                    style: AppTextStyles.caption,
+                    style: AppTextStyles.caption(context),
                   ),
                 ],
               ),
@@ -168,10 +168,10 @@ class _BarisBahasa extends StatelessWidget {
                 color: AppColors.primary,
               )
             else
-              const Icon(
+              Icon(
                 Icons.circle_outlined,
                 size: 22,
-                color: AppColors.border,
+                color: AppColors.of(context).border,
               ),
           ],
         ),

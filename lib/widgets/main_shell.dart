@@ -5,6 +5,7 @@ import '../pages/pendaftaran/pendaftaran_page.dart';
 import '../pages/riwayat/riwayat_page.dart';
 import '../pages/profil/profil_page.dart';
 import 'main_layout.dart';
+import 'theme_sync.dart';
 
 /// Shell utama setelah login: bottom nav + 5 halaman tab.
 class MainShell extends StatelessWidget {
@@ -16,12 +17,13 @@ class MainShell extends StatelessWidget {
   Widget build(BuildContext context) {
     return MainLayout(
       initialIndex: initialIndex,
+      // ThemeSync per tab: IndexedStack/Navigator tidak rebuild page lama.
       pages: const [
-        BerandaPage(),
-        LokasiPage(),
-        PendaftaranPage(),
-        RiwayatPage(),
-        ProfilPage(),
+        ThemeSync(child: BerandaPage()),
+        ThemeSync(child: LokasiPage()),
+        ThemeSync(child: PendaftaranPage()),
+        ThemeSync(child: RiwayatPage()),
+        ThemeSync(child: ProfilPage()),
       ],
     );
   }

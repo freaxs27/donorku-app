@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
+import '../../core/locale/app_strings.dart';
 import '../../services/cs/cs_service.dart';
 import '../../services/core/api_exception.dart';
 
@@ -92,6 +93,8 @@ class _ChatCsPageState extends State<ChatCsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
+    final colors = AppColors.of(context);
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -109,16 +112,16 @@ class _ChatCsPageState extends State<ChatCsPage> {
                       children: [
                         GestureDetector(
                           onTap: () => Navigator.of(context).pop(),
-                          child: const Icon(Icons.arrow_back,
-                              size: 24, color: AppColors.textPrimary),
+                          child: Icon(Icons.arrow_back,
+                              size: 24, color: colors.textPrimary),
                         ),
                         const SizedBox(width: 8),
-                        const Text(
-                          'Hubungi Staf Dukungan',
+                        Text(
+                          s.contactSupportTitle,
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
+                            color: colors.textPrimary,
                           ),
                         ),
                       ],
@@ -149,21 +152,13 @@ class _ChatCsPageState extends State<ChatCsPage> {
                     ),
                     const SizedBox(height: 16),
 
-                    const Text('Halo! Saya Revan',
-                        style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary)),
-                    const Text('dari Tim Dukungan',
-                        style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary)),
+                    Text(s.csGreetingName, style: AppTextStyles.heading(context)),
+                    Text(s.csGreetingTeam, style: AppTextStyles.heading(context)),
                     const SizedBox(height: 8),
-                    const Text(
-                      'Pilih topik dibawah ini agar saya\nbisa membantumu lebih cepat',
-                      style: TextStyle(
-                          fontSize: 14, color: AppColors.textSecondary),
+                    Text(
+                      s.csTopicPrompt,
+                      style: AppTextStyles.body(context)
+                          .copyWith(color: colors.textSecondary),
                     ),
                     const SizedBox(height: 20),
 
@@ -198,9 +193,9 @@ class _ChatCsPageState extends State<ChatCsPage> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
+                  color: colors.surface,
                   borderRadius: BorderRadius.circular(AppDimens.radiusL),
-                  border: Border.all(color: Colors.black87, width: 1.2),
+                  border: Border.all(color: colors.border),
                 ),
                 child: Row(
                   children: [
@@ -221,20 +216,19 @@ class _ChatCsPageState extends State<ChatCsPage> {
                     GestureDetector(
                       onTap: _sedangKirim ? null : _kirimPesan,
                       child: _sedangKirim
-                          ? const SizedBox(
+                          ? SizedBox(
                               width: 20,
                               height: 20,
                               child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  color: AppColors.textSecondary),
+                                  color: colors.textSecondary),
                             )
                           : Image.asset(
                               'assets/icons/Send.png',
                               width: 24,
                               height: 24,
-                              errorBuilder: (_, __, ___) => const Icon(
-                                  Icons.send,
-                                  color: AppColors.textSecondary),
+                              errorBuilder: (_, __, ___) => Icon(Icons.send,
+                                  color: colors.textSecondary),
                             ),
                     ),
                   ],
@@ -261,16 +255,16 @@ class _TombolTopik extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding:
-            const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
         decoration: BoxDecoration(
-          color: terpilih ? AppColors.primary : AppColors.surface,
+          color: terpilih ? AppColors.primary : colors.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: terpilih ? AppColors.primary : Colors.black87,
+            color: terpilih ? AppColors.primary : colors.border,
             width: 1.2,
           ),
         ),
@@ -279,7 +273,7 @@ class _TombolTopik extends StatelessWidget {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.bold,
-            color: terpilih ? Colors.white : AppColors.textPrimary,
+            color: terpilih ? Colors.white : colors.textPrimary,
           ),
         ),
       ),

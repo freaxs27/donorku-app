@@ -162,7 +162,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
               height: 36,
               padding: const EdgeInsets.all(3),
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: AppColors.of(context).surface,
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
@@ -208,7 +208,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(_pesanErrorDonor!, style: AppTextStyles.caption,
+            Text(_pesanErrorDonor!, style: AppTextStyles.caption(context),
                 textAlign: TextAlign.center),
             const SizedBox(height: 8),
             TextButton(onPressed: _muatDonor, child: Text(s.tryAgain)),
@@ -257,7 +257,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
               padding: const EdgeInsets.only(top: 24),
               child: Center(
                 child: Text(s.noHistoryInPeriod,
-                    style: AppTextStyles.caption, textAlign: TextAlign.center),
+                    style: AppTextStyles.caption(context), textAlign: TextAlign.center),
               ),
             )
           else
@@ -279,7 +279,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(_pesanErrorDaftar!, style: AppTextStyles.caption,
+            Text(_pesanErrorDaftar!, style: AppTextStyles.caption(context),
                 textAlign: TextAlign.center),
             const SizedBox(height: 8),
             TextButton(onPressed: _muatDaftar, child: Text(s.tryAgain)),
@@ -290,7 +290,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
     if (_dataDaftar.isEmpty) {
       return Center(
         child: Text(s.noRegistrations,
-            style: AppTextStyles.caption),
+            style: AppTextStyles.caption(context)),
       );
     }
 
@@ -339,7 +339,7 @@ class _PillTab extends StatelessWidget {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: aktif ? Colors.white : AppColors.textSecondary,
+              color: aktif ? Colors.white : AppColors.of(context).textSecondary,
             ),
           ),
         ),
@@ -369,7 +369,7 @@ class _KartuPendaftaran extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppDimens.paddingM),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.of(context).surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -385,12 +385,12 @@ class _KartuPendaftaran extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.local_hospital_outlined,
-                  size: 18, color: AppColors.textSecondary),
+              Icon(Icons.local_hospital_outlined,
+                  size: 18, color: AppColors.of(context).textSecondary),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(item.jadwal.lokasi,
-                    style: AppTextStyles.body
+                    style: AppTextStyles.body(context)
                         .copyWith(fontWeight: FontWeight.bold)),
               ),
               const SizedBox(width: 8),
@@ -398,17 +398,17 @@ class _KartuPendaftaran extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          const Divider(height: 1, color: AppColors.border),
+          Divider(height: 1, color: AppColors.of(context).border),
           const SizedBox(height: 8),
-          _baris(Icons.calendar_today_outlined, item.jadwal.tanggalFormat),
+          _baris(context, Icons.calendar_today_outlined, item.jadwal.tanggalFormat),
           const SizedBox(height: 4),
-          _baris(Icons.access_time,
+          _baris(context, Icons.access_time,
               '${item.jadwal.jamMulai} - ${item.jadwal.jamSelesai}'),
           const SizedBox(height: 4),
-          _baris(Icons.confirmation_number_outlined, queueLabel),
+          _baris(context, Icons.confirmation_number_outlined, queueLabel),
           if (item.riwayat?.darahTerkumpul != null) ...[
             const SizedBox(height: 4),
-            _baris(Icons.water_drop_outlined,
+            _baris(context, Icons.water_drop_outlined,
                 '${item.riwayat!.darahTerkumpul} ml'),
           ],
           if (item.bisaDibatalkan) ...[
@@ -439,12 +439,12 @@ class _KartuPendaftaran extends StatelessWidget {
     );
   }
 
-  Widget _baris(IconData icon, String teks) {
+  Widget _baris(BuildContext context, IconData icon, String teks) {
     return Row(
       children: [
-        Icon(icon, size: 14, color: AppColors.textSecondary),
+        Icon(icon, size: 14, color: AppColors.of(context).textSecondary),
         const SizedBox(width: 6),
-        Text(teks, style: AppTextStyles.caption),
+        Text(teks, style: AppTextStyles.caption(context)),
       ],
     );
   }
@@ -492,8 +492,8 @@ class _FilterChipData {
 }
 
 // ── Dekorasi kartu ────────────────────────────────────────────────────────────
-BoxDecoration get _dekorasiKartu => BoxDecoration(
-      color: AppColors.surface,
+BoxDecoration _dekorasiKartu(BuildContext context) => BoxDecoration(
+      color: AppColors.of(context).surface,
       borderRadius: BorderRadius.circular(16),
       boxShadow: [
         BoxShadow(
@@ -515,7 +515,7 @@ class _KartuRingkasan extends StatelessWidget {
     final s = AppStrings.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 18),
-      decoration: _dekorasiKartu,
+      decoration: _dekorasiKartu(context),
       child: Row(
         children: [
           Expanded(
@@ -526,10 +526,10 @@ class _KartuRingkasan extends StatelessWidget {
                       color: AppColors.primary, height: 1)),
               const SizedBox(height: 4),
               Text(s.totalDonations,
-                  style: AppTextStyles.caption.copyWith(fontSize: 10)),
+                  style: AppTextStyles.caption(context).copyWith(fontSize: 10)),
             ]),
           ),
-          Container(width: 1, height: 56, color: AppColors.border),
+          Container(width: 1, height: 56, color: AppColors.of(context).border),
           Expanded(
             child: Column(children: [
               Text('$totalMl',
@@ -538,7 +538,7 @@ class _KartuRingkasan extends StatelessWidget {
                       color: AppColors.primary, height: 1)),
               const SizedBox(height: 4),
               Text(s.mlBlood,
-                  style: AppTextStyles.caption.copyWith(fontSize: 10)),
+                  style: AppTextStyles.caption(context).copyWith(fontSize: 10)),
             ]),
           ),
         ],
@@ -557,14 +557,14 @@ class _KartuDonorKembali extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-      decoration: _dekorasiKartu,
+      decoration: _dekorasiKartu(context),
       child: Row(
         children: [
-          const Icon(Icons.calendar_today_outlined,
-              size: 30, color: AppColors.textPrimary),
+          Icon(Icons.calendar_today_outlined,
+              size: 30, color: AppColors.of(context).textPrimary),
           const SizedBox(width: 16),
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(label, style: AppTextStyles.body),
+            Text(label, style: AppTextStyles.body(context)),
             const SizedBox(height: 2),
             Text(tanggal,
                 style: const TextStyle(
@@ -627,7 +627,7 @@ class _ChipFilter extends StatelessWidget {
         width: sempit ? 43 : 100,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: isAktif ? AppColors.primary : AppColors.surface,
+          color: isAktif ? AppColors.primary : AppColors.of(context).surface,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -639,7 +639,7 @@ class _ChipFilter extends StatelessWidget {
         child: Text(label,
             style: TextStyle(
               fontSize: 10, fontWeight: FontWeight.w400,
-              color: isAktif ? Colors.white : AppColors.textPrimary,
+              color: isAktif ? Colors.white : AppColors.of(context).textPrimary,
             )),
       ),
     );
@@ -668,7 +668,7 @@ class _KartuStatusKesehatan extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 14),
-      decoration: _dekorasiKartu,
+      decoration: _dekorasiKartu(context),
       child: Column(
         children: [
           Container(
@@ -773,7 +773,7 @@ class _KartuRiwayat extends StatelessWidget {
     return Container(
       constraints: const BoxConstraints(minHeight: 99),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: _dekorasiKartu,
+      decoration: _dekorasiKartu(context),
       child: Row(
         children: [
           SizedBox(
@@ -788,13 +788,13 @@ class _KartuRiwayat extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(item.tanggalFormat,
-                    style: AppTextStyles.body
+                    style: AppTextStyles.body(context)
                         .copyWith(fontSize: 16, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 2),
                 Row(children: [
                   Expanded(
                     child: Text(item.lokasiDonor,
-                        style: AppTextStyles.body.copyWith(fontSize: 14),
+                        style: AppTextStyles.body(context).copyWith(fontSize: 14),
                         maxLines: 1, overflow: TextOverflow.ellipsis),
                   ),
                   const SizedBox(width: 8),
@@ -802,7 +802,7 @@ class _KartuRiwayat extends StatelessWidget {
                     width: 48, height: 24,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: AppColors.surface,
+                      color: AppColors.of(context).surface,
                       borderRadius: BorderRadius.circular(8),
                       boxShadow: [
                         BoxShadow(color: Colors.black.withValues(alpha: 0.25),

@@ -8,6 +8,7 @@ import '../../services/profil/profil_service.dart';
 import '../../services/core/api_exception.dart';
 import '../../services/auth/session_service.dart';
 import 'donor_sukses_page.dart';
+import '../../widgets/theme_sync.dart';
 
 /// Halaman Donor - Konfirmasi (D-004).
 /// Merangkum data dari step sebelumnya: profil (nama/email/golongan darah),
@@ -86,7 +87,7 @@ class _DonorKonfirmasiPageState extends State<DonorKonfirmasiPage> {
 
       if (!mounted) return;
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const DonorSuksesPage()),
+        AppPageRoute(builder: (context) => const DonorSuksesPage()),
         (route) => route.isFirst,
       );
     } on ApiException catch (e) {
@@ -131,7 +132,7 @@ class _DonorKonfirmasiPageState extends State<DonorKonfirmasiPage> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(AppDimens.paddingM),
                       decoration: BoxDecoration(
-                        color: AppColors.surface,
+                        color: AppColors.of(context).surface,
                         borderRadius: BorderRadius.circular(AppDimens.radiusM),
                       ),
                       child: Column(
@@ -161,7 +162,7 @@ class _DonorKonfirmasiPageState extends State<DonorKonfirmasiPage> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(AppDimens.paddingM),
                       decoration: BoxDecoration(
-                        color: AppColors.surface,
+                        color: AppColors.of(context).surface,
                         borderRadius: BorderRadius.circular(AppDimens.radiusM),
                       ),
                       child: Column(

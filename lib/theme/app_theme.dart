@@ -1,66 +1,127 @@
 import 'package:flutter/material.dart';
 
-/// Kumpulan warna yang dipakai di seluruh aplikasi Donorku.
-/// Diambil berdasarkan palet di desain: L-001, D-001, B-001, P-001.
-class AppColors {
-  AppColors._(); // tidak bisa di-instantiate
+/// Palet warna yang terikat ke [ThemeData.extensions].
+/// Ambil lewat [AppColors.of] agar widget otomatis rebuild saat tema diganti.
+@immutable
+class DonorkuColors extends ThemeExtension<DonorkuColors> {
+  const DonorkuColors({
+    required this.background,
+    required this.surface,
+    required this.textPrimary,
+    required this.textSecondary,
+    required this.textHint,
+    required this.border,
+    required this.isDark,
+  });
 
-  // Warna utama (merah khas "darah/donor")
+  final Color background;
+  final Color surface;
+  final Color textPrimary;
+  final Color textSecondary;
+  final Color textHint;
+  final Color border;
+  final bool isDark;
+
+  static const light = DonorkuColors(
+    background: Color(0xFFF2F2F2),
+    surface: Color(0xFFFFFFFF),
+    textPrimary: Color(0xFF1A1A1A),
+    textSecondary: Color(0xFF757575),
+    textHint: Color(0xFFBDBDBD),
+    border: Color(0xFFD9D9D9),
+    isDark: false,
+  );
+
+  static const dark = DonorkuColors(
+    background: Color(0xFF121212),
+    surface: Color(0xFF1E1E1E),
+    textPrimary: Color(0xFFF5F5F5),
+    textSecondary: Color(0xFFB0B0B0),
+    textHint: Color(0xFF757575),
+    border: Color(0xFF3A3A3A),
+    isDark: true,
+  );
+
+  @override
+  DonorkuColors copyWith({
+    Color? background,
+    Color? surface,
+    Color? textPrimary,
+    Color? textSecondary,
+    Color? textHint,
+    Color? border,
+    bool? isDark,
+  }) {
+    return DonorkuColors(
+      background: background ?? this.background,
+      surface: surface ?? this.surface,
+      textPrimary: textPrimary ?? this.textPrimary,
+      textSecondary: textSecondary ?? this.textSecondary,
+      textHint: textHint ?? this.textHint,
+      border: border ?? this.border,
+      isDark: isDark ?? this.isDark,
+    );
+  }
+
+  @override
+  DonorkuColors lerp(ThemeExtension<DonorkuColors>? other, double t) {
+    if (other is! DonorkuColors) return this;
+    return t < 0.5 ? this : other;
+  }
+}
+
+/// Akses warna Donorku.
+///
+/// Warna yang berubah antar tema: [AppColors.of] `(context).background` dll.
+/// Warna tetap: [AppColors.primary], [success], dst.
+class AppColors {
+  AppColors._();
+
   static const Color primary = Color(0xFFEC2727);
   static const Color primaryDark = Color(0xFFC62828);
-
-  // Background & permukaan
-  static const Color background = Color(0xFFF2F2F2);
-  static const Color surface = Color(0xFFFFFFFF);
-
-  // Teks
-  static const Color textPrimary = Color(0xFF1A1A1A);
-  static const Color textSecondary = Color(0xFF757575);
-  static const Color textHint = Color(0xFFBDBDBD);
-
-  // Border / garis input
-  static const Color border = Color(0xFFD9D9D9);
-
-  // Status (dipakai nanti di modal feedback / notifikasi)
   static const Color success = Color(0xFF2E7D32);
   static const Color warning = Color(0xFFF9A825);
   static const Color error = Color(0xFFD32F2F);
+
+  /// Terikat ke Theme — widget yang memanggil ini rebuild otomatis saat tema diganti.
+  static DonorkuColors of(BuildContext context) {
+    return Theme.of(context).extension<DonorkuColors>() ?? DonorkuColors.light;
+  }
 }
 
-/// Kumpulan text style yang konsisten dipakai di seluruh halaman.
+/// Text style — butuh [BuildContext] supaya warna ikut tema.
 class AppTextStyles {
   AppTextStyles._();
 
-  static const String fontFamily = 'Roboto'; // font default dulu,
-  // nanti bisa diganti kalau ada font khusus dari desainer (mis. Poppins/Inter)
+  static const String fontFamily = 'Roboto';
 
-  static const TextStyle heading = TextStyle(
-    fontFamily: fontFamily,
-    fontSize: 22,
-    fontWeight: FontWeight.bold,
-    color: AppColors.textPrimary,
-  );
+  static TextStyle heading(BuildContext context) => TextStyle(
+        fontFamily: fontFamily,
+        fontSize: 22,
+        fontWeight: FontWeight.bold,
+        color: AppColors.of(context).textPrimary,
+      );
 
-  static const TextStyle subheading = TextStyle(
-    fontFamily: fontFamily,
-    fontSize: 17,
-    fontWeight: FontWeight.w600,
-    color: AppColors.textPrimary,
-  );
+  static TextStyle subheading(BuildContext context) => TextStyle(
+        fontFamily: fontFamily,
+        fontSize: 17,
+        fontWeight: FontWeight.w600,
+        color: AppColors.of(context).textPrimary,
+      );
 
-  static const TextStyle body = TextStyle(
-    fontFamily: fontFamily,
-    fontSize: 14,
-    fontWeight: FontWeight.normal,
-    color: AppColors.textPrimary,
-  );
+  static TextStyle body(BuildContext context) => TextStyle(
+        fontFamily: fontFamily,
+        fontSize: 14,
+        fontWeight: FontWeight.normal,
+        color: AppColors.of(context).textPrimary,
+      );
 
-  static const TextStyle caption = TextStyle(
-    fontFamily: fontFamily,
-    fontSize: 12,
-    fontWeight: FontWeight.normal,
-    color: AppColors.textSecondary,
-  );
+  static TextStyle caption(BuildContext context) => TextStyle(
+        fontFamily: fontFamily,
+        fontSize: 12,
+        fontWeight: FontWeight.normal,
+        color: AppColors.of(context).textSecondary,
+      );
 
   static const TextStyle button = TextStyle(
     fontFamily: fontFamily,
@@ -70,8 +131,6 @@ class AppTextStyles {
   );
 }
 
-/// Ukuran radius & spacing standar, biar konsisten di semua halaman
-/// (card, tombol, input field semuanya pakai radius yang sama).
 class AppDimens {
   AppDimens._();
 
@@ -84,29 +143,42 @@ class AppDimens {
   static const double paddingL = 24;
 }
 
-/// ThemeData utama yang dipasang di MaterialApp (lihat main.dart).
+/// ThemeData terang & gelap untuk [MaterialApp].
 class AppTheme {
   AppTheme._();
 
-  static ThemeData get lightTheme {
+  static ThemeData get lightTheme => _bangun(Brightness.light);
+
+  static ThemeData get darkTheme => _bangun(Brightness.dark);
+
+  static ThemeData _bangun(Brightness brightness) {
+    final gelap = brightness == Brightness.dark;
+    final colors = gelap ? DonorkuColors.dark : DonorkuColors.light;
+
     return ThemeData(
       useMaterial3: true,
-      scaffoldBackgroundColor: AppColors.background,
+      brightness: brightness,
+      scaffoldBackgroundColor: colors.background,
+      extensions: <ThemeExtension<dynamic>>[colors],
       colorScheme: ColorScheme.fromSeed(
         seedColor: AppColors.primary,
+        brightness: brightness,
         primary: AppColors.primary,
-        surface: AppColors.surface,
+        surface: colors.surface,
       ),
       fontFamily: AppTextStyles.fontFamily,
-      appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.background,
-        foregroundColor: AppColors.textPrimary,
+      appBarTheme: AppBarTheme(
+        backgroundColor: colors.background,
+        foregroundColor: colors.textPrimary,
         elevation: 0,
         centerTitle: true,
-        titleTextStyle: AppTextStyles.subheading,
+        titleTextStyle: TextStyle(
+          fontFamily: AppTextStyles.fontFamily,
+          fontSize: 17,
+          fontWeight: FontWeight.w600,
+          color: colors.textPrimary,
+        ),
       ),
-
-      // Style default untuk semua ElevatedButton (tombol solid merah)
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
@@ -119,43 +191,57 @@ class AppTheme {
           elevation: 0,
         ),
       ),
-
-      // Style default untuk OutlinedButton (tombol outline putih, mis. "Reset")
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          backgroundColor: Colors.white,
-          foregroundColor: AppColors.textPrimary,
+          backgroundColor: colors.surface,
+          foregroundColor: colors.textPrimary,
           minimumSize: const Size.fromHeight(52),
-          textStyle: AppTextStyles.button.copyWith(color: AppColors.textPrimary),
-          side: const BorderSide(color: Colors.black, width: 1),
+          textStyle: AppTextStyles.button.copyWith(color: colors.textPrimary),
+          side: BorderSide(
+            color: gelap ? colors.border : Colors.black,
+            width: 1,
+          ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppDimens.radiusM),
           ),
         ),
       ),
-
-      // Style default untuk semua TextField (input email, password, dst.)
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.surface,
-        hintStyle: AppTextStyles.body.copyWith(color: AppColors.textHint),
+        fillColor: colors.surface,
+        hintStyle: TextStyle(
+          fontFamily: AppTextStyles.fontFamily,
+          fontSize: 14,
+          color: colors.textHint,
+        ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppDimens.paddingM,
           vertical: 14,
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimens.radiusM),
-          borderSide: const BorderSide(color: Colors.black, width: 1),
+          borderSide: BorderSide(
+            color: gelap ? colors.border : Colors.black,
+            width: 1,
+          ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimens.radiusM),
-          borderSide: const BorderSide(color: Colors.black, width: 1),
+          borderSide: BorderSide(
+            color: gelap ? colors.border : Colors.black,
+            width: 1,
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimens.radiusM),
-          borderSide: const BorderSide(color: Colors.black, width: 1.5),
+          borderSide: BorderSide(
+            color: gelap ? AppColors.primary : Colors.black,
+            width: 1.5,
+          ),
         ),
       ),
+      dividerColor: colors.border,
+      cardColor: colors.surface,
     );
   }
 }

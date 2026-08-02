@@ -168,7 +168,7 @@ class _LokasiPageState extends State<LokasiPage> with TickerProviderStateMixin {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(_pesanError!, textAlign: TextAlign.center, style: AppTextStyles.body),
+                Text(_pesanError!, textAlign: TextAlign.center, style: AppTextStyles.body(context)),
                 const SizedBox(height: 12),
                 ElevatedButton(onPressed: () => _muatData(), child: Text(s.tryAgainButton)),
               ],
@@ -218,7 +218,7 @@ class _LokasiPageState extends State<LokasiPage> with TickerProviderStateMixin {
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 color: Colors.white,
-                                border: Border.all(color: AppColors.textSecondary),
+                                border: Border.all(color: AppColors.of(context).textSecondary),
                               ),
                             ),
                           ),
@@ -234,13 +234,13 @@ class _LokasiPageState extends State<LokasiPage> with TickerProviderStateMixin {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
+                  color: AppColors.of(context).surface,
                   borderRadius: BorderRadius.circular(999),
                   boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 8)],
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.search, color: AppColors.textSecondary, size: 20),
+                    Icon(Icons.search, color: AppColors.of(context).textSecondary, size: 20),
                     const SizedBox(width: 8),
                     Expanded(
                       child: TextField(
@@ -263,7 +263,7 @@ class _LokasiPageState extends State<LokasiPage> with TickerProviderStateMixin {
                         FocusScope.of(context).unfocus();
                         _muatData();
                       },
-                      child: const Icon(Icons.close, color: AppColors.textSecondary, size: 18),
+                      child: Icon(Icons.close, color: AppColors.of(context).textSecondary, size: 18),
                     ),
                   ],
                 ),
@@ -293,8 +293,8 @@ class _LokasiPageState extends State<LokasiPage> with TickerProviderStateMixin {
 
                 return Container(
                   padding: EdgeInsets.only(top: _sheetTerbuka ? 25 : 0), 
-                  decoration: const BoxDecoration(
-                    color: AppColors.background,
+                  decoration: BoxDecoration(
+                    color: AppColors.of(context).background,
                     borderRadius: BorderRadius.vertical(top: Radius.circular(AppDimens.radiusL)),
                   ),
                   child: Column(
@@ -398,7 +398,7 @@ class _KartuLokasiPeta extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimens.paddingM),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.of(context).surface,
         borderRadius: BorderRadius.circular(AppDimens.radiusM),
       ),
       child: Column(
@@ -420,7 +420,7 @@ class _KartuLokasiPeta extends StatelessWidget {
                           return Container(
                             width: 72,
                             height: 72,
-                            color: AppColors.background,
+                            color: AppColors.of(context).background,
                             child: const Center(
                               child: SizedBox(
                                 width: 18,
@@ -433,8 +433,8 @@ class _KartuLokasiPeta extends StatelessWidget {
                         errorBuilder: (context, error, stackTrace) => Container(
                           width: 72,
                           height: 72,
-                          color: AppColors.background,
-                          child: const Icon(Icons.local_hospital_outlined, color: AppColors.textSecondary),
+                          color: AppColors.of(context).background,
+                          child: Icon(Icons.local_hospital_outlined, color: AppColors.of(context).textSecondary),
                         ),
                       )
                     : data.fotoAsset != null
@@ -442,8 +442,8 @@ class _KartuLokasiPeta extends StatelessWidget {
                         : Container(
                             width: 72,
                             height: 72,
-                            color: AppColors.background,
-                            child: const Icon(Icons.local_hospital_outlined, color: AppColors.textSecondary),
+                            color: AppColors.of(context).background,
+                            child: Icon(Icons.local_hospital_outlined, color: AppColors.of(context).textSecondary),
                           ),
               ),
               const SizedBox(width: 12),
@@ -452,13 +452,13 @@ class _KartuLokasiPeta extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(data.nama, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
+                    Text(data.nama, style: AppTextStyles.body(context).copyWith(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        const Icon(Icons.location_on_outlined, size: 14, color: AppColors.textSecondary),
+                        Icon(Icons.location_on_outlined, size: 14, color: AppColors.of(context).textSecondary),
                         const SizedBox(width: 2),
-                        Expanded(child: Text(data.alamat, style: AppTextStyles.caption)),
+                        Expanded(child: Text(data.alamat, style: AppTextStyles.caption(context))),
                       ],
                     ),
                     const SizedBox(height: 2),
@@ -472,19 +472,19 @@ class _KartuLokasiPeta extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                         fontSize: 13,
                         color: data.statusDonor == 'Belum Ada Jadwal'
-                            ? AppColors.textSecondary
-                            : AppColors.textPrimary,
+                            ? AppColors.of(context).textSecondary
+                            : AppColors.of(context).textPrimary,
                       ),
                     ),
                     if (data.tanggalFormat != null) ...[
                       const SizedBox(height: 2),
                       Row(
                         children: [
-                          const Icon(Icons.calendar_today_outlined,
-                              size: 13, color: AppColors.textSecondary),
+                          Icon(Icons.calendar_today_outlined,
+                              size: 13, color: AppColors.of(context).textSecondary),
                           const SizedBox(width: 2),
                           Text(data.tanggalFormat!,
-                              style: AppTextStyles.caption),
+                              style: AppTextStyles.caption(context)),
                         ],
                       ),
                     ],
@@ -492,11 +492,11 @@ class _KartuLokasiPeta extends StatelessWidget {
                       const SizedBox(height: 2),
                       Row(
                         children: [
-                          const Icon(Icons.access_time,
-                              size: 13, color: AppColors.textSecondary),
+                          Icon(Icons.access_time,
+                              size: 13, color: AppColors.of(context).textSecondary),
                           const SizedBox(width: 2),
                           Text(data.jadwalLabel!,
-                              style: AppTextStyles.caption),
+                              style: AppTextStyles.caption(context)),
                         ],
                       ),
                     ],

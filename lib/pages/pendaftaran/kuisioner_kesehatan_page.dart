@@ -4,6 +4,7 @@ import '../../theme/app_theme.dart';
 import '../../widgets/header_halaman.dart';
 import '../../model/jadwal_ringkas.dart';
 import 'donor_konfirmasi_page.dart';
+import '../../widgets/theme_sync.dart';
 
 // (D-003).
 class KuisionerKesehatanPage extends StatefulWidget {
@@ -51,7 +52,7 @@ class _KuisionerKesehatanPageState extends State<KuisionerKesehatanPage> {
     };
 
     Navigator.of(context).push(
-      MaterialPageRoute(
+      AppPageRoute(
         builder: (context) => DonorKonfirmasiPage(
           jadwalTerpilih: widget.jadwalTerpilih,
           pertanyaan: pertanyaan,
@@ -85,7 +86,7 @@ class _KuisionerKesehatanPageState extends State<KuisionerKesehatanPage> {
                     const SizedBox(height: 12),
                     Text(
                       s.questionnaireIntro,
-                      style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
+                      style: AppTextStyles.body(context).copyWith(color: AppColors.of(context).textSecondary),
                     ),
                     const SizedBox(height: 16),
 
@@ -133,7 +134,7 @@ class _KartuPertanyaan extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.of(context).surface,
         borderRadius: BorderRadius.circular(AppDimens.radiusM),
       ),
       child: Row(
@@ -143,15 +144,20 @@ class _KartuPertanyaan extends StatelessWidget {
             child: Text(pertanyaan, style: const TextStyle(fontSize: 12.5)),
           ),
           const SizedBox(width: 8),
-          _pilihanRadio(label: s.yesLabel, terpilih: jawabanYa, onTap: () => onUbah(true)),
+          _pilihanRadio(context, label: s.yesLabel, terpilih: jawabanYa, onTap: () => onUbah(true)),
           const SizedBox(width: 10),
-          _pilihanRadio(label: s.noLabel, terpilih: !jawabanYa, onTap: () => onUbah(false)),
+          _pilihanRadio(context, label: s.noLabel, terpilih: !jawabanYa, onTap: () => onUbah(false)),
         ],
       ),
     );
   }
 
-  Widget _pilihanRadio({required String label, required bool terpilih, required VoidCallback onTap}) {
+  Widget _pilihanRadio(
+    BuildContext context, {
+    required String label,
+    required bool terpilih,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
@@ -161,7 +167,7 @@ class _KartuPertanyaan extends StatelessWidget {
           Icon(
             terpilih ? Icons.radio_button_checked : Icons.radio_button_off,
             size: 18,
-            color: terpilih ? AppColors.primary : AppColors.textHint,
+            color: terpilih ? AppColors.primary : AppColors.of(context).textHint,
           ),
           const SizedBox(width: 4),
           Text(label, style: const TextStyle(fontSize: 12)),

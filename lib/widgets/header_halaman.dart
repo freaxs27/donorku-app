@@ -35,7 +35,7 @@ class HeaderHalaman extends StatelessWidget {
           child: leadingIcon != null
               ? GestureDetector(
                   onTap: onTapLeading,
-                  child: Icon(leadingIcon, color: AppColors.textPrimary),
+                  child: Icon(leadingIcon, color: AppColors.of(context).textPrimary),
                 )
               : null,
         ),
@@ -43,7 +43,7 @@ class HeaderHalaman extends StatelessWidget {
           child: Text(
             judul,
             textAlign: TextAlign.center,
-            style: AppTextStyles.subheading,
+            style: AppTextStyles.subheading(context),
           ),
         ),
         SizedBox(width: _lebarSisi, child: trailing),

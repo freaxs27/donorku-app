@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'app_bahasa.dart';
+import '../theme/app_tema.dart';
 
 /// String UI aplikasi. Ambil lewat [AppStrings.of] agar ikut rebuild
 /// saat bahasa diganti di Pengaturan.
@@ -170,6 +171,35 @@ class AppStrings {
   String get aplikasi => _en ? 'Application' : 'Aplikasi';
   String get pilihBahasa => _en ? 'Language' : 'Pilih Bahasa';
   String get sesuaikanTema => _en ? 'Theme' : 'Sesuaikan Tema';
+  String get judulSesuaikanTema => _en ? 'Theme' : 'Sesuaikan Tema';
+  String get deskripsiSesuaikanTema => _en
+      ? 'Choose how Donorku looks on your device.'
+      : 'Pilih tampilan Donorku di perangkatmu.';
+  String get temaBerhasilDiubah =>
+      _en ? 'Theme updated' : 'Tema berhasil diubah';
+  String get temaTerang => _en ? 'Light' : 'Terang';
+  String get temaGelap => _en ? 'Dark' : 'Gelap';
+  String get temaSistem => _en ? 'System' : 'Sistem';
+  String get temaTerangDesc =>
+      _en ? 'Always use light appearance' : 'Selalu tampilan terang';
+  String get temaGelapDesc =>
+      _en ? 'Always use dark appearance' : 'Selalu tampilan gelap';
+  String get temaSistemDesc => _en
+      ? 'Follow device light/dark setting'
+      : 'Ikuti pengaturan terang/gelap perangkat';
+
+  String labelTema(AppTema tema) => switch (tema) {
+        AppTema.terang => temaTerang,
+        AppTema.gelap => temaGelap,
+        AppTema.sistem => temaSistem,
+      };
+
+  String deskripsiTema(AppTema tema) => switch (tema) {
+        AppTema.terang => temaTerangDesc,
+        AppTema.gelap => temaGelapDesc,
+        AppTema.sistem => temaSistemDesc,
+      };
+
   String get pengaturanPrivasi =>
       _en ? 'Privacy Settings' : 'Pengaturan Privasi';
   String get tentangKami => _en ? 'About Us' : 'Tentang Kami';

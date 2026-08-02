@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/locale/app_strings.dart';
 import '../../theme/app_theme.dart';
 import '../../services/profil/profil_service.dart';
 import '../../services/core/api_exception.dart';
@@ -35,7 +36,7 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
       context: context,
       builder: (context) => Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.of(context).background,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
           child: Column(
@@ -62,11 +63,11 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
                           style: TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 10),
-                      const Text(
+                      Text(
                         'Anda salah memasukan password lama atau konfirmasi password',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                            fontSize: 13, color: AppColors.textSecondary),
+                            fontSize: 13, color: AppColors.of(context).textSecondary),
                       ),
                       const SizedBox(height: 24),
                       SizedBox(
@@ -90,8 +91,8 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
                   ),
                   GestureDetector(
                     onTap: () => Navigator.of(context).pop(),
-                    child: const Icon(Icons.close,
-                        size: 20, color: AppColors.textSecondary),
+                    child: Icon(Icons.close,
+                        size: 20, color: AppColors.of(context).textSecondary),
                   ),
                 ],
               ),
@@ -126,7 +127,7 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
       barrierDismissible: false,
       builder: (context) => Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.of(context).background,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
           child: Column(
@@ -137,9 +138,9 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
               const Text('Konfirmasi Ubah',
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               const SizedBox(height: 10),
-              const Text('Apakah anda yakin ingin mengubah password saat ini?',
+              Text('Apakah anda yakin ingin mengubah password saat ini?',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                  style: TextStyle(fontSize: 13, color: AppColors.of(context).textSecondary)),
               const SizedBox(height: 24),
               Row(
                 children: [
@@ -147,8 +148,8 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
                     child: OutlinedButton(
                       onPressed: () => Navigator.of(context).pop(false),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.textPrimary,
-                        side: const BorderSide(color: AppColors.border),
+                        foregroundColor: AppColors.of(context).textPrimary,
+                        side: BorderSide(color: AppColors.of(context).border),
                         minimumSize: const Size.fromHeight(44),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12)),
@@ -197,7 +198,7 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
         barrierDismissible: false,
         builder: (context) => Dialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          backgroundColor: AppColors.background,
+          backgroundColor: AppColors.of(context).background,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
             child: Column(
@@ -219,10 +220,10 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
                     style: TextStyle(
                         fontSize: 18, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 10),
-                const Text(
+                Text(
                   'Anda telah berhasil mengganti password baru. Silahkan coba login kembali',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                  style: TextStyle(fontSize: 13, color: AppColors.of(context).textSecondary),
                 ),
                 const SizedBox(height: 24),
                 SizedBox(
@@ -272,6 +273,7 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -284,30 +286,33 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
                 children: [
                   GestureDetector(
                     onTap: () => Navigator.of(context).pop(),
-                    child: const Icon(Icons.arrow_back,
-                        size: 28, color: AppColors.textPrimary),
+                    child: Icon(Icons.arrow_back,
+                        size: 28, color: AppColors.of(context).textPrimary),
                   ),
-                  const Expanded(
+                  Expanded(
                     child: Text('Edit Password',
                         textAlign: TextAlign.center,
                         style: TextStyle(fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary)),
+                            color: AppColors.of(context).textPrimary)),
                   ),
                   const SizedBox(width: 28),
                 ],
               ),
               const SizedBox(height: 32),
-
-              const Text('Ubah Password',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary)),
+              Text(
+                s.changePasswordTitle,
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.of(context).textPrimary),
+              ),
               const SizedBox(height: 16),
 
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
+                  color: AppColors.of(context).surface,
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
@@ -357,8 +362,8 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
                     child: OutlinedButton(
                       onPressed: () => Navigator.of(context).pop(),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.textPrimary,
-                        side: const BorderSide(color: AppColors.border),
+                        foregroundColor: AppColors.of(context).textPrimary,
+                        side: BorderSide(color: AppColors.of(context).border),
                         minimumSize: const Size.fromHeight(44),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12)),
@@ -404,7 +409,7 @@ class _LabelField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Text(label,
-        style: const TextStyle(fontSize: 14, color: AppColors.textPrimary));
+        style: TextStyle(fontSize: 14, color: AppColors.of(context).textPrimary));
   }
 }
 
@@ -427,10 +432,10 @@ class _InputPassword extends StatelessWidget {
       controller: ctrl,
       obscureText: !lihat,
       keyboardType: TextInputType.visiblePassword,
-      style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
+      style: TextStyle(fontSize: 14, color: AppColors.of(context).textPrimary),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: const TextStyle(fontSize: 14, color: AppColors.textHint),
+        hintStyle: TextStyle(fontSize: 14, color: AppColors.of(context).textHint),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         border: OutlineInputBorder(
@@ -449,7 +454,7 @@ class _InputPassword extends StatelessWidget {
           onTap: onToggle,
           child: Icon(
             lihat ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-            size: 20, color: AppColors.textSecondary,
+            size: 20, color: AppColors.of(context).textSecondary,
           ),
         ),
       ),

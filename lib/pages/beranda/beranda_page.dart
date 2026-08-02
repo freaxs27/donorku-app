@@ -13,6 +13,7 @@ import '../../widgets/main_layout.dart';
 import '../bantuan/reza_chatbot_page.dart';
 import '../bantuan/chat_cs.dart';
 import '../lokasi/lokasi_page.dart';
+import '../../widgets/theme_sync.dart';
 
 /// Halaman Beranda (D-001 / B-001 - keduanya desain yang sama).
 class BerandaPage extends StatefulWidget {
@@ -145,7 +146,7 @@ class _BerandaPageState extends State<BerandaPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(_pesanError!, textAlign: TextAlign.center, style: AppTextStyles.body),
+              Text(_pesanError!, textAlign: TextAlign.center, style: AppTextStyles.body(context)),
               const SizedBox(height: 12),
               ElevatedButton(onPressed: _muatData, child: Text(s.tryAgainButton)),
             ],
@@ -169,7 +170,7 @@ class _BerandaPageState extends State<BerandaPage> {
               Row(
                 children: [
                   Expanded(
-                    child: Text(s.greetingHello(data.namaLengkap), style: AppTextStyles.heading),
+                    child: Text(s.greetingHello(data.namaLengkap), style: AppTextStyles.heading(context)),
                   ),
                   Image.asset('assets/images/logo.png', height: 28),
                   const SizedBox(width: 8),
@@ -177,9 +178,9 @@ class _BerandaPageState extends State<BerandaPage> {
                     onTap: () => _bukaNotifikasi(context),
                     child: Container(
                       padding: const EdgeInsets.all(8),
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: AppColors.surface,
+                        color: AppColors.of(context).surface,
                       ),
                       child: const Icon(Icons.notifications_none, size: 20),
                     ),
@@ -230,7 +231,7 @@ class _BerandaPageState extends State<BerandaPage> {
                     tanggalPelaksanaan: l.tanggalPelaksanaan,
                   );
                   Navigator.of(context, rootNavigator: true).push(
-                    MaterialPageRoute(
+                    AppPageRoute(
                       builder: (context) => LokasiPage(lokasiAwal: lokasiDonor),
                     ),
                   );
@@ -243,10 +244,10 @@ class _BerandaPageState extends State<BerandaPage> {
                 subjudul: s.chatRezaSubtitle,
                 iconAssetPath: null,
                 onTapPanah: () => Navigator.of(context, rootNavigator: true).push(
-                  MaterialPageRoute(builder: (context) => const RezaChatbotPage()),
+                  AppPageRoute(builder: (context) => const RezaChatbotPage()),
                 ),
                 onKirimPesan: (pesan) => Navigator.of(context, rootNavigator: true).push(
-                  MaterialPageRoute(builder: (context) => const RezaChatbotPage()),
+                  AppPageRoute(builder: (context) => const RezaChatbotPage()),
                 ),
               ),
               const SizedBox(height: 12),
@@ -255,10 +256,10 @@ class _BerandaPageState extends State<BerandaPage> {
                 subjudul: s.chatAdminSubtitle,
                 iconAssetPath: 'assets/icons/bantuan/admin.png',
                 onTapPanah: () => Navigator.of(context, rootNavigator: true).push(
-                  MaterialPageRoute(builder: (context) => const ChatCsPage()),
+                  AppPageRoute(builder: (context) => const ChatCsPage()),
                 ),
-                onKirimPesan: (_) => Navigator.of(context, rootNavigator: true).push(
-                  MaterialPageRoute(builder: (context) => const ChatCsPage()),
+                onKirimPesan: (pesan) => Navigator.of(context, rootNavigator: true).push(
+                  AppPageRoute(builder: (context) => ChatCsPage(pesanAwal: pesan)),
                 ),
               ),
             ],
@@ -278,7 +279,7 @@ class _JudulSeksi extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(child: Text(judul, style: AppTextStyles.subheading)),
+        Expanded(child: Text(judul, style: AppTextStyles.subheading(context))),
         const Icon(Icons.arrow_forward, size: 18),
       ],
     );
@@ -297,7 +298,7 @@ class _KartuMulaiDonor extends StatelessWidget {
       borderRadius: BorderRadius.circular(AppDimens.radiusM),
       child: Container(
         width: double.infinity, // kartu selalu selebar induknya
-        color: AppColors.surface,
+        color: AppColors.of(context).surface,
         child: Stack(
           children: [
             // Ilustrasi diperbesar & diposisikan "bleed" ke pojok
@@ -320,14 +321,14 @@ class _KartuMulaiDonor extends StatelessWidget {
                   // yang sekarang lebih besar & nyender ke kanan.
                   SizedBox(
                     width: 190,
-                    child: Text(s.startDonatingTitle, style: AppTextStyles.subheading),
+                    child: Text(s.startDonatingTitle, style: AppTextStyles.subheading(context)),
                   ),
                   const SizedBox(height: 4),
                   SizedBox(
                     width: 190,
                     child: Text(
                       s.startDonatingSubtitle,
-                      style: AppTextStyles.caption,
+                      style: AppTextStyles.caption(context),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -370,7 +371,7 @@ class _KartuAndaSudahDonor extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppDimens.paddingM),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.of(context).surface,
         borderRadius: BorderRadius.circular(AppDimens.radiusM),
       ),
       child: Column(
@@ -386,7 +387,7 @@ class _KartuAndaSudahDonor extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(AppDimens.paddingM),
             decoration: BoxDecoration(
-              border: Border.all(color: AppColors.border),
+              border: Border.all(color: AppColors.of(context).border),
               borderRadius: BorderRadius.circular(AppDimens.radiusM),
             ),
             child: Row(
@@ -395,16 +396,16 @@ class _KartuAndaSudahDonor extends StatelessWidget {
                   child: Column(
                     children: [
                       Text('$totalDonasi', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary)),
-                      Text(s.totalDonations, style: AppTextStyles.caption),
+                      Text(s.totalDonations, style: AppTextStyles.caption(context)),
                     ],
                   ),
                 ),
-                const SizedBox(height: 40, child: VerticalDivider(color: AppColors.border)),
+                SizedBox(height: 40, child: VerticalDivider(color: AppColors.of(context).border)),
                 Expanded(
                   child: Column(
                     children: [
                       Text('$totalMlDarah', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary)),
-                      Text(s.mlBlood, style: AppTextStyles.caption),
+                      Text(s.mlBlood, style: AppTextStyles.caption(context)),
                     ],
                   ),
                 ),
@@ -418,7 +419,7 @@ class _KartuAndaSudahDonor extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              border: Border.all(color: AppColors.border),
+              border: Border.all(color: AppColors.of(context).border),
               borderRadius: BorderRadius.circular(AppDimens.radiusM),
             ),
             child: Row(
@@ -426,7 +427,7 @@ class _KartuAndaSudahDonor extends StatelessWidget {
                 Icon(
                   bolehDonorSekarang ? Icons.check_circle_outline : Icons.calendar_today_outlined,
                   size: 26,
-                  color: bolehDonorSekarang ? AppColors.success : AppColors.textPrimary,
+                  color: bolehDonorSekarang ? AppColors.success : AppColors.of(context).textPrimary,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -435,7 +436,7 @@ class _KartuAndaSudahDonor extends StatelessWidget {
                     children: [
                       Text(
                         bolehDonorSekarang ? s.canDonateNow : s.canDonateAgain,
-                        style: AppTextStyles.body,
+                        style: AppTextStyles.body(context),
                       ),
                       const SizedBox(height: 2),
                       Text(
@@ -499,7 +500,7 @@ class _KartuLokasiTersedia extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppDimens.paddingM),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.of(context).surface,
         borderRadius: BorderRadius.circular(AppDimens.radiusM),
       ),
       child: Column(
@@ -538,7 +539,7 @@ class _KartuLokasiItem extends StatelessWidget {
       width: double.infinity, // kartu selalu selebar induknya, tidak ikut ukuran konten
       padding: const EdgeInsets.all(AppDimens.paddingM),
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.of(context).border),
         borderRadius: BorderRadius.circular(AppDimens.radiusM),
       ),
       child: Padding(
@@ -565,7 +566,7 @@ class _KartuLokasiItem extends StatelessWidget {
                             return Container(
                               width: 72,
                               height: 72,
-                              color: AppColors.background,
+                              color: AppColors.of(context).background,
                               child: const Center(
                                 child: SizedBox(
                                   width: 20,
@@ -580,8 +581,8 @@ class _KartuLokasiItem extends StatelessWidget {
                             return Container(
                               width: 72,
                               height: 72,
-                              color: AppColors.background,
-                              child: const Icon(Icons.local_hospital_outlined, color: AppColors.textSecondary),
+                              color: AppColors.of(context).background,
+                              child: Icon(Icons.local_hospital_outlined, color: AppColors.of(context).textSecondary),
                             );
                           },
                         )
@@ -595,8 +596,8 @@ class _KartuLokasiItem extends StatelessWidget {
                           : Container(
                               width: 72,
                               height: 72,
-                              color: AppColors.background,
-                              child: const Icon(Icons.local_hospital_outlined, color: AppColors.textSecondary),
+                              color: AppColors.of(context).background,
+                              child: Icon(Icons.local_hospital_outlined, color: AppColors.of(context).textSecondary),
                             ),
                 ),
                 const SizedBox(width: 12),
@@ -609,17 +610,17 @@ class _KartuLokasiItem extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(data.nama, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
+                      Text(data.nama, style: AppTextStyles.body(context).copyWith(fontWeight: FontWeight.bold)),
                       const SizedBox(height: 4),
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.location_on_outlined, size: 14, color: AppColors.textSecondary),
+                          Icon(Icons.location_on_outlined, size: 14, color: AppColors.of(context).textSecondary),
                           const SizedBox(width: 2),
                           Flexible(
                             child: Text(
                               data.alamat,
-                              style: AppTextStyles.caption,
+                              style: AppTextStyles.caption(context),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -633,9 +634,9 @@ class _KartuLokasiItem extends StatelessWidget {
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.calendar_today_outlined, size: 13, color: AppColors.textSecondary),
+                            Icon(Icons.calendar_today_outlined, size: 13, color: AppColors.of(context).textSecondary),
                             const SizedBox(width: 2),
-                            Text(data.tanggalPelaksanaan!, style: AppTextStyles.caption),
+                            Text(data.tanggalPelaksanaan!, style: AppTextStyles.caption(context)),
                           ],
                         ),
                       ],
@@ -644,13 +645,13 @@ class _KartuLokasiItem extends StatelessWidget {
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.access_time, size: 13, color: AppColors.textSecondary),
+                            Icon(Icons.access_time, size: 13, color: AppColors.of(context).textSecondary),
                             const SizedBox(width: 2),
                             Text(
                               data.jamMulai != null && data.jamSelesai != null && data.sisaKuota != null
                                   ? s.scheduleQuota(data.jamMulai!, data.jamSelesai!, data.sisaKuota!)
                                   : '${data.jamMulai} - ${data.jamSelesai}',
-                              style: AppTextStyles.caption,
+                              style: AppTextStyles.caption(context),
                             ),
                           ],
                         ),
@@ -731,7 +732,7 @@ class _KartuChatState extends State<_KartuChat> {
     return Container(
       padding: const EdgeInsets.all(AppDimens.paddingM),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.of(context).surface,
         borderRadius: BorderRadius.circular(AppDimens.radiusM),
       ),
       child: Column(
@@ -741,7 +742,7 @@ class _KartuChatState extends State<_KartuChat> {
             children: [
               if (widget.iconAssetPath != null) ...[
                 CircleAvatar(
-                  backgroundColor: AppColors.background,
+                  backgroundColor: AppColors.of(context).background,
                   backgroundImage: AssetImage(widget.iconAssetPath!),
                 ),
                 const SizedBox(width: 10),
@@ -750,8 +751,8 @@ class _KartuChatState extends State<_KartuChat> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(widget.judul, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
-                    Text(widget.subjudul, style: AppTextStyles.caption),
+                    Text(widget.judul, style: AppTextStyles.body(context).copyWith(fontWeight: FontWeight.bold)),
+                    Text(widget.subjudul, style: AppTextStyles.caption(context)),
                   ],
                 ),
               ),
@@ -768,7 +769,7 @@ class _KartuChatState extends State<_KartuChat> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppColors.background,
+                    color: AppColors.of(context).background,
                     borderRadius: BorderRadius.circular(999), // rounded penuh
                   ),
                   child: Row(
@@ -776,7 +777,7 @@ class _KartuChatState extends State<_KartuChat> {
                       Expanded(
                         child: TextField(
                           controller: _controller,
-                          style: AppTextStyles.body,
+                          style: AppTextStyles.body(context),
                           decoration: InputDecoration(
                             hintText: s.writeQuestionHint,
                             filled: false,
@@ -790,7 +791,7 @@ class _KartuChatState extends State<_KartuChat> {
                       ),
                       GestureDetector(
                         onTap: _hapusDanTutupKeyboard,
-                        child: const Icon(Icons.close, size: 16, color: AppColors.textSecondary),
+                        child: Icon(Icons.close, size: 16, color: AppColors.of(context).textSecondary),
                       ),
                     ],
                   ),
@@ -855,7 +856,7 @@ class _NotifikasiModalState extends State<_NotifikasiModal> {
   Widget build(BuildContext context) {
     final s = AppStrings.of(context);
     return Dialog(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.of(context).background,
       insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 80),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimens.radiusL)),
       child: Padding(
@@ -866,7 +867,7 @@ class _NotifikasiModalState extends State<_NotifikasiModal> {
             Row(
               children: [
                 Expanded(
-                  child: Text(s.notificationsTitle, style: AppTextStyles.subheading, textAlign: TextAlign.center),
+                  child: Text(s.notificationsTitle, style: AppTextStyles.subheading(context), textAlign: TextAlign.center),
                 ),
                 GestureDetector(
                   onTap: () => Navigator.of(context).pop(),
@@ -884,7 +885,7 @@ class _NotifikasiModalState extends State<_NotifikasiModal> {
               Padding(
                 padding: const EdgeInsets.all(24),
                 child: Text(s.noNotifications,
-                    style: const TextStyle(color: AppColors.textSecondary)),
+                    style: TextStyle(color: AppColors.of(context).textSecondary)),
               )
             else
               ..._daftar.map((n) => _kartuNotifikasi(n)),
@@ -905,7 +906,7 @@ class _NotifikasiModalState extends State<_NotifikasiModal> {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.of(context).surface,
         borderRadius: BorderRadius.circular(AppDimens.radiusM),
       ),
       child: Row(
@@ -917,15 +918,15 @@ class _NotifikasiModalState extends State<_NotifikasiModal> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(item.pesan, style: AppTextStyles.body),
+                Text(item.pesan, style: AppTextStyles.body(context)),
                 const SizedBox(height: 2),
-                Text(item.waktu, style: AppTextStyles.caption),
+                Text(item.waktu, style: AppTextStyles.caption(context)),
               ],
             ),
           ),
           GestureDetector(
             onTap: () => _tandaiBaca(item),
-            child: const Icon(Icons.close, size: 16, color: AppColors.textSecondary),
+            child: Icon(Icons.close, size: 16, color: AppColors.of(context).textSecondary),
           ),
         ],
       ),

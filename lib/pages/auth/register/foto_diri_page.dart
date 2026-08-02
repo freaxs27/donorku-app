@@ -8,6 +8,7 @@ import '../../../model/data_register.dart';
 import '../../../services/auth/auth_service.dart';
 import '../../../services/core/api_exception.dart';
 import 'register_sukses_page.dart';
+import '../../../widgets/theme_sync.dart';
 
 // (R-003).
 class FotoDiriPage extends StatefulWidget {
@@ -77,7 +78,7 @@ class _FotoDiriPageState extends State<FotoDiriPage> {
 
       if (!mounted) return;
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const RegisterSuksesPage()),
+        AppPageRoute(builder: (context) => const RegisterSuksesPage()),
         (route) => false,
       );
     } on ApiException catch (e) {
@@ -98,7 +99,7 @@ class _FotoDiriPageState extends State<FotoDiriPage> {
     final s = AppStrings.of(context);
     return Scaffold(
       appBar: AppBar(
-        leading: const BackButton(color: AppColors.textPrimary),
+        leading: BackButton(color: AppColors.of(context).textPrimary),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: AppDimens.paddingL),
@@ -106,11 +107,11 @@ class _FotoDiriPageState extends State<FotoDiriPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Center(
-              child: Text(s.createAccountTitle, style: AppTextStyles.heading),
+              child: Text(s.createAccountTitle, style: AppTextStyles.heading(context)),
             ),
             const SizedBox(height: 20),
 
-            Text(s.selfieTitle, style: AppTextStyles.subheading),
+            Text(s.selfieTitle, style: AppTextStyles.subheading(context)),
             const SizedBox(height: 12),
 
             GestureDetector(
@@ -152,7 +153,7 @@ class _FotoDiriPageState extends State<FotoDiriPage> {
             Center(
               child: Text.rich(
                 TextSpan(
-                  style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
+                  style: AppTextStyles.body(context).copyWith(color: AppColors.of(context).textSecondary),
                   children: [
                     TextSpan(text: s.haveAccountPrompt),
                     TextSpan(
