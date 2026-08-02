@@ -1,13 +1,71 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import '../../theme/app_theme.dart';
 import '../../widgets/header_halaman.dart';
+import '../../services/core/api_config.dart';
 import 'jadwal_lokasi_page.dart';
 
 /// Halaman Pendaftaran / Daftar - Step 1 (D-001).
 /// Aturan & Tips Donor, dengan tombol lampu di kanan atas yang membuka
 /// modal Edukasi & Manfaat Donor (DE-001).
-class PendaftaranPage extends StatelessWidget {
+class PendaftaranPage extends StatefulWidget {
   const PendaftaranPage({super.key});
+
+  @override
+  State<PendaftaranPage> createState() => _PendaftaranPageState();
+}
+
+class _PendaftaranPageState extends State<PendaftaranPage> {
+  List<_ItemAturan> _aturanList = [];
+  List<_ItemAturan> _tipsList = [];
+  bool _sedangMemuat = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _muatData();
+  }
+
+  Future<void> _muatData() async {
+    try {
+      final uri = Uri.parse('${ApiConfig.baseUrl}/edukasi');
+      final response = await http.get(uri).timeout(const Duration(seconds: 20));
+      if (response.statusCode == 200) {
+        final list = jsonDecode(response.body) as List<dynamic>;
+        final aturan = <_ItemAturan>[];
+        final tips = <_ItemAturan>[];
+        for (final item in list) {
+          final judul = item['judul'] as String? ?? '';
+          final isi = item['isi'] as String? ?? '';
+          final kategori = (item['kategori'] as String? ?? '').toLowerCase();
+          // Split isi per baris untuk dijadikan sub-item bullet
+          final subItem = isi
+              .split('\n')
+              .map((e) => e.trim())
+              .where((e) => e.isNotEmpty)
+              .toList();
+          final itemAturan = _ItemAturan(judul, subItem);
+          if (kategori == 'aturan') {
+            aturan.add(itemAturan);
+          } else {
+            tips.add(itemAturan);
+          }
+        }
+        if (mounted) {
+          setState(() {
+            _aturanList = aturan;
+            _tipsList = tips;
+            _sedangMemuat = false;
+          });
+        }
+      } else {
+        if (mounted) setState(() => _sedangMemuat = false);
+      }
+    } catch (_) {
+      if (mounted) setState(() => _sedangMemuat = false);
+    }
+  }
 
   void _bukaEdukasi(BuildContext context) {
     showDialog(
@@ -31,71 +89,38 @@ class PendaftaranPage extends StatelessWidget {
       child: Column(
         children: [
           Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(AppDimens.paddingL, 12, AppDimens.paddingL, 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  HeaderHalaman(
-                    judul: 'Aturan dan Tips Donor',
-                    trailing: GestureDetector(
-                      onTap: () => _bukaEdukasi(context),
-                      child: Image.asset('assets/icons/edukasi/lamp.png', width: 24, height: 24),
+            child: _sedangMemuat
+                ? const Center(child: CircularProgressIndicator())
+                : SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(AppDimens.paddingL, 12, AppDimens.paddingL, 8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        HeaderHalaman(
+                          judul: 'Aturan dan Tips Donor',
+                          trailing: GestureDetector(
+                            onTap: () => _bukaEdukasi(context),
+                            child: Image.asset('assets/icons/edukasi/lamp.png', width: 24, height: 24),
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+
+                        if (_aturanList.isNotEmpty) ...[
+                          _KartuAturan(
+                            judul: 'Aturan sebelum donor darah :',
+                            items: _aturanList,
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+
+                        if (_tipsList.isNotEmpty)
+                          _KartuAturan(
+                            judul: 'Tips sebelum donor darah :',
+                            items: _tipsList,
+                          ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 14),
-
-                  _KartuAturan(
-                    judul: 'Aturan sebelum donor darah :',
-                    items: const [
-                      _ItemAturan('Usia', [
-                        'Tidak memiliki batasan usia, asalkan kondisi kesehatan normal dan tidak punya riwayat penyakit berhubungan dengan darah',
-                      ]),
-                      _ItemAturan('Berat Badan', ['Minimal 45 kg']),
-                      _ItemAturan('Kondisi Fisik', [
-                        'Sehat jasmani & rohani',
-                        'Tidak sedang demam, flu, atau sakit',
-                      ]),
-                      _ItemAturan('Tekanan Darah', [
-                        'Sistole: 100-170 mmHg',
-                        'Diastole: 70-100 mmHg',
-                      ]),
-                      _ItemAturan('Kadar Hemoglobin (Hb)', [
-                        'Pria: ≥ 12,5 g/dL',
-                        'Wanita: ≥ 12,0 g/dL',
-                      ]),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-
-                  _KartuAturan(
-                    judul: 'Tips sebelum donor darah :',
-                    items: const [
-                      _ItemAturan('Tidur Cukup', [
-                        'Minimal 6-8 jam',
-                        'Hindari begadang sebelum donor',
-                      ]),
-                      _ItemAturan('Makan Sebelum Donor', [
-                        'Makan 3-4 jam sebelumnya',
-                        'Pilih makanan ringan & bergizi',
-                        'Hindari makanan berlemak tinggi',
-                      ]),
-                      _ItemAturan('Cukupi Asupan Cairan', [
-                        'Minum air putih 2-3 gelas',
-                        'Hindari alkohol minimal 24 jam sebelumnya',
-                      ]),
-                      _ItemAturan('Hindari Rokok', [
-                        'Tidak merokok 1 jam sebelum donor',
-                        'Tidak merokok 1 jam setelah donor',
-                      ]),
-                      _ItemAturan('Pastikan Kondisi Tubuh Sehat', [
-                        'Tidak sedang demam, flu, atau sakit',
-                      ]),
-                    ],
-                  ),
-                ],
-              ),
-            ),
           ),
 
           // Tombol fixed di bawah layar, selalu kelihatan tanpa perlu scroll.
