@@ -50,8 +50,8 @@ class _RegisterPageState extends State<RegisterPage> {
       _tampilkanPesan('Format email tidak valid');
       return;
     }
-    if (password.length < 6) {
-      _tampilkanPesan('Password minimal 6 karakter');
+    if (password.length < 8) {
+      _tampilkanPesan('Password minimal 8 karakter');
       return;
     }
     if (password != konfirmasi) {

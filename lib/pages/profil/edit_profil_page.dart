@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_underscores, unused_element_parameter
+
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -160,8 +162,7 @@ class _EditProfilPageState extends State<EditProfilPage> {
                             fontWeight: FontWeight.bold,
                             color: AppColors.textPrimary)),
                   ),
-                  const Icon(Icons.settings_outlined,
-                      size: 26, color: AppColors.textPrimary),
+                  const SizedBox(width: 28),
                 ],
               ),
               const SizedBox(height: 24),
@@ -190,7 +191,7 @@ class _EditProfilPageState extends State<EditProfilPage> {
                             : widget.data.fotoProfil != null
                                 ? Image.network(widget.data.fotoProfil!,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (_, _, _) => const Icon(
+                                    errorBuilder: (_, __, ___) => const Icon(
                                         Icons.person,
                                         size: 56, color: AppColors.primary))
                                 : const Icon(Icons.person,
@@ -392,8 +393,9 @@ class _BarisEdit extends StatelessWidget {
     required this.label,
     required this.ctrl,
     this.tipe = TextInputType.text,
+    this.readOnly = false,
     this.maxLines = 1,
-  }) : readOnly = false;
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -458,27 +460,39 @@ class _BarisTanggalLahir extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
-      child: GestureDetector(
-        onTap: onTap,
-        child: Row(
-          children: [
-            const SizedBox(
-              width: 110,
-              child: Text('Tanggal Lahir',
-                  style: TextStyle(fontSize: 14, color: AppColors.textPrimary)),
-            ),
-            const Text(': ',
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const SizedBox(
+            width: 110,
+            child: Text('Tanggal Lahir',
                 style: TextStyle(fontSize: 14, color: AppColors.textPrimary)),
-            const SizedBox(width: 4),
-            Expanded(
-              child: Text(nilai,
-                  style: const TextStyle(
-                      fontSize: 14, color: AppColors.textPrimary)),
+          ),
+          const Text(': ',
+              style: TextStyle(fontSize: 14, color: AppColors.textPrimary)),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 4),
+              child: GestureDetector(
+                onTap: onTap,
+                child: AbsorbPointer(
+                  child: TextField(
+                    controller: TextEditingController(text: nilai),
+                    readOnly: true,
+                    style: const TextStyle(
+                        fontSize: 14, color: AppColors.textPrimary),
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding:
+                          EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                    ),
+                  ),
+                ),
+              ),
             ),
-            const Icon(Icons.calendar_today_outlined,
-                size: 16, color: AppColors.textSecondary),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

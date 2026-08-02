@@ -61,4 +61,16 @@ class ProfilService {
       statusCode: streamed.statusCode,
     );
   }
+
+  Future<void> gantiPassword({
+    required String passwordSekarang,
+    required String passwordBaru,
+    required String konfirmasiPasswordBaru,
+  }) async {
+    await ApiClient.patch('/profil/password', {
+      'password_sekarang': passwordSekarang,
+      'password_baru': passwordBaru,
+      'konfirmasi_password_baru': konfirmasiPasswordBaru,
+    });
+  }
 }
