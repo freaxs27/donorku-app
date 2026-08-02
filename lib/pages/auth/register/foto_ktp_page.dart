@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import '../../../theme/app_theme.dart';
+import '../../../core/locale/app_strings.dart';
 import '../../../model/data_register.dart';
 import 'foto_diri_page.dart';
 
@@ -134,6 +135,7 @@ class _FotoKtpPageState extends State<FotoKtpPage> {
   }
 
   void _lanjutkan() {
+    final s = AppStrings.of(context);
     final nik = _nikController.text.trim();
     final ttlText = _ttlController.text.trim();
     final alamat = _alamatController.text.trim();
@@ -141,24 +143,24 @@ class _FotoKtpPageState extends State<FotoKtpPage> {
     final profesi = _profesiController.text.trim();
 
     if (nik.length != 16 || int.tryParse(nik) == null) {
-      _tampilkanPesan('NIK harus 16 digit angka');
+      _tampilkanPesan(s.nikMustBe16);
       return;
     }
 
     final tanggalLahir = _parseTanggalLahir(ttlText);
     if (tanggalLahir == null) {
-      _tampilkanPesan('Format TTL tidak dikenali, coba edit manual (contoh: 28-06-2006)');
+      _tampilkanPesan(s.dobFormatUnrecognized);
       return;
     }
 
     if (alamat.isEmpty || goldar.isEmpty || profesi.isEmpty) {
-      _tampilkanPesan('Lengkapi semua data hasil scan KTP dulu');
+      _tampilkanPesan(s.completeKtpScanData);
       return;
     }
 
     final golonganDarahLengkap = goldar.toUpperCase();
     if (!RegExp(r'^(A|B|AB|O)[+-]$').hasMatch(golonganDarahLengkap)) {
-      _tampilkanPesan('Golongan darah harus diakhiri + atau - (contoh: O+, AB-)');
+      _tampilkanPesan(s.bloodTypeFormatInvalid);
       return;
     }
 
@@ -227,7 +229,7 @@ class _FotoKtpPageState extends State<FotoKtpPage> {
     return null;
   }
 
-  Widget _buildFieldGoldar() {
+  Widget _buildFieldGoldar(AppStrings s) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
@@ -235,7 +237,7 @@ class _FotoKtpPageState extends State<FotoKtpPage> {
         children: [
           SizedBox(
             width: 70,
-            child: Text('Goldar', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
+            child: Text(s.bloodTypeShort, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
           ),
           const Text(': ', style: AppTextStyles.body),
           Expanded(
@@ -293,6 +295,7 @@ class _FotoKtpPageState extends State<FotoKtpPage> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Scaffold(
       appBar: AppBar(
         leading: const BackButton(color: AppColors.textPrimary),
@@ -302,12 +305,12 @@ class _FotoKtpPageState extends State<FotoKtpPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Center(
-              child: Text('Buat Akunmu', style: AppTextStyles.heading),
+            Center(
+              child: Text(s.createAccountTitle, style: AppTextStyles.heading),
             ),
             const SizedBox(height: 20),
 
-            const Text('Fotokan KTPmu atau e-ktp', style: AppTextStyles.subheading),
+            Text(s.photoKtpTitle, style: AppTextStyles.subheading),
             const SizedBox(height: 12),
             GestureDetector(
               onTap: _sedangMemproses ? null : _ambilFotoKtp,
@@ -333,17 +336,17 @@ class _FotoKtpPageState extends State<FotoKtpPage> {
             ),
             const SizedBox(height: 20),
 
-            _buildFieldHasilOcr('NIK', _nikController),
-            _buildFieldHasilOcr('Nama', _namaController),
-            _buildFieldHasilOcr('TTL', _ttlController),
-            _buildFieldHasilOcr('Alamat', _alamatController),
-            _buildFieldGoldar(),
-            _buildFieldHasilOcr('Profesi', _profesiController),
+            _buildFieldHasilOcr(s.nikLabel, _nikController),
+            _buildFieldHasilOcr(s.nameLabel, _namaController),
+            _buildFieldHasilOcr(s.dobTtlLabel, _ttlController),
+            _buildFieldHasilOcr(s.addressLabel, _alamatController),
+            _buildFieldGoldar(s),
+            _buildFieldHasilOcr(s.occupationLabel, _profesiController),
             const SizedBox(height: 12),
 
             ElevatedButton(
               onPressed: _lanjutkan,
-              child: const Text('Selanjutnya'),
+              child: Text(s.nextButton),
             ),
             const SizedBox(height: 16),
 
@@ -352,9 +355,9 @@ class _FotoKtpPageState extends State<FotoKtpPage> {
                 TextSpan(
                   style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
                   children: [
-                    const TextSpan(text: 'Sudah punya akun? '),
+                    TextSpan(text: s.haveAccountPrompt),
                     TextSpan(
-                      text: 'login disini',
+                      text: s.loginHereLink,
                       style: const TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
                       recognizer: TapGestureRecognizer()
                         ..onTap = () {

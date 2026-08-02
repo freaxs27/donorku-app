@@ -1,5 +1,6 @@
 import 'dart:convert';
 import '../services/core/api_config.dart';
+import '../core/locale/app_strings.dart';
 
 class BerandaData {
   final String namaLengkap;
@@ -76,16 +77,9 @@ class LokasiRingkas {
     );
   }
 
-  /// Format "5 Agustus 2026"
   String? get tanggalFormat {
     if (tanggalPelaksanaan == null) return null;
-    const bulan = [
-      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
-    ];
-    return '${tanggalPelaksanaan!.day} '
-        '${bulan[tanggalPelaksanaan!.month - 1]} '
-        '${tanggalPelaksanaan!.year}';
+    return AppStrings.current.formatTanggal(tanggalPelaksanaan!);
   }
 }
 

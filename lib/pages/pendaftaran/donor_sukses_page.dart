@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/locale/app_strings.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/main_layout.dart';
 
@@ -28,6 +29,7 @@ class _DonorSuksesPageState extends State<DonorSuksesPage> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Scaffold(
       body: SafeArea(
         child: Center(
@@ -45,8 +47,8 @@ class _DonorSuksesPageState extends State<DonorSuksesPage> {
                 child: const Icon(Icons.check, color: AppColors.primary, size: 40),
               ),
               const SizedBox(height: 24),
-              const Text(
-                'Berhasil melakukan pendaftaran',
+              Text(
+                s.registrationSuccess,
                 style: AppTextStyles.subheading,
               ),
             ],
@@ -81,6 +83,7 @@ class _ModalFeedbackState extends State<_ModalFeedback> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Dialog(
       backgroundColor: AppColors.background,
       insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 120),
@@ -93,8 +96,8 @@ class _ModalFeedbackState extends State<_ModalFeedback> {
           children: [
             Row(
               children: [
-                const Expanded(
-                  child: Text('FeedBack', textAlign: TextAlign.center, style: AppTextStyles.subheading),
+                Expanded(
+                  child: Text(s.feedbackTitle, textAlign: TextAlign.center, style: AppTextStyles.subheading),
                 ),
                 GestureDetector(
                   onTap: () => Navigator.of(context).pop(),
@@ -104,7 +107,7 @@ class _ModalFeedbackState extends State<_ModalFeedback> {
             ),
             const SizedBox(height: 16),
 
-            const Text('Bagaimana Pengalaman Anda?', style: AppTextStyles.body),
+            Text(s.experienceQuestion, style: AppTextStyles.body),
             const SizedBox(height: 10),
 
             Container(
@@ -131,7 +134,7 @@ class _ModalFeedbackState extends State<_ModalFeedback> {
             ),
             const SizedBox(height: 16),
 
-            const Text('Tulis Saran atau Keluhan Anda', style: AppTextStyles.body),
+            Text(s.feedbackHintLabel, style: AppTextStyles.body),
             const SizedBox(height: 10),
 
             TextField(
@@ -158,7 +161,7 @@ class _ModalFeedbackState extends State<_ModalFeedback> {
 
             ElevatedButton(
               onPressed: _kirimFeedback,
-              child: const Text('Kirim FeedBack'),
+              child: Text(s.sendFeedbackButton),
             ),
           ],
         ),

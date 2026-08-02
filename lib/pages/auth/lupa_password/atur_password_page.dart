@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../theme/app_theme.dart';
+import '../../../core/locale/app_strings.dart';
 import '../../../core/validators/app_validators.dart';
 import '../../../services/auth/auth_service.dart';
 import '../../../services/core/api_exception.dart';
@@ -61,7 +62,7 @@ class _AturPasswordPageState extends State<AturPasswordPage> {
     } on ApiException catch (e) {
       _tampilkanPesan(e.message);
     } catch (e) {
-      _tampilkanPesan('Terjadi kesalahan tak terduga, coba lagi');
+      _tampilkanPesan(AppStrings.of(context).unexpectedError);
     } finally {
       if (mounted) setState(() => _sedangProses = false);
     }
@@ -73,6 +74,7 @@ class _AturPasswordPageState extends State<AturPasswordPage> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Scaffold(
       appBar: AppBar(
         leading: const BackButton(color: AppColors.textPrimary),
@@ -82,21 +84,21 @@ class _AturPasswordPageState extends State<AturPasswordPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Atur Password Baru', style: AppTextStyles.heading),
+            Text(s.setNewPasswordTitle, style: AppTextStyles.heading),
             const SizedBox(height: 4),
-            const Text(
-              'Masukan password yang baru',
+            Text(
+              s.setNewPasswordSubtitle,
               style: AppTextStyles.caption,
             ),
             const SizedBox(height: 24),
 
-            const Text('Password', style: AppTextStyles.body),
+            Text(s.passwordLabel, style: AppTextStyles.body),
             const SizedBox(height: 8),
             TextField(
               controller: _passwordController,
               obscureText: _obscurePassword,
               decoration: InputDecoration(
-                hintText: 'Masukan password',
+                hintText: s.passwordHint,
                 suffixIcon: IconButton(
                   icon: Icon(
                     _obscurePassword
@@ -112,13 +114,13 @@ class _AturPasswordPageState extends State<AturPasswordPage> {
             ),
             const SizedBox(height: 16),
 
-            const Text('Konfirmasi Password', style: AppTextStyles.body),
+            Text(s.confirmPasswordLabel, style: AppTextStyles.body),
             const SizedBox(height: 8),
             TextField(
               controller: _konfirmasiController,
               obscureText: _obscureKonfirmasi,
               decoration: InputDecoration(
-                hintText: 'Masukan kembali password',
+                hintText: s.confirmPasswordHint,
                 suffixIcon: IconButton(
                   icon: Icon(
                     _obscureKonfirmasi
@@ -142,7 +144,7 @@ class _AturPasswordPageState extends State<AturPasswordPage> {
                       height: 20,
                       child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                     )
-                  : const Text('Atur Ulang Password'),
+                  : Text(s.resetPasswordButton),
             ),
           ],
         ),

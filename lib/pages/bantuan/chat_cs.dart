@@ -88,8 +88,14 @@ class _ChatCsPageState extends State<ChatCsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        centerTitle: false,
+        leading: const BackButton(color: AppColors.textPrimary),
+        title: Text(s.contactSupportTitle, style: AppTextStyles.subheading),
+        titleSpacing: 0,
+      ),
       body: SafeArea(
         child: Column(
           children: [
@@ -144,25 +150,29 @@ class _ChatCsPageState extends State<ChatCsPage> {
                         ),
                       ),
                     ),
+                    const SizedBox(height: 16),
+
+                    Text(s.csGreetingName, style: AppTextStyles.heading),
+                    Text(s.csGreetingTeam, style: AppTextStyles.heading),
+                    const SizedBox(height: 8),
+                    Text(
+                      s.csTopicPrompt,
+                      style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
+                    ),
                     const SizedBox(height: 20),
 
-                    // Judul
-                    const Text(
-                      'Halo! Saya Revan\ndari Tim Dukungan',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
-                        height: 1.3,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Pilih topik dibawah ini agar saya\nbisa membantumu lebih cepat',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppColors.textSecondary,
-                        height: 1.4,
+                    IntrinsicWidth(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _TombolTopik(label: s.topicDonorIssue, onTap: () => _pilihTopik(s.topicDonorIssue)),
+                          const SizedBox(height: 12),
+                          _TombolTopik(label: s.topicAccountIssue, onTap: () => _pilihTopik(s.topicAccountIssue)),
+                          const SizedBox(height: 12),
+                          _TombolTopik(label: s.topicLocationInfo, onTap: () => _pilihTopik(s.topicLocationInfo)),
+                          const SizedBox(height: 12),
+                          _TombolTopik(label: s.topicOther, onTap: () => _pilihTopik(s.topicOther)),
+                        ],
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -225,34 +235,31 @@ class _ChatCsPageState extends State<ChatCsPage> {
 
             // Field chat di bawah — sejajar dengan topik, outline hitam
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 10, 24, 20),
-              child: TextField(
-                controller: _pesanController,
-                focusNode: _focusNode,
-                style: const TextStyle(
-                    fontSize: 14, color: AppColors.textPrimary),
-                decoration: InputDecoration(
-                  hintText: 'Ketik pesan untuk admin disini...',
-                  hintStyle: const TextStyle(
-                      fontSize: 14, color: AppColors.textHint),
-                  contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 12),
-                  suffixIcon: GestureDetector(
-                    onTap: _sedangKirim ? null : _kirimPesan,
-                    child: Padding(
-                      padding: const EdgeInsets.all(10),
-                      child: _sedangKirim
-                          ? const SizedBox(
-                              width: 16, height: 16,
-                              child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: AppColors.textSecondary),
-                            )
-                          : Image.asset(
-                              'assets/icons/bantuan/send.png',
-                              width: 20,
-                              height: 20,
-                            ),
+              padding: const EdgeInsets.fromLTRB(AppDimens.paddingL, 8, AppDimens.paddingL, 16),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(AppDimens.radiusL),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _pesanController,
+                        decoration: InputDecoration(
+                          hintText: s.csMessageHint,
+                          filled: false,
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: _kirimPesan,
+                      child: const Icon(Icons.send, color: AppColors.textSecondary),
                     ),
                   ),
                   border: OutlineInputBorder(
@@ -274,6 +281,26 @@ class _ChatCsPageState extends State<ChatCsPage> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _TombolTopik extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  const _TombolTopik({required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton(
+      style: OutlinedButton.styleFrom(
+        alignment: Alignment.centerLeft,
+        minimumSize: const Size(0, 44),
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+      ),
+      onPressed: onTap,
+      child: Text(label, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
     );
   }
 }

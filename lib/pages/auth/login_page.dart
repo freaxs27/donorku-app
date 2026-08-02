@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import '../../theme/app_theme.dart';
+import '../../core/locale/app_strings.dart';
 import '../../widgets/main_shell.dart';
 import '../../services/auth/auth_service.dart';
 import '../../services/core/api_exception.dart';
@@ -36,7 +37,7 @@ class _LoginPageState extends State<LoginPage> {
     final password = _passwordController.text;
 
     if (email.isEmpty || password.isEmpty) {
-      _tampilkanPesan('Email dan password wajib diisi');
+      _tampilkanPesan(AppStrings.of(context).emailPasswordRequired);
       return;
     }
 
@@ -58,7 +59,7 @@ class _LoginPageState extends State<LoginPage> {
     } on ApiException catch (e) {
       _tampilkanPesan(e.message);
     } catch (e) {
-      _tampilkanPesan('Terjadi kesalahan tak terduga, coba lagi');
+      _tampilkanPesan(AppStrings.of(context).unexpectedError);
     } finally {
       if (mounted) setState(() => _sedangLogin = false);
     }
@@ -88,6 +89,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -109,31 +111,31 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 24),
 
-              const Text(
-                'Login ke akunmu',
+              Text(
+                s.loginTitle,
                 textAlign: TextAlign.center,
                 style: AppTextStyles.subheading,
               ),
               const SizedBox(height: 24),
 
               // Email
-              const Text('Email', style: AppTextStyles.body),
+              Text(s.emailLabel, style: AppTextStyles.body),
               const SizedBox(height: 8),
               TextField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(hintText: 'Masukan email'),
+                decoration: InputDecoration(hintText: s.emailHint),
               ),
               const SizedBox(height: 16),
 
               // Password
-              const Text('Password', style: AppTextStyles.body),
+              Text(s.passwordLabel, style: AppTextStyles.body),
               const SizedBox(height: 8),
               TextField(
                 controller: _passwordController,
                 obscureText: _obscurePassword,
                 decoration: InputDecoration(
-                  hintText: 'Masukan password',
+                  hintText: s.passwordHint,
                   suffixIcon: IconButton(
                     icon: Icon(
                       _obscurePassword
@@ -154,9 +156,9 @@ class _LoginPageState extends State<LoginPage> {
                 alignment: Alignment.centerLeft,
                 child: GestureDetector(
                   onTap: _goToForgotPassword,
-                  child: const Text(
-                    'Lupa password?',
-                    style: TextStyle(
+                  child: Text(
+                    s.forgotPasswordLink,
+                    style: const TextStyle(
                       fontSize: 13,
                       color: AppColors.textPrimary,
                       decoration: TextDecoration.underline,
@@ -178,7 +180,7 @@ class _LoginPageState extends State<LoginPage> {
                               height: 20,
                               child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                             )
-                          : const Text('Masuk'),
+                          : Text(s.signInButton),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -188,10 +190,51 @@ class _LoginPageState extends State<LoginPage> {
                         _emailController.clear();
                         _passwordController.clear();
                       },
-                      child: const Text('Reset'),
+                      child: Text(s.resetButton),
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: 20),
+
+              // Divider "Atau"
+              Row(
+                children: [
+                  const Expanded(child: Divider(color: AppColors.border)),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Text(s.orDivider, style: AppTextStyles.caption),
+                  ),
+                  const Expanded(child: Divider(color: AppColors.border)),
+                ],
+              ),
+              const SizedBox(height: 20),
+
+              // Login dengan Google
+              OutlinedButton.icon(
+                onPressed: () {
+                  // TODO: integrasi login Google
+                },
+                icon: Image.asset(
+                  'assets/icons/social/google.png',
+                  width: 20,
+                  height: 20,
+                ),
+                label: Text(s.loginWithGoogle),
+              ),
+              const SizedBox(height: 12),
+
+              // Login dengan Facebook
+              OutlinedButton.icon(
+                onPressed: () {
+                  // TODO: integrasi login Facebook
+                },
+                icon: Image.asset(
+                  'assets/icons/social/facebook.png',
+                  width: 20,
+                  height: 20,
+                ),
+                label: Text(s.loginWithFacebook),
               ),
               const SizedBox(height: 20),
 
@@ -201,9 +244,9 @@ class _LoginPageState extends State<LoginPage> {
                   text: TextSpan(
                     style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
                     children: [
-                      const TextSpan(text: 'Tidak punya akun? '),
+                      TextSpan(text: s.noAccountPrompt),
                       TextSpan(
-                        text: 'buat disini',
+                        text: s.createAccountLink,
                         style: const TextStyle(
                           color: Colors.blue,
                           decoration: TextDecoration.underline,

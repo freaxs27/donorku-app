@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import '../../core/locale/app_strings.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/header_halaman.dart';
 import '../../services/core/api_config.dart';
@@ -85,41 +84,68 @@ class _PendaftaranPageState extends State<PendaftaranPage> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return SafeArea(
       child: Column(
         children: [
           Expanded(
-            child: _sedangMemuat
-                ? const Center(child: CircularProgressIndicator())
-                : SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(AppDimens.paddingL, 12, AppDimens.paddingL, 8),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        HeaderHalaman(
-                          judul: 'Aturan dan Tips Donor',
-                          trailing: GestureDetector(
-                            onTap: () => _bukaEdukasi(context),
-                            child: Image.asset('assets/icons/edukasi/lamp.png', width: 24, height: 24),
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-
-                        if (_aturanList.isNotEmpty) ...[
-                          _KartuAturan(
-                            judul: 'Aturan sebelum donor darah :',
-                            items: _aturanList,
-                          ),
-                          const SizedBox(height: 12),
-                        ],
-
-                        if (_tipsList.isNotEmpty)
-                          _KartuAturan(
-                            judul: 'Tips sebelum donor darah :',
-                            items: _tipsList,
-                          ),
-                      ],
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(AppDimens.paddingL, 12, AppDimens.paddingL, 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  HeaderHalaman(
+                    judul: s.donorRulesTitle,
+                    trailing: GestureDetector(
+                      onTap: () => _bukaEdukasi(context),
+                      child: Image.asset('assets/icons/edukasi/lamp.png', width: 24, height: 24),
                     ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  _KartuAturan(
+                    judul: s.rulesBeforeDonation,
+                    items: [
+                      _ItemAturan(s.ruleAge, [s.ruleAgeDetail]),
+                      _ItemAturan(s.ruleWeight, [s.ruleWeightDetail]),
+                      _ItemAturan(s.rulePhysical, [
+                        s.rulePhysicalDetail1,
+                        s.rulePhysicalDetail2,
+                      ]),
+                      _ItemAturan(s.ruleBloodPressure, [
+                        s.ruleBpSystolic,
+                        s.ruleBpDiastolic,
+                      ]),
+                      _ItemAturan(s.ruleHemoglobin, [
+                        s.ruleHbMale,
+                        s.ruleHbFemale,
+                      ]),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+
+                  _KartuAturan(
+                    judul: s.tipsBeforeDonation,
+                    items: [
+                      _ItemAturan(s.tipSleep, [
+                        s.tipSleepDetail1,
+                        s.tipSleepDetail2,
+                      ]),
+                      _ItemAturan(s.tipEat, [
+                        s.tipEatDetail1,
+                        s.tipEatDetail2,
+                        s.tipEatDetail3,
+                      ]),
+                      _ItemAturan(s.tipHydration, [
+                        s.tipHydrationDetail1,
+                        s.tipHydrationDetail2,
+                      ]),
+                      _ItemAturan(s.tipSmoking, [
+                        s.tipSmokingDetail1,
+                        s.tipSmokingDetail2,
+                      ]),
+                      _ItemAturan(s.tipHealthy, [s.tipHealthyDetail]),
+                    ],
                   ),
           ),
 
@@ -128,7 +154,7 @@ class _PendaftaranPageState extends State<PendaftaranPage> {
             padding: const EdgeInsets.fromLTRB(AppDimens.paddingL, 0, AppDimens.paddingL, 16),
             child: ElevatedButton(
               onPressed: () => _mulaiDonor(context),
-              child: const Text('Donor Sekarang'),
+              child: Text(s.donateNowButton),
             ),
           ),
         ],
@@ -205,6 +231,7 @@ class _ModalEdukasiDonor extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Dialog(
       backgroundColor: AppColors.background,
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 60),
@@ -220,8 +247,8 @@ class _ModalEdukasiDonor extends StatelessWidget {
                 children: [
                   Image.asset('assets/icons/edukasi/book.png', width: 22, height: 22),
                   const SizedBox(width: 8),
-                  const Expanded(
-                    child: Text('Edukasi & Manfaat Donor', style: AppTextStyles.subheading),
+                  Expanded(
+                    child: Text(s.educationModalTitle, style: AppTextStyles.subheading),
                   ),
                   GestureDetector(
                     onTap: () => Navigator.of(context).pop(),
@@ -232,44 +259,44 @@ class _ModalEdukasiDonor extends StatelessWidget {
               const SizedBox(height: 16),
 
               _KartuEdukasi(
-                judul: 'Edukasi Donor Darah',
-                items: const [
+                judul: s.educationSectionTitle,
+                items: [
                   _ItemEdukasi(
                     iconAsset: 'assets/icons/edukasi/shield.png',
-                    judul: 'Donor Darah Aman',
-                    deskripsi: 'Proses menggunakan alat steril sekali pakai dan diawasi tenaga medis.',
+                    judul: s.eduSafeTitle,
+                    deskripsi: s.eduSafeDesc,
                   ),
                   _ItemEdukasi(
                     iconAsset: 'assets/icons/edukasi/syarat.png',
-                    judul: 'Memenuhi Syarat Kesehatan',
-                    deskripsi: 'Sebelum donor, pendonor akan diperiksa kondisi umum untuk memastikan tubuh dalam keadaan sehat.',
+                    judul: s.eduHealthTitle,
+                    deskripsi: s.eduHealthDesc,
                   ),
                   _ItemEdukasi(
                     iconAsset: 'assets/icons/edukasi/rutin.png',
-                    judul: 'Donor Dilakukan Secara Rutin',
-                    deskripsi: 'Donor darah bisa dilakukan setiap 2-3 bulan sekali untuk menjaga ketersediaan stok darah bagi yang membutuhkan.',
+                    judul: s.eduRoutineTitle,
+                    deskripsi: s.eduRoutineDesc,
                   ),
                 ],
               ),
               const SizedBox(height: 16),
 
               _KartuEdukasi(
-                judul: 'Manfaat Donor Darah',
-                items: const [
+                judul: s.benefitsSectionTitle,
+                items: [
                   _ItemEdukasi(
                     iconAsset: 'assets/icons/edukasi/jantung.png',
-                    judul: 'Menjaga Kesehatan Jantung',
-                    deskripsi: 'Donor darah membantu menjaga kekentalan darah tetap stabil',
+                    judul: s.benefitHeartTitle,
+                    deskripsi: s.benefitHeartDesc,
                   ),
                   _ItemEdukasi(
                     iconAsset: 'assets/icons/edukasi/deteksi.png',
-                    judul: 'Deteksi Penyakit Serius',
-                    deskripsi: 'Sebelum donor, dilakukan pemeriksaan kesehatan, sehingga dapat mengetahui kondisi kesehatan sejak awal.',
+                    judul: s.benefitDetectionTitle,
+                    deskripsi: s.benefitDetectionDesc,
                   ),
                   _ItemEdukasi(
                     iconAsset: 'assets/icons/edukasi/produksi.png',
-                    judul: 'Meningkatkan Produksi Sel Darah Baru',
-                    deskripsi: 'Setelah donor, tubuh akan merangsang pembentukan sel darah merah baru untuk menggantikan yang hilang',
+                    judul: s.benefitProductionTitle,
+                    deskripsi: s.benefitProductionDesc,
                   ),
                 ],
               ),

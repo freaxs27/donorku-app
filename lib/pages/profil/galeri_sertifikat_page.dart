@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:path_provider/path_provider.dart';
+import '../../core/locale/app_strings.dart';
 import '../../theme/app_theme.dart';
 import '../../model/data_sertifikat.dart';
 import '../../services/sertifikat/sertifikat_service.dart';
@@ -43,7 +44,7 @@ class _GaleriSertifikatPageState extends State<GaleriSertifikatPage> {
     } on ApiException catch (e) {
       setState(() => _pesanError = e.message);
     } catch (_) {
-      setState(() => _pesanError = 'Gagal memuat sertifikat, coba lagi.');
+      setState(() => _pesanError = AppStrings.of(context).loadCertificateFailed);
     } finally {
       if (mounted) setState(() => _sedangMemuat = false);
     }
@@ -62,7 +63,7 @@ class _GaleriSertifikatPageState extends State<GaleriSertifikatPage> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Gagal membuat PDF')));
+            SnackBar(content: Text(AppStrings.of(context).pdfCreateFailed)));
       }
     } finally {
       if (mounted) setState(() => _sedangUnduh = false);
@@ -82,13 +83,13 @@ class _GaleriSertifikatPageState extends State<GaleriSertifikatPage> {
       await SharePlus.instance.share(
         ShareParams(
           files: [XFile(file.path, mimeType: 'application/pdf')],
-          subject: 'Sertifikat Donor Darah - ${data.namaPendonor}',
+          subject: AppStrings.of(context).sharePdfSubject(data.namaPendonor),
         ),
       );
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Gagal membagikan PDF')));
+            SnackBar(content: Text(AppStrings.of(context).pdfShareFailed)));
       }
     } finally {
       if (mounted) setState(() => _sedangBagi = false);
@@ -97,6 +98,7 @@ class _GaleriSertifikatPageState extends State<GaleriSertifikatPage> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Scaffold(
       body: SafeArea(
         child: _sedangMemuat
@@ -106,12 +108,12 @@ class _GaleriSertifikatPageState extends State<GaleriSertifikatPage> {
                     child: Column(mainAxisSize: MainAxisSize.min, children: [
                       Text(_pesanError!, textAlign: TextAlign.center),
                       const SizedBox(height: 8),
-                      TextButton(onPressed: _muatData, child: const Text('Coba lagi')),
+                      TextButton(onPressed: _muatData, child: Text(s.tryAgain)),
                     ]))
                 : _daftar.isEmpty
-                    ? const Center(
-                        child: Text('Belum ada sertifikat donor',
-                            style: TextStyle(color: AppColors.textSecondary)))
+                    ? Center(
+                        child: Text(s.noCertificates,
+                            style: const TextStyle(color: AppColors.textSecondary)))
                     : SingleChildScrollView(
                         padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
                         child: Column(
@@ -124,10 +126,10 @@ class _GaleriSertifikatPageState extends State<GaleriSertifikatPage> {
                                 child: const Icon(Icons.arrow_back,
                                     size: 28, color: AppColors.textPrimary),
                               ),
-                              const Expanded(
-                                child: Text('Galeri Sertifikat',
+                              Expanded(
+                                child: Text(s.certificateGalleryTitle,
                                     textAlign: TextAlign.center,
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
                                         color: AppColors.textPrimary)),
@@ -144,12 +146,13 @@ class _GaleriSertifikatPageState extends State<GaleriSertifikatPage> {
                                 sedangBagi: _sedangBagi,
                                 onUnduh: _unduhPdf,
                                 onBagi: _bagikanPdf,
+                                s: s,
                               ),
                             ),
                             const SizedBox(height: 24),
 
-                            const Text('Riwayat Sertifikat',
-                                style: TextStyle(
+                            Text(s.certificateHistoryTitle,
+                                style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
                                     color: AppColors.textPrimary)),
@@ -174,6 +177,7 @@ class _GaleriSertifikatPageState extends State<GaleriSertifikatPage> {
                                   onTap: () =>
                                       setState(() => _indeksTerpilih = i),
                                   data: _daftar[i],
+                                  s: s,
                                 );
                               },
                             ),
@@ -191,8 +195,9 @@ class _GaleriSertifikatPageState extends State<GaleriSertifikatPage> {
 // ---------------------------------------------------------------------------
 class _PreviewSertifikat extends StatelessWidget {
   final DataSertifikat data;
+  final AppStrings s;
 
-  const _PreviewSertifikat({required this.data});
+  const _PreviewSertifikat({required this.data, required this.s});
 
   @override
   Widget build(BuildContext context) {
@@ -202,23 +207,22 @@ class _PreviewSertifikat extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Header
           Column(children: [
-            const Text('SERTIFIKAT APRESIASI',
-                style: TextStyle(
+            Text(s.certAppreciationHeader,
+                style: const TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF8B0000),
                     height: 1.2)),
-            const Text('DONOR DARAH',
-                style: TextStyle(
+            Text(s.certBloodDonorHeader,
+                style: const TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF8B0000),
                     height: 1.2)),
             const SizedBox(height: 4),
-            const Text('Diberikan dengan bangga kepada:',
-                style: TextStyle(
+            Text(s.certPresentedTo,
+                style: const TextStyle(
                     fontSize: 7,
                     fontStyle: FontStyle.italic,
                     color: Colors.black54)),
@@ -229,38 +233,34 @@ class _PreviewSertifikat extends StatelessWidget {
                 textAlign: TextAlign.center),
           ]),
 
-          // Info row
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _infoKolom('Tanggal', data.tanggalFormat),
-              _infoKolom('Lokasi', data.lokasiDonor),
-              _infoKolom('Volume', '${data.darahTerkumpul} ml'),
-              _infoKolom('Gol. Darah', data.golonganDarah),
+              _infoKolom(s.dateLabel, data.tanggalFormat),
+              _infoKolom(s.locationLabel, data.lokasiDonor),
+              _infoKolom(s.volumeLabel, '${data.darahTerkumpul} ml'),
+              _infoKolom(s.bloodTypeShortDot, data.golonganDarah),
             ],
           ),
 
-          // Kalimat apresiasi
-          const Text(
-            'Terima kasih atas kontribusi sukarela Anda yang\ntak ternilai dalam menyelamatkan nyawa sesama.',
+          Text(
+            s.certThankYouMessage,
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
                 fontSize: 6,
                 fontStyle: FontStyle.italic,
                 color: Colors.black54),
           ),
 
-          // TTD
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _ttdKolom('dr. Siti Aminah, MARS', 'Kepala UDD PMI'),
-              _ttdKolom('H. Iwan Setiawan', 'Ketua PMI'),
+              _ttdKolom('dr. Siti Aminah, MARS', s.signatoryRoleUdd),
+              _ttdKolom('H. Iwan Setiawan', s.signatoryRoleChair),
             ],
           ),
 
-          // Nomor sertifikat
-          Text('No. Sertifikat : ${data.nomorSertifikat}',
+          Text(s.certificateNumber(data.nomorSertifikat),
               style: const TextStyle(
                   fontSize: 6,
                   fontWeight: FontWeight.bold,
@@ -355,6 +355,7 @@ class _KartuSertifikatUtama extends StatelessWidget {
   final bool sedangBagi;
   final VoidCallback onUnduh;
   final VoidCallback onBagi;
+  final AppStrings s;
 
   const _KartuSertifikatUtama({
     required this.data,
@@ -362,6 +363,7 @@ class _KartuSertifikatUtama extends StatelessWidget {
     required this.sedangBagi,
     required this.onUnduh,
     required this.onBagi,
+    required this.s,
   });
 
   @override
@@ -395,7 +397,7 @@ class _KartuSertifikatUtama extends StatelessWidget {
                         color: const Color(0xFF8B0000), width: 2),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: _PreviewSertifikat(data: data),
+                  child: _PreviewSertifikat(data: data, s: s),
                 ),
               ),
             ),
@@ -403,7 +405,7 @@ class _KartuSertifikatUtama extends StatelessWidget {
 
             Center(
               child: Text(
-                'Donor Darah Sukarela - ${data.lokasiDonor}',
+                s.voluntaryDonorTitle(data.lokasiDonor),
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                     fontSize: 14,
@@ -432,7 +434,7 @@ class _KartuSertifikatUtama extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _TombolAksi(
-                  label: 'Unduh PDF',
+                  label: s.downloadPdfButton,
                   icon: Icons.download_outlined,
                   warnaBackground: AppColors.primary,
                   warnaTeks: Colors.white,
@@ -441,7 +443,7 @@ class _KartuSertifikatUtama extends StatelessWidget {
                   onTap: onUnduh,
                 ),
                 _TombolAksi(
-                  label: 'Bagikan',
+                  label: s.shareButton,
                   icon: Icons.share_outlined,
                   warnaBackground: AppColors.surface,
                   warnaTeks: AppColors.primary,
@@ -467,12 +469,14 @@ class _ItemGaleri extends StatelessWidget {
   final bool terpilih;
   final VoidCallback onTap;
   final DataSertifikat data;
+  final AppStrings s;
 
   const _ItemGaleri({
     required this.label,
     required this.terpilih,
     required this.onTap,
     required this.data,
+    required this.s,
   });
 
   @override
@@ -506,7 +510,7 @@ class _ItemGaleri extends StatelessWidget {
                 child: SizedBox(
                   width: 300,
                   height: 170,
-                  child: _PreviewSertifikat(data: data),
+                  child: _PreviewSertifikat(data: data, s: s),
                 ),
               ),
             ),
@@ -596,6 +600,7 @@ class _TombolAksi extends StatelessWidget {
 // PDF generator
 // ---------------------------------------------------------------------------
 Future<Uint8List> _buildPdfBytes(DataSertifikat data) async {
+  final s = AppStrings.current;
   final pdf = pw.Document();
   final fontRegular = await PdfGoogleFonts.poppinsRegular();
   final fontBold = await PdfGoogleFonts.poppinsBold();
@@ -617,18 +622,18 @@ Future<Uint8List> _buildPdfBytes(DataSertifikat data) async {
           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
           children: [
             pw.Column(children: [
-              pw.Text('SERTIFIKAT APRESIASI',
+              pw.Text(s.certAppreciationHeader,
                   style: pw.TextStyle(
                       font: fontBold,
                       fontSize: 22,
                       color: PdfColor.fromHex('#8B0000'))),
-              pw.Text('DONOR DARAH',
+              pw.Text(s.certBloodDonorHeader,
                   style: pw.TextStyle(
                       font: fontBold,
                       fontSize: 22,
                       color: PdfColor.fromHex('#8B0000'))),
               pw.SizedBox(height: 12),
-              pw.Text('Diberikan dengan bangga kepada:',
+              pw.Text(s.certPresentedTo,
                   style: pw.TextStyle(font: fontItalic, fontSize: 11)),
               pw.SizedBox(height: 8),
               pw.Text(data.namaPendonor,
@@ -637,28 +642,28 @@ Future<Uint8List> _buildPdfBytes(DataSertifikat data) async {
             pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.center,
               children: [
-                _pdfInfoItem(fontBold, fontRegular, 'Tanggal', data.tanggalFormat),
+                _pdfInfoItem(fontBold, fontRegular, s.dateLabel, data.tanggalFormat),
                 pw.SizedBox(width: 24),
-                _pdfInfoItem(fontBold, fontRegular, 'Lokasi', data.lokasiDonor),
+                _pdfInfoItem(fontBold, fontRegular, s.locationLabel, data.lokasiDonor),
                 pw.SizedBox(width: 24),
-                _pdfInfoItem(fontBold, fontRegular, 'Volume', '${data.darahTerkumpul} ml'),
+                _pdfInfoItem(fontBold, fontRegular, s.volumeLabel, '${data.darahTerkumpul} ml'),
                 pw.SizedBox(width: 24),
-                _pdfInfoItem(fontBold, fontRegular, 'Gol. Darah', data.golonganDarah),
+                _pdfInfoItem(fontBold, fontRegular, s.bloodTypeShortDot, data.golonganDarah),
               ],
             ),
             pw.Text(
-              'Terima kasih atas kontribusi sukarela Anda yang\ntak ternilai dalam menyelamatkan nyawa sesama.',
+              s.certThankYouMessage,
               textAlign: pw.TextAlign.center,
               style: pw.TextStyle(font: fontItalic, fontSize: 10),
             ),
             pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
               children: [
-                _pdfTtd(fontBold, fontRegular, 'dr. Siti Aminah, MARS', 'Kepala UDD PMI'),
-                _pdfTtd(fontBold, fontRegular, 'H. Iwan Setiawan', 'Ketua PMI'),
+                _pdfTtd(fontBold, fontRegular, 'dr. Siti Aminah, MARS', s.signatoryRoleUdd),
+                _pdfTtd(fontBold, fontRegular, 'H. Iwan Setiawan', s.signatoryRoleChair),
               ],
             ),
-            pw.Text('No. Sertifikat : ${data.nomorSertifikat}',
+            pw.Text(s.certificateNumber(data.nomorSertifikat),
                 style: pw.TextStyle(font: fontBold, fontSize: 9)),
           ],
         ),

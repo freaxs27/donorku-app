@@ -1,3 +1,5 @@
+import '../core/locale/app_strings.dart';
+
 class RiwayatResponse {
   final int totalDonasi;
   final int totalMlDarah;
@@ -126,20 +128,11 @@ class ItemRiwayat {
     );
   }
 
-  String get tanggalFormat {
-    const bulan = [
-      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
-    ];
-    return '${tanggalDonor.day} ${bulan[tanggalDonor.month - 1]} ${tanggalDonor.year}';
-  }
+  String get tanggalFormat =>
+      AppStrings.current.formatTanggal(tanggalDonor);
 
-  String get statusLabel => switch (statusDonor) {
-        'berhasil' => 'Selesai',
-        'gagal'    => 'Gagal',
-        'ditunda'  => 'Ditunda',
-        _          => statusDonor,
-      };
+  String get statusLabel =>
+      AppStrings.current.labelStatusRiwayat(statusDonor);
 
   String get volumeLabel =>
       darahTerkumpul != null ? '${darahTerkumpul}ml' : '-';

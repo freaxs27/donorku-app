@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/locale/app_strings.dart';
 
 class MainLayoutScope extends InheritedWidget {
   final void Function(int index) pindahTab;
@@ -46,12 +47,12 @@ class _MainLayoutState extends State<MainLayout> {
   late int _currentIndex;
   late final List<GlobalKey<NavigatorState>> _navigatorKeys;
 
-  static const List<_NavItemData> _navItems = [
-    _NavItemData(assetPath: 'assets/icons/nav/beranda.png', label: 'Beranda'),
-    _NavItemData(assetPath: 'assets/icons/nav/lokasi.png', label: 'Lokasi'),
-    _NavItemData(assetPath: 'assets/icons/nav/pendaftaran.png', label: 'Daftar'),
-    _NavItemData(assetPath: 'assets/icons/nav/riwayat.png', label: 'Riwayat'),
-    _NavItemData(assetPath: 'assets/icons/nav/profil.png', label: 'Profil'),
+  static const List<String> _navAssetPaths = [
+    'assets/icons/nav/beranda.png',
+    'assets/icons/nav/lokasi.png',
+    'assets/icons/nav/pendaftaran.png',
+    'assets/icons/nav/riwayat.png',
+    'assets/icons/nav/profil.png',
   ];
 
   @override
@@ -70,9 +71,18 @@ class _MainLayoutState extends State<MainLayout> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
+    final navLabels = [
+      s.navBeranda,
+      s.navLokasi,
+      s.navDaftar,
+      s.navRiwayat,
+      s.navProfil,
+    ];
+
     assert(
-      widget.pages.length == _navItems.length,
-      'Jumlah halaman (${widget.pages.length}) harus sama dengan jumlah item nav (${_navItems.length})',
+      widget.pages.length == _navAssetPaths.length,
+      'Jumlah halaman (${widget.pages.length}) harus sama dengan jumlah item nav (${_navAssetPaths.length})',
     );
 
     return MainLayoutScope(
@@ -89,12 +99,12 @@ class _MainLayoutState extends State<MainLayout> {
             );
           }),
         ),
-        bottomNavigationBar: _buildBottomNav(context),
+        bottomNavigationBar: _buildBottomNav(context, navLabels),
       ),
     );
   }
 
-  Widget _buildBottomNav(BuildContext context) {
+  Widget _buildBottomNav(BuildContext context, List<String> navLabels) {
     return SafeArea(
       child: Container(
         decoration: BoxDecoration(
@@ -111,11 +121,11 @@ class _MainLayoutState extends State<MainLayout> {
           padding: const EdgeInsets.symmetric(vertical: 16),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: List.generate(_navItems.length, (index) {
-              final item = _navItems[index];
+            children: List.generate(_navAssetPaths.length, (index) {
               final bool isActive = index == _currentIndex;
               return _NavItem(
-                data: item,
+                assetPath: _navAssetPaths[index],
+                label: navLabels[index],
                 isActive: isActive,
                 onTap: () => _onTapNav(index),
               );
@@ -127,23 +137,15 @@ class _MainLayoutState extends State<MainLayout> {
   }
 }
 
-class _NavItemData {
+class _NavItem extends StatelessWidget {
   final String assetPath;
   final String label;
-
-  const _NavItemData({
-    required this.assetPath,
-    required this.label,
-  });
-}
-
-class _NavItem extends StatelessWidget {
-  final _NavItemData data;
   final bool isActive;
   final VoidCallback onTap;
 
   const _NavItem({
-    required this.data,
+    required this.assetPath,
+    required this.label,
     required this.isActive,
     required this.onTap,
   });
@@ -173,14 +175,14 @@ class _NavItem extends StatelessWidget {
                 BlendMode.srcIn,
               ),
               child: Image.asset(
-                data.assetPath,
+                assetPath,
                 width: 22,
                 height: 22,
               ),
             ),
             const SizedBox(height: 4),
             Text(
-              data.label,
+              label,
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,

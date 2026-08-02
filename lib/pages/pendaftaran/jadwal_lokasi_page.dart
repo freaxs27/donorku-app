@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
+import '../../core/locale/app_strings.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/header_halaman.dart';
 import '../../model/jadwal_ringkas.dart';
@@ -27,10 +28,6 @@ class _JadwalLokasiPageState extends State<JadwalLokasiPage> {
   bool _sedangMemuat = false;
   String? _pesanError;
 
-  static const List<String> _namaBulan = [
-    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
-  ];
   static const List<String> _namaHari = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   @override
@@ -65,7 +62,7 @@ class _JadwalLokasiPageState extends State<JadwalLokasiPage> {
       setState(() {
         _daftarJadwal = [];
         _sedangMemuat = false;
-        _pesanError = 'Terjadi kesalahan tak terduga, coba lagi.';
+        _pesanError = AppStrings.of(context).unexpectedErrorDot;
       });
     }
   }
@@ -77,12 +74,13 @@ class _JadwalLokasiPageState extends State<JadwalLokasiPage> {
   }
 
   Future<void> _pilihBulanTahun() async {
+    final s = AppStrings.of(context);
     final hasil = await showDialog<DateTime>(
       context: context,
       builder: (context) => _ModalPilihBulanTahun(
         tahunAwal: _bulanDitampilkan.year,
         bulanAwal: _bulanDitampilkan.month,
-        namaBulan: _namaBulan,
+        namaBulan: s.namaBulan,
       ),
     );
     if (hasil != null) {
@@ -105,7 +103,7 @@ class _JadwalLokasiPageState extends State<JadwalLokasiPage> {
         jadwal.lokasi.latitude ?? 0,
         jadwal.lokasi.longitude ?? 0,
       ),
-      statusDonor: 'Open Donor Darah',
+      statusDonor: AppStrings.of(context).openDonorStatus,
       jamMulai: jadwal.jamMulaiFormat,
       jamSelesai: jadwal.jamSelesaiFormat,
       sisaKuota: jadwal.sisaKuota,
@@ -131,6 +129,7 @@ class _JadwalLokasiPageState extends State<JadwalLokasiPage> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -142,7 +141,7 @@ class _JadwalLokasiPageState extends State<JadwalLokasiPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   HeaderHalaman(
-                    judul: 'Jadwal & Lokasi Donor',
+                    judul: s.scheduleLocationTitle,
                     leadingIcon: Icons.arrow_back,
                     onTapLeading: () => Navigator.of(context).pop(),
                   ),
@@ -158,7 +157,7 @@ class _JadwalLokasiPageState extends State<JadwalLokasiPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Silahkan pilih tanggal donor', style: AppTextStyles.caption),
+                        Text(s.selectDatePrompt, style: AppTextStyles.caption),
                         const SizedBox(height: 12),
                         Container(
                           width: double.infinity,
@@ -170,7 +169,7 @@ class _JadwalLokasiPageState extends State<JadwalLokasiPage> {
                           child: _KalenderDonor(
                             bulanDitampilkan: _bulanDitampilkan,
                             tanggalDipilih: _tanggalDipilih,
-                            namaBulan: _namaBulan,
+                            namaBulan: s.namaBulan,
                             namaHari: _namaHari,
                             onGantiBulan: _gantiBulan,
                             onTapNamaBulan: _pilihBulanTahun,
@@ -192,7 +191,7 @@ class _JadwalLokasiPageState extends State<JadwalLokasiPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Silahkan pilih jadwal donor :', style: AppTextStyles.caption),
+                        Text(s.selectSchedulePrompt, style: AppTextStyles.caption),
                         const SizedBox(height: 12),
                         SizedBox(
                           height: 340,
@@ -210,7 +209,7 @@ class _JadwalLokasiPageState extends State<JadwalLokasiPage> {
             padding: const EdgeInsets.fromLTRB(AppDimens.paddingL, 0, AppDimens.paddingL, 16),
             child: ElevatedButton(
               onPressed: _jadwalDipilih == null ? null : _selanjutnya,
-              child: const Text('Selanjutnya'),
+              child: Text(s.nextButton),
             ),
           ),
         ],
@@ -220,6 +219,7 @@ class _JadwalLokasiPageState extends State<JadwalLokasiPage> {
   }
 
   Widget _buildDaftarJadwal() {
+    final s = AppStrings.of(context);
     if (_sedangMemuat) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -231,16 +231,16 @@ class _JadwalLokasiPageState extends State<JadwalLokasiPage> {
           children: [
             Text(_pesanError!, style: AppTextStyles.caption, textAlign: TextAlign.center),
             const SizedBox(height: 8),
-            TextButton(onPressed: _muatJadwal, child: const Text('Coba lagi')),
+            TextButton(onPressed: _muatJadwal, child: Text(s.tryAgain)),
           ],
         ),
       );
     }
 
     if (_daftarJadwal.isEmpty) {
-      return const Center(
+      return Center(
         child: Text(
-          'Tidak ada jadwal donor tersedia untuk tanggal ini',
+          s.noScheduleForDate,
           style: AppTextStyles.caption,
           textAlign: TextAlign.center,
         ),
@@ -394,6 +394,7 @@ class _KartuPilihJadwal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return GestureDetector(
       onTap: onTapKartu,
       child: Container(
@@ -474,7 +475,7 @@ class _KartuPilihJadwal extends StatelessWidget {
                           Text('${data.jamMulaiFormat} - ${data.jamSelesaiFormat}',
                               style: AppTextStyles.caption),
                           const SizedBox(width: 8),
-                          Text('Sisa ${data.sisaKuota} kuota', style: AppTextStyles.caption),
+                          Text(s.quotaRemaining(data.sisaKuota), style: AppTextStyles.caption),
                         ],
                       ),
                     ],
@@ -491,7 +492,7 @@ class _KartuPilihJadwal extends StatelessWidget {
                   shape: const StadiumBorder(),
                 ),
                 onPressed: onCekDetail,
-                child: const Text('Cek Detail Lokasi', style: TextStyle(fontSize: 13)),
+                child: Text(s.viewLocationDetails, style: const TextStyle(fontSize: 13)),
               ),
             ),
           ],
