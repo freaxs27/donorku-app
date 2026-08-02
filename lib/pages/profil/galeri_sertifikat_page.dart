@@ -11,7 +11,7 @@ import '../../model/data_sertifikat.dart';
 import '../../services/sertifikat/sertifikat_service.dart';
 import '../../services/core/api_exception.dart';
 
-// (P-003).
+/// Halaman Galeri Sertifikat (P-003).
 class GaleriSertifikatPage extends StatefulWidget {
   const GaleriSertifikatPage({super.key});
 
@@ -117,6 +117,7 @@ class _GaleriSertifikatPageState extends State<GaleriSertifikatPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
+                            // Header
                             Row(children: [
                               GestureDetector(
                                 onTap: () => Navigator.of(context).pop(),
@@ -135,6 +136,7 @@ class _GaleriSertifikatPageState extends State<GaleriSertifikatPage> {
                             ]),
                             const SizedBox(height: 16),
 
+                            // Kartu utama
                             Center(
                               child: _KartuSertifikatUtama(
                                 data: _sertifikatTerpilih!,
@@ -183,6 +185,10 @@ class _GaleriSertifikatPageState extends State<GaleriSertifikatPage> {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Preview sertifikat — dipakai di kartu utama & grid
+// Identik dengan tampilan PDF (termasuk TTD placeholder)
+// ---------------------------------------------------------------------------
 class _PreviewSertifikat extends StatelessWidget {
   final DataSertifikat data;
 
@@ -234,6 +240,7 @@ class _PreviewSertifikat extends StatelessWidget {
             ],
           ),
 
+          // Kalimat apresiasi
           const Text(
             'Terima kasih atas kontribusi sukarela Anda yang\ntak ternilai dalam menyelamatkan nyawa sesama.',
             textAlign: TextAlign.center,
@@ -243,6 +250,7 @@ class _PreviewSertifikat extends StatelessWidget {
                 color: Colors.black54),
           ),
 
+          // TTD
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -278,6 +286,7 @@ class _PreviewSertifikat extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
+        // TTD random (kurva sederhana pakai CustomPaint)
         SizedBox(
           width: 60,
           height: 20,
@@ -297,6 +306,7 @@ class _PreviewSertifikat extends StatelessWidget {
   }
 }
 
+/// CustomPainter untuk TTD random berdasarkan seed (hashCode nama)
 class _TtdPainter extends CustomPainter {
   final int seed;
   const _TtdPainter(this.seed);
@@ -309,6 +319,7 @@ class _TtdPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
+    // Generate kurva pseudo-random berdasarkan seed
     final r = seed.abs() % 1000;
     final path = Path();
     path.moveTo(4, size.height * 0.7);
@@ -335,6 +346,9 @@ class _TtdPainter extends CustomPainter {
   bool shouldRepaint(_TtdPainter old) => old.seed != seed;
 }
 
+// ---------------------------------------------------------------------------
+// Kartu sertifikat utama
+// ---------------------------------------------------------------------------
 class _KartuSertifikatUtama extends StatelessWidget {
   final DataSertifikat data;
   final bool sedangUnduh;
@@ -369,6 +383,7 @@ class _KartuSertifikatUtama extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            // Preview sertifikat
             Center(
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(8),
@@ -444,6 +459,9 @@ class _KartuSertifikatUtama extends StatelessWidget {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Item grid galeri
+// ---------------------------------------------------------------------------
 class _ItemGaleri extends StatelessWidget {
   final String label;
   final bool terpilih;
@@ -507,6 +525,9 @@ class _ItemGaleri extends StatelessWidget {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Tombol aksi
+// ---------------------------------------------------------------------------
 class _TombolAksi extends StatelessWidget {
   final String label;
   final IconData icon;
@@ -571,6 +592,9 @@ class _TombolAksi extends StatelessWidget {
   }
 }
 
+// ---------------------------------------------------------------------------
+// PDF generator
+// ---------------------------------------------------------------------------
 Future<Uint8List> _buildPdfBytes(DataSertifikat data) async {
   final pdf = pw.Document();
   final fontRegular = await PdfGoogleFonts.poppinsRegular();
@@ -652,8 +676,39 @@ pw.Widget _pdfInfoItem(pw.Font bold, pw.Font regular, String label, String nilai
 }
 
 pw.Widget _pdfTtd(pw.Font bold, pw.Font regular, String nama, String jabatan) {
+  // Seed berdasarkan nama supaya TTD konsisten per orang
+  final seed = nama.hashCode.abs() % 1000;
+
   return pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.center, children: [
-    pw.SizedBox(height: 36),
+    // TTD sebagai custom painter di PDF
+    pw.SizedBox(
+      width: 120,
+      height: 36,
+      child: pw.CustomPaint(
+        painter: (canvas, size) {
+          canvas.setStrokeColor(PdfColors.black);
+          canvas.setLineWidth(1.0);
+          canvas.moveTo(4, size.y * 0.3);
+          canvas.curveTo(
+            size.x * (0.2 + (seed % 10) * 0.02),
+            size.y * (0.8 - (seed % 7) * 0.05),
+            size.x * (0.5 + (seed % 8) * 0.02),
+            size.y * (0.2 + (seed % 6) * 0.05),
+            size.x * 0.7,
+            size.y * 0.5,
+          );
+          canvas.curveTo(
+            size.x * (0.75 + (seed % 5) * 0.02),
+            size.y * (0.7 - (seed % 9) * 0.04),
+            size.x * 0.85,
+            size.y * 0.4,
+            size.x - 4,
+            size.y * 0.6,
+          );
+          canvas.strokePath();
+        },
+      ),
+    ),
     pw.Container(height: 1, width: 120, color: PdfColors.black),
     pw.SizedBox(height: 4),
     pw.Text(nama, style: pw.TextStyle(font: bold, fontSize: 9)),
