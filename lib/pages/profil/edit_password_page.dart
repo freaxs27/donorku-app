@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/locale/app_strings.dart';
 import '../../theme/app_theme.dart';
-import '../../core/validators/app_validators.dart';
 import '../../services/profil/profil_service.dart';
 import '../../services/core/api_exception.dart';
 
@@ -13,15 +12,16 @@ class EditPasswordPage extends StatefulWidget {
 }
 
 class _EditPasswordPageState extends State<EditPasswordPage> {
-  final _passSkrCtrl = TextEditingController();
-  final _passBrCtrl = TextEditingController();
+  final _passSkrCtrl    = TextEditingController();
+  final _passBrCtrl     = TextEditingController();
   final _konfirmasiCtrl = TextEditingController();
-  final ProfilService _service = ProfilService();
 
-  bool _lihatSkr = false;
-  bool _lihatBr = false;
+  bool _lihatSkr    = false;
+  bool _lihatBr     = false;
   bool _lihatKonfir = false;
   bool _sedangSimpan = false;
+
+  final ProfilService _service = ProfilService();
 
   @override
   void dispose() {
@@ -31,26 +31,156 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
     super.dispose();
   }
 
-  Future<void> _simpan() async {
-    final passSkr = _passSkrCtrl.text;
-    final passBr = _passBrCtrl.text;
-    final konfirm = _konfirmasiCtrl.text;
+  Future<void> _tampilkanPopupPasswordSalah() async {
+    await showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: AppColors.background,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Stack(
+                alignment: Alignment.topRight,
+                children: [
+                  Column(
+                    children: [
+                      Container(
+                        width: 72, height: 72,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: const Color(0xFFFFD8D8),
+                          border: Border.all(color: AppColors.primary, width: 2),
+                        ),
+                        child: const Icon(Icons.close,
+                            size: 36, color: AppColors.primary),
+                      ),
+                      const SizedBox(height: 16),
+                      const Text('Password Salah',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 10),
+                      const Text(
+                        'Anda salah memasukan password lama atau konfirmasi password',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            fontSize: 13, color: AppColors.textSecondary),
+                      ),
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                            minimumSize: const Size.fromHeight(44),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                            elevation: 0,
+                          ),
+                          child: const Text('Coba Lagi',
+                              style:
+                                  TextStyle(fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                    ],
+                  ),
+                  GestureDetector(
+                    onTap: () => Navigator.of(context).pop(),
+                    child: const Icon(Icons.close,
+                        size: 20, color: AppColors.textSecondary),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
-    // Validasi di sisi Flutter dulu sebelum kirim ke server
+  Future<void> _simpan() async {
+    final passSkr  = _passSkrCtrl.text.trim();
+    final passBr   = _passBrCtrl.text.trim();
+    final konfirm  = _konfirmasiCtrl.text.trim();
+
     if (passSkr.isEmpty || passBr.isEmpty || konfirm.isEmpty) {
       _tampilkanPesan(AppStrings.of(context).allFieldsRequired);
       return;
     }
-    final errPass = AppValidators.password(passBr);
-    if (errPass != null) {
-      _tampilkanPesan(errPass);
+    if (passBr.length < 8) {
+      _tampilkanPesan('Password baru minimal 8 karakter');
       return;
     }
-    final errKonfirm = AppValidators.passwordConfirm(passBr, konfirm);
-    if (errKonfirm != null) {
-      _tampilkanPesan(errKonfirm);
+    if (passBr != konfirm) {
+      await _tampilkanPopupPasswordSalah();
       return;
     }
+
+    // Popup konfirmasi (Frame 11)
+    final konfirmasi = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: AppColors.background,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset('assets/images/icon-tanya.png', width: 72, height: 72),
+              const SizedBox(height: 16),
+              const Text('Konfirmasi Ubah',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 10),
+              const Text('Apakah anda yakin ingin mengubah password saat ini?',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.textPrimary,
+                        side: const BorderSide(color: AppColors.border),
+                        minimumSize: const Size.fromHeight(44),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: const Text('Batal'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.of(context).pop(true),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size.fromHeight(44),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                        elevation: 0,
+                      ),
+                      child: const Text('Ubah',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (konfirmasi != true || !mounted) return;
 
     setState(() => _sedangSimpan = true);
     try {
@@ -59,12 +189,20 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
         passwordBaru: passBr,
         konfirmasiPasswordBaru: konfirm,
       );
+
       if (!mounted) return;
       _tampilkanPesan(AppStrings.of(context).passwordChanged);
       Navigator.of(context).pop();
     } on ApiException catch (e) {
-      if (e.statusCode == 401) return;
-      if (mounted) _tampilkanPesan(e.message);
+      if (!mounted) return;
+      final isPasswordSalah = e.statusCode == 400 &&
+          (e.message.toLowerCase().contains('password') ||
+           e.message.toLowerCase().contains('sesuai'));
+      if (isPasswordSalah) {
+        await _tampilkanPopupPasswordSalah();
+      } else {
+        _tampilkanPesan(e.message);
+      }
     } catch (_) {
       if (mounted) _tampilkanPesan(AppStrings.of(context).changePasswordFailed);
     } finally {
@@ -87,6 +225,7 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // Header
               Row(
                 children: [
                   GestureDetector(
@@ -113,6 +252,7 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
                     color: AppColors.textPrimary),
               ),
               const SizedBox(height: 16),
+
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -159,13 +299,12 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
                 ),
               ),
               const SizedBox(height: 24),
+
               Row(
                 children: [
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: _sedangSimpan
-                          ? null
-                          : () => Navigator.of(context).pop(),
+                      onPressed: () => Navigator.of(context).pop(),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.textPrimary,
                         side: const BorderSide(color: AppColors.border),
@@ -189,9 +328,7 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
                         elevation: 0,
                       ),
                       child: _sedangSimpan
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
+                          ? const SizedBox(width: 18, height: 18,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
                                 color: Colors.white,

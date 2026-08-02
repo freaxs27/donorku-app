@@ -184,6 +184,8 @@ class ApiClient {
     }
   }
 
+  
+
   static Future<Map<String, dynamic>> _prosesRespons(
     http.Response response,
   ) async {
@@ -210,5 +212,20 @@ class ApiClient {
       body['message'] as String? ?? 'Terjadi kesalahan',
       statusCode: response.statusCode,
     );
+  }
+
+  static Future<Map<String, dynamic>> deleteWithBody(
+      String path, Map<String, dynamic> data) async {
+    final uri = Uri.parse('${ApiConfig.baseUrl}$path');
+    late final http.Response response;
+    try {
+      response = await http
+          .delete(uri,
+              headers: await _headerJson(), body: jsonEncode(data))
+          .timeout(const Duration(seconds: 20));
+    } catch (e) {
+      throw ApiException('Tidak bisa terhubung ke server. Cek koneksi internet Anda.');
+    }
+    return _prosesRespons(response);
   }
 }

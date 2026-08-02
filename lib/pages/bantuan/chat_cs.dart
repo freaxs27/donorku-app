@@ -1,11 +1,12 @@
+// ignore_for_file: unnecessary_underscores
+
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
-import '../../core/locale/app_strings.dart';
+import '../../services/cs/cs_service.dart';
+import '../../services/core/api_exception.dart';
 
-// (CA-001).
 class ChatCsPage extends StatefulWidget {
   final String? pesanAwal;
-
   const ChatCsPage({super.key, this.pesanAwal});
 
   @override
@@ -13,23 +14,76 @@ class ChatCsPage extends StatefulWidget {
 }
 
 class _ChatCsPageState extends State<ChatCsPage> {
-  late final TextEditingController _pesanController =
-      TextEditingController(text: widget.pesanAwal ?? '');
+  final TextEditingController _pesanController = TextEditingController();
+  final CsService _csService = CsService();
+  final FocusNode _focusNode = FocusNode();
+
+  String? _topikTerpilih;
+  bool _sedangKirim = false;
+
+  static const List<String> _daftarTopik = [
+    'Masalah Donor',
+    'Masalah Akun',
+    'Informasi Lokasi',
+    'Lainnya',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.pesanAwal != null) {
+      _pesanController.text = widget.pesanAwal!;
+    }
+  }
 
   @override
   void dispose() {
     _pesanController.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
-  void _pilihTopik(String topik) {
-    debugPrint('Topik dipilih: $topik');
-  }
+  Future<void> _kirimPesan() async {
+    final topik = _topikTerpilih;
+    final pesan = _pesanController.text.trim();
 
-  void _kirimPesan() {
-    if (_pesanController.text.trim().isEmpty) return;
-    debugPrint('Pesan dikirim: ${_pesanController.text}');
-    _pesanController.clear();
+    if (topik == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Pilih topik terlebih dahulu')),
+      );
+      return;
+    }
+    if (pesan.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Tulis pesan terlebih dahulu')),
+      );
+      return;
+    }
+
+    setState(() => _sedangKirim = true);
+    try {
+      await _csService.kirimPesan(topik: topik, pesan: pesan);
+      if (mounted) {
+        _pesanController.clear();
+        setState(() => _topikTerpilih = null);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Pesan berhasil dikirim ke support')),
+        );
+      }
+    } on ApiException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(e.message)));
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Gagal mengirim pesan, coba lagi.')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _sedangKirim = false);
+    }
   }
 
   @override
@@ -47,21 +101,52 @@ class _ChatCsPageState extends State<ChatCsPage> {
           children: [
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: AppDimens.paddingL),
+                padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 16),
 
-                    // Foto staf dukungan (Revan)
+                    // Header
+                    Row(
+                      children: [
+                        GestureDetector(
+                          onTap: () => Navigator.of(context).pop(),
+                          child: const Icon(Icons.arrow_back,
+                              size: 24, color: AppColors.textPrimary),
+                        ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Hubungi Staf Dukungan',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Foto Revan
                     Center(
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(AppDimens.radiusM),
+                        borderRadius: BorderRadius.circular(16),
                         child: Image.asset(
                           'assets/images/cs.png',
-                          width: 187,
-                          height: 198,
+                          width: 180,
+                          height: 180,
                           fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Container(
+                            width: 180,
+                            height: 180,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFD8D8),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: const Icon(Icons.person,
+                                size: 80, color: AppColors.primary),
+                          ),
                         ),
                       ),
                     ),
@@ -90,11 +175,65 @@ class _ChatCsPageState extends State<ChatCsPage> {
                         ],
                       ),
                     ),
+                    const SizedBox(height: 24),
+
+                    // Tombol topik — lebar mengikuti teks terpanjang
+                    ..._daftarTopik.map((topik) {
+                      final terpilih = _topikTerpilih == topik;
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: GestureDetector(
+                          onTap: () =>
+                              setState(() => _topikTerpilih = topik),
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(
+                              minWidth: 160, // lebar minimum
+                            ),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 14),
+                              decoration: BoxDecoration(
+                                color: terpilih
+                                    ? AppColors.primary
+                                    : AppColors.surface,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: terpilih
+                                      ? AppColors.primary
+                                      : Colors.black87,
+                                  width: 1.2,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.06),
+                                    blurRadius: 4,
+                                    offset: Offset.zero,
+                                  ),
+                                ],
+                              ),
+                              child: Text(
+                                topik,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: terpilih
+                                      ? Colors.white
+                                      : AppColors.textPrimary,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+
+                    const SizedBox(height: 8),
                   ],
                 ),
               ),
             ),
 
+            // Field chat di bawah — sejajar dengan topik, outline hitam
             Padding(
               padding: const EdgeInsets.fromLTRB(AppDimens.paddingL, 8, AppDimens.paddingL, 16),
               child: Container(
@@ -122,8 +261,21 @@ class _ChatCsPageState extends State<ChatCsPage> {
                       onTap: _kirimPesan,
                       child: const Icon(Icons.send, color: AppColors.textSecondary),
                     ),
-                  ],
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Colors.black87, width: 1.2),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Colors.black87, width: 1.2),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Colors.black87, width: 1.5),
+                  ),
                 ),
+                onSubmitted: (_) => _kirimPesan(),
               ),
             ),
           ],

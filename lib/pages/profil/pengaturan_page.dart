@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
+import '../../services/core/api_client.dart';
+import '../../services/core/api_exception.dart';
 import '../../services/auth/session_service.dart';
 import '../../core/locale/app_bahasa.dart';
 import '../../core/locale/app_strings.dart';
@@ -476,7 +478,7 @@ class _KartuAkun extends StatelessWidget {
           ),
           const Divider(height: 1, color: AppColors.border, indent: 56),
           InkWell(
-            onTap: () {},
+            onTap: onHapusAkun,
             borderRadius: const BorderRadius.only(
               bottomLeft: Radius.circular(20),
               bottomRight: Radius.circular(20),

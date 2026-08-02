@@ -2,13 +2,69 @@ import 'package:flutter/material.dart';
 import '../../core/locale/app_strings.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/header_halaman.dart';
+import '../../services/core/api_config.dart';
 import 'jadwal_lokasi_page.dart';
 
 /// Halaman Pendaftaran / Daftar - Step 1 (D-001).
 /// Aturan & Tips Donor, dengan tombol lampu di kanan atas yang membuka
 /// modal Edukasi & Manfaat Donor (DE-001).
-class PendaftaranPage extends StatelessWidget {
+class PendaftaranPage extends StatefulWidget {
   const PendaftaranPage({super.key});
+
+  @override
+  State<PendaftaranPage> createState() => _PendaftaranPageState();
+}
+
+class _PendaftaranPageState extends State<PendaftaranPage> {
+  List<_ItemAturan> _aturanList = [];
+  List<_ItemAturan> _tipsList = [];
+  bool _sedangMemuat = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _muatData();
+  }
+
+  Future<void> _muatData() async {
+    try {
+      final uri = Uri.parse('${ApiConfig.baseUrl}/edukasi');
+      final response = await http.get(uri).timeout(const Duration(seconds: 20));
+      if (response.statusCode == 200) {
+        final list = jsonDecode(response.body) as List<dynamic>;
+        final aturan = <_ItemAturan>[];
+        final tips = <_ItemAturan>[];
+        for (final item in list) {
+          final judul = item['judul'] as String? ?? '';
+          final isi = item['isi'] as String? ?? '';
+          final kategori = (item['kategori'] as String? ?? '').toLowerCase();
+          // Split isi per baris untuk dijadikan sub-item bullet
+          final subItem = isi
+              .split('\n')
+              .map((e) => e.trim())
+              .where((e) => e.isNotEmpty)
+              .toList();
+          final itemAturan = _ItemAturan(judul, subItem);
+          if (kategori == 'aturan') {
+            aturan.add(itemAturan);
+          } else {
+            tips.add(itemAturan);
+          }
+        }
+        if (mounted) {
+          setState(() {
+            _aturanList = aturan;
+            _tipsList = tips;
+            _sedangMemuat = false;
+          });
+        }
+      } else {
+        if (mounted) setState(() => _sedangMemuat = false);
+      }
+    } catch (_) {
+      if (mounted) setState(() => _sedangMemuat = false);
+    }
+  }
 
   void _bukaEdukasi(BuildContext context) {
     showDialog(
@@ -91,9 +147,6 @@ class PendaftaranPage extends StatelessWidget {
                       _ItemAturan(s.tipHealthy, [s.tipHealthyDetail]),
                     ],
                   ),
-                ],
-              ),
-            ),
           ),
 
           // Tombol fixed di bawah layar, selalu kelihatan tanpa perlu scroll.
