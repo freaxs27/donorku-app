@@ -558,7 +558,14 @@ class _KartuLokasiItem extends StatelessWidget {
                         children: [
                           const Icon(Icons.location_on_outlined, size: 14, color: AppColors.textSecondary),
                           const SizedBox(width: 2),
-                          Text(data.alamat, style: AppTextStyles.caption),
+                          Flexible(
+                            child: Text(
+                              data.alamat,
+                              style: AppTextStyles.caption,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 2),

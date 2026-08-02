@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
-import '../auth/login_page.dart';
 import 'galeri_sertifikat_page.dart';
 import 'pengaturan_page.dart';
+import 'edit_profil_page.dart';
+import 'edit_password_page.dart';
 
 /// Halaman Profil (P-001) — sesuai desain Figma.
 class ProfilPage extends StatelessWidget {
@@ -19,13 +20,6 @@ class ProfilPage extends StatelessWidget {
     totalMlDarah: 829,
   );
 
-  void _keluar(BuildContext context) {
-    Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (context) => const LoginPage()),
-      (route) => false,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -34,7 +28,7 @@ class ProfilPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // ---- Header: judul "Profil" + ikon settings ----
+            // Header
             Row(
               children: [
                 const SizedBox(width: 28),
@@ -51,67 +45,147 @@ class ProfilPage extends StatelessWidget {
                 SizedBox(
                   width: 28,
                   child: GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => const PengaturanPage(),
-                        ),
-                      );
-                    },
-                    child: const Icon(
-                      Icons.settings_outlined,
-                      size: 26,
-                      color: AppColors.textPrimary,
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                          builder: (context) => const PengaturanPage()),
                     ),
+                    child: const Icon(Icons.settings_outlined,
+                        size: 26, color: AppColors.textPrimary),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 24),
 
-            // ---- Foto profil ----
+            // Foto profil — persegi rounded sesuai Figma
             Center(child: _FotoProfil()),
-            const SizedBox(height: 28),
+            const SizedBox(height: 20),
 
-            // ---- Kartu statistik (Total Donasi / ml Darah) ----
-            _KartuStatistik(data: _dataProfil),
-            const SizedBox(height: 24),
-
-            // ---- Section: Informasi Pribadi ----
-            const _JudulSection(text: 'Informasi Pribadi'),
-            const SizedBox(height: 8),
-            _KartuInfoPribadi(data: _dataProfil),
-            const SizedBox(height: 24),
-
-            // ---- Section: Lainnya ----
-            const _JudulSection(text: 'Lainnya'),
-            const SizedBox(height: 8),
-
-            // ---- Section: Sertifikasi Pendonor ----
-            const Text(
-              'Sertifikasi Pendonor',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.normal,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            _KartuSertifikasi(),
-            const SizedBox(height: 24),
-
-            // ---- Tombol keluar ----
-            TextButton(
-              onPressed: () => _keluar(context),
-              child: const Text(
-                'Keluar',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.primary,
+            // Statistik — sama dengan edit profil, IntrinsicWidth
+            Center(
+              child: IntrinsicWidth(
+                child: Container(
+                  height: 55,
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.25),
+                        blurRadius: 4,
+                        offset: Offset.zero,
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text('${_dataProfil.totalDonasi}',
+                                style: const TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.primary)),
+                            const SizedBox(height: 2),
+                            const Text('Total Donasi',
+                                style: TextStyle(
+                                    fontSize: 10,
+                                    color: AppColors.textPrimary)),
+                          ],
+                        ),
+                      ),
+                      Container(width: 1, height: 34, color: AppColors.border),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text('${_dataProfil.totalMlDarah}',
+                                style: const TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.primary)),
+                            const SizedBox(height: 2),
+                            const Text('ml Darah',
+                                style: TextStyle(
+                                    fontSize: 10,
+                                    color: AppColors.textPrimary)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
+            const SizedBox(height: 20),
+
+            // Informasi Pribadi
+            const _JudulSection(text: 'Informasi Pribadi'),
+            const SizedBox(height: 8),
+            _KartuInfoPribadi(data: _dataProfil),
+            const SizedBox(height: 12),
+
+            // Tombol Edit Profil + Edit Password — 2 grid sesuai Figma
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                          builder: (context) => const EditProfilPage()),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.textPrimary,
+                      side: const BorderSide(color: AppColors.border),
+                      minimumSize: const Size.fromHeight(44),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: const Text('Edit Profil',
+                        style: TextStyle(fontSize: 14)),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                          builder: (context) => const EditPasswordPage()),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size.fromHeight(44),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                      elevation: 0,
+                    ),
+                    child: const Text('Edit Password',
+                        style: TextStyle(fontSize: 14)),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // Lainnya
+            const _JudulSection(text: 'Lainnya'),
+            const SizedBox(height: 8),
+            const Text(
+              'Sertifikasi Pendonor',
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.normal,
+                  color: AppColors.textPrimary),
+            ),
+            const SizedBox(height: 8),
+            _KartuSertifikasi(),
+            // Tidak ada tombol Keluar di sini — sudah ada di Pengaturan
           ],
         ),
       ),
@@ -161,38 +235,33 @@ BoxDecoration get _dekorasiKartu => BoxDecoration(
       ],
     );
 
-/// Foto profil bulat dengan border putih & drop shadow (159×159 di Figma).
+/// Foto profil — persegi rounded dengan border (sesuai Figma P-001),
+/// bukan full circle seperti versi lama.
 class _FotoProfil extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 159,
-      height: 159,
+      width: 120,
+      height: 120,
       decoration: BoxDecoration(
-        shape: BoxShape.circle,
+        borderRadius: BorderRadius.circular(16),
         color: const Color(0xFFFFD8D8),
-        border: Border.all(color: Colors.white, width: 4),
+        border: Border.all(color: Colors.white, width: 3),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.25),
-            blurRadius: 4,
-            offset: Offset.zero,
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: const Icon(
-        Icons.person,
-        size: 64,
-        color: AppColors.primary,
-      ),
+      child: const Icon(Icons.person, size: 56, color: AppColors.primary),
     );
   }
 }
 
-/// Judul section (Poppins Bold 16 di Figma).
 class _JudulSection extends StatelessWidget {
   final String text;
-
   const _JudulSection({required this.text});
 
   @override
@@ -200,18 +269,16 @@ class _JudulSection extends StatelessWidget {
     return Text(
       text,
       style: const TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.bold,
-        color: AppColors.textPrimary,
-      ),
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          color: AppColors.textPrimary),
     );
   }
 }
 
-/// Kartu statistik: "Total Donasi" | "ml Darah" dipisah garis vertikal.
+// ignore: unused_element
 class _KartuStatistik extends StatelessWidget {
   final _DataProfil data;
-
   const _KartuStatistik({required this.data});
 
   @override
@@ -233,16 +300,12 @@ class _KartuStatistik extends StatelessWidget {
         children: [
           Expanded(
             child: _KolomStat(
-              nilai: '${data.totalDonasi}',
-              label: 'Total Donasi',
-            ),
+                nilai: '${data.totalDonasi}', label: 'Total Donasi'),
           ),
           Container(width: 1, height: 34, color: AppColors.border),
           Expanded(
             child: _KolomStat(
-              nilai: '${data.totalMlDarah}',
-              label: 'ml Darah',
-            ),
+                nilai: '${data.totalMlDarah}', label: 'ml Darah'),
           ),
         ],
       ),
@@ -253,7 +316,6 @@ class _KartuStatistik extends StatelessWidget {
 class _KolomStat extends StatelessWidget {
   final String nilai;
   final String label;
-
   const _KolomStat({required this.nilai, required this.label});
 
   @override
@@ -261,32 +323,24 @@ class _KolomStat extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(
-          nilai,
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: AppColors.primary,
-          ),
-        ),
+        Text(nilai,
+            style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: AppColors.primary)),
         const SizedBox(height: 2),
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.normal,
-            color: AppColors.textPrimary,
-          ),
-        ),
+        Text(label,
+            style: const TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.normal,
+                color: AppColors.textPrimary)),
       ],
     );
   }
 }
 
-/// Kartu Informasi Pribadi: label di kiri, nilai di kanan.
 class _KartuInfoPribadi extends StatelessWidget {
   final _DataProfil data;
-
   const _KartuInfoPribadi({required this.data});
 
   @override
@@ -322,7 +376,6 @@ class _KartuInfoPribadi extends StatelessWidget {
 class _BarisInfo extends StatelessWidget {
   final String label;
   final String nilai;
-
   const _BarisInfo({required this.label, required this.nilai});
 
   @override
@@ -332,83 +385,55 @@ class _BarisInfo extends StatelessWidget {
       children: [
         Expanded(
           flex: 2,
-          child: Text(
-            label,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.normal,
-              color: AppColors.textPrimary,
-            ),
-          ),
+          child: Text(label,
+              style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.normal,
+                  color: AppColors.textPrimary)),
         ),
         Expanded(
           flex: 3,
-          child: Text(
-            ': $nilai',
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.normal,
-              color: AppColors.textPrimary,
-            ),
-          ),
+          child: Text(': $nilai',
+              style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.normal,
+                  color: AppColors.textPrimary)),
         ),
       ],
     );
   }
 }
 
-/// Kartu Sertifikasi Pendonor: ikon kamera + tombol "Buka Galeri".
 class _KartuSertifikasi extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 182,
-      padding: const EdgeInsets.symmetric(vertical: 20),
+      height: 150,
       decoration: _dekorasiKartu,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: const BoxDecoration(
-              color: AppColors.surface,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.camera_alt_outlined,
-              size: 28,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 16),
+          const Icon(Icons.camera_alt_outlined,
+              size: 32, color: AppColors.textPrimary),
+          const SizedBox(height: 12),
           SizedBox(
             width: 112,
-            height: 27,
+            height: 32,
             child: ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const GaleriSertifikatPage(),
-                  ),
-                );
-              },
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                    builder: (context) => const GaleriSertifikatPage()),
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
                 padding: EdgeInsets.zero,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
+                    borderRadius: BorderRadius.circular(10)),
                 elevation: 0,
               ),
-              child: const Text(
-                'Buka Galeri',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.normal,
-                ),
-              ),
+              child: const Text('Buka Galeri',
+                  style: TextStyle(fontSize: 14)),
             ),
           ),
         ],
