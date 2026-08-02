@@ -14,12 +14,18 @@ class ApiClient {
   /// Cegah double-redirect kalau beberapa request gagal 401 bersamaan.
   static bool _sedangRedirect401 = false;
 
-  static Future<Map<String, String>> _headerDenganToken() async {
-    final token = await SessionService.ambilToken();
-    return {
-      'Content-Type': 'application/json',
-      if (token != null) 'Authorization': 'Bearer $token',
-    };
+  static const Duration _timeoutDefault = Duration(seconds: 20);
+  static const Duration _timeoutMultipart = Duration(seconds: 30);
+
+  static Future<Map<String, String>> _headerJson({bool withAuth = true}) async {
+    final headers = <String, String>{'Content-Type': 'application/json'};
+    if (withAuth) {
+      final token = await SessionService.ambilToken();
+      if (token != null && token.isNotEmpty) {
+        headers['Authorization'] = 'Bearer $token';
+      }
+    }
+    return headers;
   }
 
   /// Hapus sesi + panggil [onUnauthorized] (sekali saja per gelombang 401).
@@ -28,7 +34,6 @@ class ApiClient {
       _sedangRedirect401 = true;
       await SessionService.hapusSesi();
       onUnauthorized?.call();
-      // Izinkan redirect lagi setelah user sempat login ulang.
       Future<void>.delayed(const Duration(seconds: 2), () {
         _sedangRedirect401 = false;
       });
@@ -36,46 +41,51 @@ class ApiClient {
     throw ApiException(pesan, statusCode: 401);
   }
 
+  static Future<http.Response> _kirim(
+    Future<http.Response> Function() request, {
+    Duration timeout = _timeoutDefault,
+  }) async {
+    try {
+      return await request().timeout(timeout);
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw ApiException(
+        'Tidak bisa terhubung ke server. Cek koneksi internet Anda.',
+      );
+    }
+  }
+
   static Future<Map<String, dynamic>> get(String path) async {
     final uri = Uri.parse('${ApiConfig.baseUrl}$path');
-    late final http.Response response;
-    try {
-      response = await http
-          .get(uri, headers: await _headerDenganToken())
-          .timeout(const Duration(seconds: 20));
-    } catch (e) {
-      throw ApiException('Tidak bisa terhubung ke server. Cek koneksi internet Anda.');
-    }
+    final response = await _kirim(
+      () async => http.get(uri, headers: await _headerJson()),
+    );
     return _prosesRespons(response);
   }
 
   static Future<List<dynamic>> getList(String path) async {
     final uri = Uri.parse('${ApiConfig.baseUrl}$path');
-    late final http.Response response;
-    try {
-      response = await http
-          .get(uri, headers: await _headerDenganToken())
-          .timeout(const Duration(seconds: 20));
-    } catch (e) {
-      throw ApiException('Tidak bisa terhubung ke server. Cek koneksi internet Anda.');
-    }
+    final response = await _kirim(
+      () async => http.get(uri, headers: await _headerJson()),
+    );
 
     if (response.statusCode >= 200 && response.statusCode < 300) {
       try {
         return jsonDecode(response.body) as List<dynamic>;
       } catch (_) {
-        throw ApiException('Respons server tidak valid.', statusCode: response.statusCode);
+        throw ApiException(
+          'Respons server tidak valid.',
+          statusCode: response.statusCode,
+        );
       }
     }
 
-    Map<String, dynamic> body = {};
-    try {
-      body = jsonDecode(response.body) as Map<String, dynamic>;
-    } catch (_) {}
+    final body = _cobaDecodeMap(response.body);
 
     if (response.statusCode == 401) {
       await _tangani401(
-        body['message'] as String? ?? 'Sesi login sudah habis, silakan login ulang',
+        body['message'] as String? ??
+            'Sesi login sudah habis, silakan login ulang',
       );
     }
 
@@ -85,51 +95,104 @@ class ApiClient {
     );
   }
 
-  static Future<Map<String, dynamic>> postJson(String path, Map<String, dynamic> data) async {
+  static Future<Map<String, dynamic>> postJson(
+    String path,
+    Map<String, dynamic> data, {
+    bool withAuth = true,
+  }) async {
     final uri = Uri.parse('${ApiConfig.baseUrl}$path');
-    late final http.Response response;
-    try {
-      response = await http
-          .post(uri, headers: await _headerDenganToken(), body: jsonEncode(data))
-          .timeout(const Duration(seconds: 20));
-    } catch (e) {
-      throw ApiException('Tidak bisa terhubung ke server. Cek koneksi internet Anda.');
-    }
+    final response = await _kirim(
+      () async => http.post(
+        uri,
+        headers: await _headerJson(withAuth: withAuth),
+        body: jsonEncode(data),
+      ),
+    );
     return _prosesRespons(response);
   }
 
-  static Future<Map<String, dynamic>> put(String path, Map<String, dynamic> data) async {
+  static Future<Map<String, dynamic>> put(
+    String path,
+    Map<String, dynamic> data,
+  ) async {
     final uri = Uri.parse('${ApiConfig.baseUrl}$path');
-    late final http.Response response;
-    try {
-      response = await http
-          .put(uri, headers: await _headerDenganToken(), body: jsonEncode(data))
-          .timeout(const Duration(seconds: 20));
-    } catch (e) {
-      throw ApiException('Tidak bisa terhubung ke server. Cek koneksi internet Anda.');
-    }
+    final response = await _kirim(
+      () async => http.put(
+        uri,
+        headers: await _headerJson(),
+        body: jsonEncode(data),
+      ),
+    );
     return _prosesRespons(response);
   }
 
-  static Future<Map<String, dynamic>> patch(String path, Map<String, dynamic> data) async {
+  static Future<Map<String, dynamic>> patch(
+    String path,
+    Map<String, dynamic> data,
+  ) async {
     final uri = Uri.parse('${ApiConfig.baseUrl}$path');
-    late final http.Response response;
-    try {
-      response = await http
-          .patch(uri, headers: await _headerDenganToken(), body: jsonEncode(data))
-          .timeout(const Duration(seconds: 20));
-    } catch (e) {
-      throw ApiException('Tidak bisa terhubung ke server. Cek koneksi internet Anda.');
-    }
+    final response = await _kirim(
+      () async => http.patch(
+        uri,
+        headers: await _headerJson(),
+        body: jsonEncode(data),
+      ),
+    );
     return _prosesRespons(response);
   }
 
-  static Future<Map<String, dynamic>> _prosesRespons(http.Response response) async {
-    Map<String, dynamic> body;
+  /// Multipart POST terpusat (register, upload foto, dll).
+  /// [withAuth] false untuk endpoint publik seperti register.
+  static Future<Map<String, dynamic>> postMultipart(
+    String path, {
+    Map<String, String> fields = const {},
+    List<http.MultipartFile> files = const [],
+    bool withAuth = true,
+  }) async {
+    final uri = Uri.parse('${ApiConfig.baseUrl}$path');
+    final request = http.MultipartRequest('POST', uri);
+
+    if (withAuth) {
+      final token = await SessionService.ambilToken();
+      if (token != null && token.isNotEmpty) {
+        request.headers['Authorization'] = 'Bearer $token';
+      }
+    }
+
+    request.fields.addAll(fields);
+    request.files.addAll(files);
+
+    late final http.Response response;
     try {
-      body = jsonDecode(response.body) as Map<String, dynamic>;
+      final streamed = await request.send().timeout(_timeoutMultipart);
+      response = await http.Response.fromStream(streamed);
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw ApiException(
+        'Tidak bisa terhubung ke server. Cek koneksi internet Anda.',
+      );
+    }
+
+    return _prosesRespons(response);
+  }
+
+  static Map<String, dynamic> _cobaDecodeMap(String raw) {
+    try {
+      return jsonDecode(raw) as Map<String, dynamic>;
     } catch (_) {
-      throw ApiException('Respons server tidak valid.', statusCode: response.statusCode);
+      return {};
+    }
+  }
+
+  static Future<Map<String, dynamic>> _prosesRespons(
+    http.Response response,
+  ) async {
+    final body = _cobaDecodeMap(response.body);
+    if (body.isEmpty && response.body.isNotEmpty) {
+      throw ApiException(
+        'Respons server tidak valid.',
+        statusCode: response.statusCode,
+      );
     }
 
     if (response.statusCode >= 200 && response.statusCode < 300) {
@@ -138,7 +201,8 @@ class ApiClient {
 
     if (response.statusCode == 401) {
       await _tangani401(
-        body['message'] as String? ?? 'Sesi login sudah habis, silakan login ulang',
+        body['message'] as String? ??
+            'Sesi login sudah habis, silakan login ulang',
       );
     }
 

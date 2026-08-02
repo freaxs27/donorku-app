@@ -55,6 +55,8 @@ class _LokasiPageState extends State<LokasiPage> with TickerProviderStateMixin {
   @override
   void dispose() {
     _searchController.dispose();
+    _mapController.dispose();
+    _sheetController.dispose();
     super.dispose();
   }
 
@@ -107,6 +109,7 @@ class _LokasiPageState extends State<LokasiPage> with TickerProviderStateMixin {
     });
 
     controller.addListener(() {
+      if (!mounted) return;
       _mapController.moveAndRotate(
         tweenPosisi.evaluate(animasi),
         tweenZoom.evaluate(animasi),
@@ -118,7 +121,7 @@ class _LokasiPageState extends State<LokasiPage> with TickerProviderStateMixin {
       }
     });
 
-    controller.forward().whenComplete(() => controller.dispose());
+    controller.forward().whenComplete(controller.dispose);
 
     _sheetController.animateTo(
       _sheetSatuKartu,

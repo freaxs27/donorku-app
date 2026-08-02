@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import '../../../theme/app_theme.dart';
+import '../../../core/validators/app_validators.dart';
 import '../../../model/data_register.dart';
 import 'foto_ktp_page.dart';
 
@@ -50,12 +51,14 @@ class _RegisterPageState extends State<RegisterPage> {
       _tampilkanPesan('Format email tidak valid');
       return;
     }
-    if (password.length < 6) {
-      _tampilkanPesan('Password minimal 6 karakter');
+    final errPass = AppValidators.password(password);
+    if (errPass != null) {
+      _tampilkanPesan(errPass);
       return;
     }
-    if (password != konfirmasi) {
-      _tampilkanPesan('Konfirmasi password tidak sama');
+    final errKonfirm = AppValidators.passwordConfirm(password, konfirmasi);
+    if (errKonfirm != null) {
+      _tampilkanPesan(errKonfirm);
       return;
     }
 

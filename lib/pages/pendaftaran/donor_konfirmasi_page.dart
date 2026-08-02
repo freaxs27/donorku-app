@@ -3,15 +3,14 @@ import '../../theme/app_theme.dart';
 import '../../widgets/header_halaman.dart';
 import '../../model/jadwal_ringkas.dart';
 import '../../services/pendaftaran/pendaftaran_service.dart';
+import '../../services/profil/profil_service.dart';
 import '../../services/core/api_exception.dart';
 import '../../services/auth/session_service.dart';
 import 'donor_sukses_page.dart';
 
 /// Halaman Donor - Konfirmasi (D-004).
-/// Merangkum data dari step sebelumnya: profil (nama/email dari sesi
-/// login, golongan darah masih dummy karena Profil belum diintegrasi),
-/// jadwal (tanggal, jam, lokasi) dari D-002, dan jawaban kuisioner dari
-/// D-003.
+/// Merangkum data dari step sebelumnya: profil (nama/email/golongan darah),
+/// jadwal (tanggal, jam, lokasi) dari D-002, dan jawaban kuisioner dari D-003.
 ///
 /// Di sinilah pendaftaran BENERAN dikirim ke backend saat "Daftar Donor"
 /// ditekan (POST /pendaftaran, dengan id_jadwal + jawaban kuisioner).
@@ -40,9 +39,11 @@ class _DonorKonfirmasiPageState extends State<DonorKonfirmasiPage> {
   ];
 
   final PendaftaranService _pendaftaranService = PendaftaranService();
+  final ProfilService _profilService = ProfilService();
 
   String _nama = '-';
   String _email = '-';
+  String _golonganDarah = '-';
   bool _sedangKirim = false;
 
   @override
@@ -54,10 +55,23 @@ class _DonorKonfirmasiPageState extends State<DonorKonfirmasiPage> {
   Future<void> _muatDataSesi() async {
     final nama = await SessionService.ambilNama();
     final email = await SessionService.ambilEmail();
+
+    String golongan = '-';
+    try {
+      final profil = await _profilService.ambilProfil();
+      golongan = profil.golonganDarah;
+    } on ApiException catch (e) {
+      if (e.statusCode == 401) return;
+      // Fallback ke sesi saja kalau profil gagal dimuat.
+    } catch (_) {
+      // Biarkan golongan '-' — konfirmasi tetap bisa dilanjutkan.
+    }
+
     if (!mounted) return;
     setState(() {
       _nama = nama ?? '-';
       _email = email ?? '-';
+      _golonganDarah = golongan;
     });
   }
 
@@ -133,7 +147,7 @@ class _DonorKonfirmasiPageState extends State<DonorKonfirmasiPage> {
                           const SizedBox(height: 10),
                           _baris('Nama', _nama),
                           _baris('Email', _email),
-                          _baris('Golongan Darah', 'O+'), // TODO: ganti data asli saat Profil sudah diintegrasi
+                          _baris('Golongan Darah', _golonganDarah),
                           const SizedBox(height: 10),
                           const Divider(color: AppColors.primary, thickness: 0.8),
                           const SizedBox(height: 10),

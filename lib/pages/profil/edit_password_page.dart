@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
+import '../../core/validators/app_validators.dart';
+import '../../services/profil/profil_service.dart';
+import '../../services/core/api_exception.dart';
 
 /// Halaman Edit Password (P-001 varian Edit Password) — sesuai desain Figma.
 class EditPasswordPage extends StatefulWidget {
@@ -10,13 +13,15 @@ class EditPasswordPage extends StatefulWidget {
 }
 
 class _EditPasswordPageState extends State<EditPasswordPage> {
-  final _passSkrCtrl  = TextEditingController();
-  final _passBrCtrl   = TextEditingController();
+  final _passSkrCtrl = TextEditingController();
+  final _passBrCtrl = TextEditingController();
   final _konfirmasiCtrl = TextEditingController();
+  final ProfilService _service = ProfilService();
 
-  bool _lihatSkr    = false;
-  bool _lihatBr     = false;
+  bool _lihatSkr = false;
+  bool _lihatBr = false;
   bool _lihatKonfir = false;
+  bool _sedangSimpan = false;
 
   @override
   void dispose() {
@@ -26,27 +31,44 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
     super.dispose();
   }
 
-  void _simpan() {
-    final passSkr   = _passSkrCtrl.text.trim();
-    final passBr    = _passBrCtrl.text.trim();
-    final konfirm   = _konfirmasiCtrl.text.trim();
+  Future<void> _simpan() async {
+    final passSkr = _passSkrCtrl.text;
+    final passBr = _passBrCtrl.text;
+    final konfirm = _konfirmasiCtrl.text;
 
     if (passSkr.isEmpty || passBr.isEmpty || konfirm.isEmpty) {
       _tampilkanPesan('Semua field wajib diisi');
       return;
     }
-    if (passBr != konfirm) {
-      _tampilkanPesan('Password baru tidak cocok');
+    final errPass = AppValidators.password(passBr);
+    if (errPass != null) {
+      _tampilkanPesan(errPass);
       return;
     }
-    if (passBr.length < 8) {
-      _tampilkanPesan('Password minimal 8 karakter');
+    final errKonfirm = AppValidators.passwordConfirm(passBr, konfirm);
+    if (errKonfirm != null) {
+      _tampilkanPesan(errKonfirm);
       return;
     }
 
-    // TODO: sambungkan ke API PUT /profil/password
-    _tampilkanPesan('Password berhasil diubah');
-    Navigator.of(context).pop();
+    setState(() => _sedangSimpan = true);
+    try {
+      await _service.gantiPassword(
+        passwordSekarang: passSkr,
+        passwordBaru: passBr,
+        konfirmasiPasswordBaru: konfirm,
+      );
+      if (!mounted) return;
+      _tampilkanPesan('Password berhasil diubah');
+      Navigator.of(context).pop();
+    } on ApiException catch (e) {
+      if (e.statusCode == 401) return;
+      if (mounted) _tampilkanPesan(e.message);
+    } catch (_) {
+      if (mounted) _tampilkanPesan('Gagal mengubah password, coba lagi.');
+    } finally {
+      if (mounted) setState(() => _sedangSimpan = false);
+    }
   }
 
   void _tampilkanPesan(String pesan) {
@@ -63,7 +85,6 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Header
               Row(
                 children: [
                   GestureDetector(
@@ -86,8 +107,6 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
                 ],
               ),
               const SizedBox(height: 32),
-
-              // Form ubah password
               const Text(
                 'Ubah Password',
                 style: TextStyle(
@@ -96,7 +115,6 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
                     color: AppColors.textPrimary),
               ),
               const SizedBox(height: 16),
-
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -119,8 +137,7 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
                       ctrl: _passSkrCtrl,
                       hint: 'Masukkan password sekarang',
                       lihat: _lihatSkr,
-                      onToggle: () =>
-                          setState(() => _lihatSkr = !_lihatSkr),
+                      onToggle: () => setState(() => _lihatSkr = !_lihatSkr),
                     ),
                     const SizedBox(height: 16),
                     _LabelField(label: 'Password Baru'),
@@ -129,8 +146,7 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
                       ctrl: _passBrCtrl,
                       hint: 'Masukkan password baru',
                       lihat: _lihatBr,
-                      onToggle: () =>
-                          setState(() => _lihatBr = !_lihatBr),
+                      onToggle: () => setState(() => _lihatBr = !_lihatBr),
                     ),
                     const SizedBox(height: 16),
                     _LabelField(label: 'Konfirmasi Password Baru'),
@@ -146,13 +162,13 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
                 ),
               ),
               const SizedBox(height: 24),
-
-              // Tombol Batal + Simpan
               Row(
                 children: [
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: () => Navigator.of(context).pop(),
+                      onPressed: _sedangSimpan
+                          ? null
+                          : () => Navigator.of(context).pop(),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.textPrimary,
                         side: const BorderSide(color: AppColors.border),
@@ -160,14 +176,13 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12)),
                       ),
-                      child: const Text('Batal',
-                          style: TextStyle(fontSize: 14)),
+                      child: const Text('Batal', style: TextStyle(fontSize: 14)),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: _simpan,
+                      onPressed: _sedangSimpan ? null : _simpan,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,
@@ -176,8 +191,17 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
                             borderRadius: BorderRadius.circular(12)),
                         elevation: 0,
                       ),
-                      child: const Text('Simpan',
-                          style: TextStyle(fontSize: 14)),
+                      child: _sedangSimpan
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Text('Simpan',
+                              style: TextStyle(fontSize: 14)),
                     ),
                   ),
                 ],
@@ -225,8 +249,7 @@ class _InputPassword extends StatelessWidget {
       style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: const TextStyle(
-            fontSize: 14, color: AppColors.textHint),
+        hintStyle: const TextStyle(fontSize: 14, color: AppColors.textHint),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         border: OutlineInputBorder(
