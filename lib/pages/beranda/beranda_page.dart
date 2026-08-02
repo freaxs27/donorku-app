@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:latlong2/latlong.dart';
 import '../../core/locale/app_strings.dart';
 import '../../theme/app_theme.dart';
 import '../../model/beranda_data.dart';
 import '../../model/data_notifikasi.dart';
+import '../../model/lokasi_donor.dart';
 import '../../services/beranda/beranda_service.dart';
 import '../../services/notifikasi/notifikasi_service.dart';
 import '../../services/core/api_exception.dart';
 import '../../widgets/main_layout.dart';
 import '../bantuan/reza_chatbot_page.dart';
 import '../bantuan/chat_cs.dart';
+import '../lokasi/lokasi_page.dart';
 
 /// Halaman Beranda (D-001 / B-001 - keduanya desain yang sama).
 class BerandaPage extends StatefulWidget {
@@ -195,6 +198,7 @@ class _BerandaPageState extends State<BerandaPage> {
                 totalMlDarah: data.totalMlDarah,
                 bolehDonorSekarang: data.bolehDonorSekarang,
                 tanggalBolehDonor: data.tanggalBolehDonor,
+                onTapPanah: () => MainLayoutScope.of(context)?.pindahTab(3),
               ),
               const SizedBox(height: 20),
 
@@ -208,8 +212,29 @@ class _BerandaPageState extends State<BerandaPage> {
                           jamSelesai: l.jamSelesai,
                           sisaKuota: l.sisaKuota,
                           tanggalPelaksanaan: l.tanggalFormat,
+                          lokasiRingkas: l,
                         ))
                     .toList(),
+                onTapPanah: () => MainLayoutScope.of(context)?.pindahTab(1),
+                onTapCekDetail: (l) {
+                  final lokasiDonor = LokasiDonor(
+                    idLokasi: l.idLokasi,
+                    nama: l.namaLokasi,
+                    alamat: l.alamat,
+                    fotoUrl: l.fotoUrl,
+                    posisi: LatLng(l.latitude ?? 0, l.longitude ?? 0),
+                    statusDonor: 'Open Donor Darah',
+                    jamMulai: l.jamMulai,
+                    jamSelesai: l.jamSelesai,
+                    sisaKuota: l.sisaKuota,
+                    tanggalPelaksanaan: l.tanggalPelaksanaan,
+                  );
+                  Navigator.of(context, rootNavigator: true).push(
+                    MaterialPageRoute(
+                      builder: (context) => LokasiPage(lokasiAwal: lokasiDonor),
+                    ),
+                  );
+                },
               ),
               const SizedBox(height: 20),
 
@@ -329,12 +354,14 @@ class _KartuAndaSudahDonor extends StatelessWidget {
   final int totalMlDarah;
   final bool bolehDonorSekarang;
   final DateTime? tanggalBolehDonor;
+  final VoidCallback onTapPanah;
 
   const _KartuAndaSudahDonor({
     required this.totalDonasi,
     required this.totalMlDarah,
     required this.bolehDonorSekarang,
     required this.tanggalBolehDonor,
+    required this.onTapPanah,
   });
 
   @override
@@ -349,7 +376,10 @@ class _KartuAndaSudahDonor extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _JudulSeksi(judul: s.youHaveDonatedTitle),
+          GestureDetector(
+            onTap: onTapPanah,
+            child: _JudulSeksi(judul: s.youHaveDonatedTitle),
+          ),
           const SizedBox(height: 12),
 
           // Kartu kecil 1: statistik Total Donasi & ml Darah
@@ -436,6 +466,7 @@ class _DataLokasi {
   final String? jamSelesai;
   final int? sisaKuota;
   final String? tanggalPelaksanaan;
+  final LokasiRingkas lokasiRingkas;
 
   const _DataLokasi({
     required this.nama,
@@ -445,6 +476,7 @@ class _DataLokasi {
     this.jamSelesai,
     this.sisaKuota,
     this.tanggalPelaksanaan,
+    required this.lokasiRingkas,
   }) : fotoAsset = null;
 }
 
@@ -452,7 +484,14 @@ class _DataLokasi {
 /// untuk tiap lokasi.
 class _KartuLokasiTersedia extends StatelessWidget {
   final List<_DataLokasi> daftarLokasi;
-  const _KartuLokasiTersedia({required this.daftarLokasi});
+  final VoidCallback onTapPanah;
+  final ValueChanged<LokasiRingkas> onTapCekDetail;
+
+  const _KartuLokasiTersedia({
+    required this.daftarLokasi,
+    required this.onTapPanah,
+    required this.onTapCekDetail,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -466,10 +505,16 @@ class _KartuLokasiTersedia extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _JudulSeksi(judul: s.availableLocationsTitle),
+          GestureDetector(
+            onTap: onTapPanah,
+            child: _JudulSeksi(judul: s.availableLocationsTitle),
+          ),
           const SizedBox(height: 12),
           for (int i = 0; i < daftarLokasi.length; i++) ...[
-            _KartuLokasiItem(data: daftarLokasi[i]),
+            _KartuLokasiItem(
+              data: daftarLokasi[i],
+              onTapCekDetail: () => onTapCekDetail(daftarLokasi[i].lokasiRingkas),
+            ),
             if (i != daftarLokasi.length - 1) const SizedBox(height: 12),
           ],
         ],
@@ -482,7 +527,8 @@ class _KartuLokasiTersedia extends StatelessWidget {
 /// lihat _DataLokasi.fotoAsset).
 class _KartuLokasiItem extends StatelessWidget {
   final _DataLokasi data;
-  const _KartuLokasiItem({required this.data});
+  final VoidCallback onTapCekDetail;
+  const _KartuLokasiItem({required this.data, required this.onTapCekDetail});
 
   @override
   Widget build(BuildContext context) {
@@ -622,9 +668,7 @@ class _KartuLokasiItem extends StatelessWidget {
                   minimumSize: const Size.fromHeight(36),
                   shape: const StadiumBorder(),
                 ),
-                onPressed: () {
-                  // TODO: navigasi ke halaman Detail Lokasi
-                },
+                onPressed: onTapCekDetail,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

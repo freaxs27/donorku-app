@@ -178,14 +178,13 @@ class _DonorKonfirmasiPageState extends State<DonorKonfirmasiPage> {
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  SizedBox(
-                                    width: 210,
+                                  Expanded(
                                     child: Text(
                                       '•  ${widget.pertanyaan[i]}',
                                       style: const TextStyle(fontSize: 11.5),
                                     ),
                                   ),
-                                  const SizedBox(width: 10),
+                                  const SizedBox(width: 8),
                                   Text(
                                     ': ${widget.jawaban[i] ? s.yesLabel : s.noLabel}',
                                     style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600),

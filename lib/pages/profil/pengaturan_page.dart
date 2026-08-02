@@ -3,10 +3,7 @@ import '../../theme/app_theme.dart';
 import '../../services/core/api_client.dart';
 import '../../services/core/api_exception.dart';
 import '../../services/auth/session_service.dart';
-import '../../core/locale/app_bahasa.dart';
-import '../../core/locale/app_strings.dart';
 import '../auth/login_page.dart';
-import 'pilih_bahasa_page.dart';
 
 /// Halaman Pengaturan (P-002) — sesuai desain Figma.
 class PengaturanPage extends StatefulWidget {
@@ -36,7 +33,7 @@ class _PengaturanPageState extends State<PengaturanPage> {
   }
 
   Future<void> _hapusAkun() async {
-    // Popup konfirmasi
+    // Popup 1: Konfirmasi hapus akun (Frame 3)
     final konfirmasi = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
@@ -48,15 +45,21 @@ class _PengaturanPageState extends State<PengaturanPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Image.asset('assets/images/icon_tanya.png', width: 72, height: 72,
-                  errorBuilder: (_, __, ___) => const Icon(Icons.warning_amber_rounded,
-                      size: 72, color: AppColors.primary)),
+              // Ikon warning
+              const Icon(Icons.warning_amber_rounded,
+                  size: 72, color: AppColors.textPrimary),
               const SizedBox(height: 16),
-              const Text('Hapus Akun?',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              const Text(
+                'Hapus Akun?',
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary),
+              ),
               const SizedBox(height: 10),
               const Text(
-                'Akun anda akan dihapus secara permanen. Anda tidak dapat membatalkan tindakan ini',
+                'Akun anda akan dihapus secara permanen. '
+                'Anda tidak dapat membatalkan tindakan ini',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
               ),
@@ -73,7 +76,8 @@ class _PengaturanPageState extends State<PengaturanPage> {
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12)),
                       ),
-                      child: const Text('Batal'),
+                      child: const Text('Batal',
+                          style: TextStyle(fontSize: 14)),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -89,7 +93,8 @@ class _PengaturanPageState extends State<PengaturanPage> {
                         elevation: 0,
                       ),
                       child: const Text('Hapus Akun',
-                          style: TextStyle(fontWeight: FontWeight.bold)),
+                          style: TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],
@@ -101,7 +106,7 @@ class _PengaturanPageState extends State<PengaturanPage> {
     );
     if (konfirmasi != true || !mounted) return;
 
-    // Input password
+    // Input password via dialog kecil
     final passCtrl = TextEditingController();
     bool lihat = false;
     final password = await showDialog<String>(
@@ -109,7 +114,8 @@ class _PengaturanPageState extends State<PengaturanPage> {
       barrierDismissible: false,
       builder: (context) => StatefulBuilder(
         builder: (context, setStateDialog) => Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           backgroundColor: AppColors.background,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
@@ -118,19 +124,24 @@ class _PengaturanPageState extends State<PengaturanPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text('Konfirmasi Password',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    style: TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
-                const Text('Masukkan password Anda untuk melanjutkan:',
-                    style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                const Text(
+                    'Masukkan password Anda untuk melanjutkan:',
+                    style:
+                        TextStyle(fontSize: 13, color: AppColors.textSecondary)),
                 const SizedBox(height: 12),
                 TextField(
                   controller: passCtrl,
                   obscureText: !lihat,
                   decoration: InputDecoration(
                     hintText: 'Password',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10)),
                     suffixIcon: GestureDetector(
-                      onTap: () => setStateDialog(() => lihat = !lihat),
+                      onTap: () =>
+                          setStateDialog(() => lihat = !lihat),
                       child: Icon(lihat
                           ? Icons.visibility_outlined
                           : Icons.visibility_off_outlined),
@@ -156,7 +167,8 @@ class _PengaturanPageState extends State<PengaturanPage> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () => Navigator.of(context).pop(passCtrl.text),
+                        onPressed: () =>
+                            Navigator.of(context).pop(passCtrl.text),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,
@@ -180,41 +192,52 @@ class _PengaturanPageState extends State<PengaturanPage> {
 
     if (password == null || password.isEmpty || !mounted) return;
 
+    // Kirim ke API
     try {
       await ApiClient.deleteWithBody('/account', {'password': password});
       await SessionService.hapusSesi();
       if (!mounted) return;
 
-      // Popup sukses
+      // Popup 2: Sukses (Frame 4)
       await showDialog(
         context: context,
         barrierDismissible: false,
         builder: (context) => Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           backgroundColor: AppColors.background,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // Ikon centang merah dalam lingkaran
                 Container(
-                  width: 72, height: 72,
+                  width: 72,
+                  height: 72,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: const Color(0xFFFFD8D8),
-                    border: Border.all(color: AppColors.primary, width: 2),
+                    border: Border.all(color: AppColors.primary, width: 2.5),
                   ),
-                  child: const Icon(Icons.check, size: 36, color: AppColors.primary),
+                  child: const Icon(Icons.check,
+                      size: 36, color: AppColors.primary),
                 ),
                 const SizedBox(height: 16),
-                const Text('Akun Berhasil Dihapus',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                const Text(
+                  'Akun Berhasil Dihapus',
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary),
+                  textAlign: TextAlign.center,
+                ),
                 const SizedBox(height: 10),
                 const Text(
-                  'Anda telah berhasil menghapus akun. Terima kasih telah menggunakan aplikasi ini.',
+                  'Anda telah berhasil menghapus akun. '
+                  'Terima kasih telah menggunakan aplikasi ini.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                  style: TextStyle(
+                      fontSize: 13, color: AppColors.textSecondary),
                 ),
                 const SizedBox(height: 24),
                 SizedBox(
@@ -230,7 +253,8 @@ class _PengaturanPageState extends State<PengaturanPage> {
                       elevation: 0,
                     ),
                     child: const Text('Keluar',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.bold)),
                   ),
                 ),
               ],
@@ -239,6 +263,7 @@ class _PengaturanPageState extends State<PengaturanPage> {
         ),
       );
 
+      // Setelah popup sukses ditutup, redirect ke Login
       if (!mounted) return;
       Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => const LoginPage()),
@@ -252,29 +277,22 @@ class _PengaturanPageState extends State<PengaturanPage> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Gagal menghapus akun, coba lagi.')),
+          const SnackBar(
+              content: Text('Gagal menghapus akun, coba lagi.')),
         );
       }
     }
   }
 
-  void _bukaPilihBahasa() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const PilihBahasaPage()),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    final s = AppStrings.of(context);
-    final namaBahasa = LocaleController.instance.bahasa.namaTampil;
-
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // ---- Header: back + judul "Pengaturan" ----
             Row(
               children: [
                 GestureDetector(
@@ -285,11 +303,11 @@ class _PengaturanPageState extends State<PengaturanPage> {
                     color: AppColors.textPrimary,
                   ),
                 ),
-                Expanded(
+                const Expanded(
                   child: Text(
-                    s.pengaturan,
+                    'Pengaturan',
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: AppColors.textPrimary,
@@ -301,50 +319,35 @@ class _PengaturanPageState extends State<PengaturanPage> {
             ),
             const SizedBox(height: 32),
 
-            _JudulSection(text: s.notifikasi),
+            // ---- Section: Notifikasi ----
+            const _JudulSection(text: 'Notifikasi'),
             const SizedBox(height: 8),
             _KartuNotifikasi(
               notifAktif: _notifAktif,
               notifEmail: _notifEmail,
               sms: _sms,
-              labelNotif: s.nyalakanNotifikasi,
-              labelEmail: s.notifikasiEmail,
-              labelSms: s.sms,
               onNotifAktif: (v) => setState(() => _notifAktif = v),
               onNotifEmail: (v) => setState(() => _notifEmail = v),
               onSms: (v) => setState(() => _sms = v),
             ),
             const SizedBox(height: 24),
 
-            _JudulSection(text: s.aplikasi),
+            // ---- Section: Aplikasi ----
+            const _JudulSection(text: 'Aplikasi'),
             const SizedBox(height: 8),
-            _KartuAplikasi(
-              labelBahasa: s.pilihBahasa,
-              labelTema: s.sesuaikanTema,
-              labelPrivasi: s.pengaturanPrivasi,
-              nilaiBahasa: namaBahasa,
-              onPilihBahasa: _bukaPilihBahasa,
-            ),
+            _KartuAplikasi(),
             const SizedBox(height: 24),
 
-            _JudulSection(text: s.tentangKami),
+            // ---- Section: Tentang Kami ----
+            const _JudulSection(text: 'Tentang Kami'),
             const SizedBox(height: 8),
-            _KartuTentangKami(
-              labelTentang: s.tentangDonorKu,
-              labelBantuan: s.bantuan,
-              labelSyarat: s.syaratKetentuan,
-              labelPrivasi: s.kebijakanPrivasi,
-            ),
+            _KartuTentangKami(),
             const SizedBox(height: 24),
 
-            _JudulSection(text: s.akun),
+            // ---- Section: Akun ----
+            const _JudulSection(text: 'Akun'),
             const SizedBox(height: 8),
-            _KartuAkun(
-              onKeluar: _keluar,
-              onHapusAkun: _hapusAkun,
-              labelKeluar: s.keluar,
-              labelHapusAkun: s.hapusAkun,
-            ),
+            _KartuAkun(onKeluar: _keluar, onHapusAkun: _hapusAkun),
           ],
         ),
       ),
@@ -398,9 +401,6 @@ class _KartuNotifikasi extends StatelessWidget {
   final bool notifAktif;
   final bool notifEmail;
   final bool sms;
-  final String labelNotif;
-  final String labelEmail;
-  final String labelSms;
   final ValueChanged<bool> onNotifAktif;
   final ValueChanged<bool> onNotifEmail;
   final ValueChanged<bool> onSms;
@@ -409,9 +409,6 @@ class _KartuNotifikasi extends StatelessWidget {
     required this.notifAktif,
     required this.notifEmail,
     required this.sms,
-    required this.labelNotif,
-    required this.labelEmail,
-    required this.labelSms,
     required this.onNotifAktif,
     required this.onNotifEmail,
     required this.onSms,
@@ -425,21 +422,21 @@ class _KartuNotifikasi extends StatelessWidget {
         children: [
           _BarisSwitch(
             icon: Icons.notifications_outlined,
-            label: labelNotif,
+            label: 'Nyalakan Notifikasi',
             value: notifAktif,
             onChanged: onNotifAktif,
           ),
           const Divider(height: 1, color: AppColors.border, indent: 56),
           _BarisSwitch(
             icon: Icons.mail_outline,
-            label: labelEmail,
+            label: 'Notifikasi Email',
             value: notifEmail,
             onChanged: onNotifEmail,
           ),
           const Divider(height: 1, color: AppColors.border, indent: 56),
           _BarisSwitch(
             icon: Icons.comment_outlined,
-            label: labelSms,
+            label: 'SMS',
             value: sms,
             onChanged: onSms,
           ),
@@ -499,20 +496,6 @@ class _BarisSwitch extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _KartuAplikasi extends StatelessWidget {
-  final String labelBahasa;
-  final String labelTema;
-  final String labelPrivasi;
-  final String nilaiBahasa;
-  final VoidCallback onPilihBahasa;
-
-  const _KartuAplikasi({
-    required this.labelBahasa,
-    required this.labelTema,
-    required this.labelPrivasi,
-    required this.nilaiBahasa,
-    required this.onPilihBahasa,
-  });
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -521,20 +504,19 @@ class _KartuAplikasi extends StatelessWidget {
         children: [
           _BarisMenu(
             icon: Icons.language,
-            label: labelBahasa,
-            trailingText: nilaiBahasa,
-            onTap: onPilihBahasa,
+            label: 'Pilih Bahasa',
+            onTap: () {},
           ),
           const Divider(height: 1, color: AppColors.border, indent: 56),
           _BarisMenu(
             icon: Icons.dark_mode_outlined,
-            label: labelTema,
+            label: 'Sesuaikan Tema',
             onTap: () {},
           ),
           const Divider(height: 1, color: AppColors.border, indent: 56),
           _BarisMenu(
             icon: Icons.shield_outlined,
-            label: labelPrivasi,
+            label: 'Pengaturan Privasi',
             onTap: () {},
           ),
         ],
@@ -548,18 +530,6 @@ class _KartuAplikasi extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _KartuTentangKami extends StatelessWidget {
-  final String labelTentang;
-  final String labelBantuan;
-  final String labelSyarat;
-  final String labelPrivasi;
-
-  const _KartuTentangKami({
-    required this.labelTentang,
-    required this.labelBantuan,
-    required this.labelSyarat,
-    required this.labelPrivasi,
-  });
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -568,25 +538,25 @@ class _KartuTentangKami extends StatelessWidget {
         children: [
           _BarisMenu(
             icon: Icons.info_outline,
-            label: labelTentang,
+            label: 'Tentang Donor Ku',
             onTap: () {},
           ),
           const Divider(height: 1, color: AppColors.border, indent: 56),
           _BarisMenu(
             icon: Icons.help_outline,
-            label: labelBantuan,
+            label: 'Bantuan',
             onTap: () {},
           ),
           const Divider(height: 1, color: AppColors.border, indent: 56),
           _BarisMenu(
             icon: Icons.description_outlined,
-            label: labelSyarat,
+            label: 'Syarat & Ketentuan',
             onTap: () {},
           ),
           const Divider(height: 1, color: AppColors.border, indent: 56),
           _BarisMenu(
             icon: Icons.lock_outline,
-            label: labelPrivasi,
+            label: 'Kebijakan Privasi',
             onTap: () {},
           ),
         ],
@@ -602,13 +572,11 @@ class _KartuTentangKami extends StatelessWidget {
 class _BarisMenu extends StatelessWidget {
   final IconData icon;
   final String label;
-  final String? trailingText;
   final VoidCallback? onTap;
 
   const _BarisMenu({
     required this.icon,
     required this.label,
-    this.trailingText,
     this.onTap,
   });
 
@@ -633,16 +601,6 @@ class _BarisMenu extends StatelessWidget {
                 ),
               ),
             ),
-            if (trailingText != null) ...[
-              Text(
-                trailingText!,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              const SizedBox(width: 4),
-            ],
             const Icon(
               Icons.chevron_right,
               size: 24,
@@ -662,15 +620,8 @@ class _BarisMenu extends StatelessWidget {
 class _KartuAkun extends StatelessWidget {
   final VoidCallback onKeluar;
   final VoidCallback onHapusAkun;
-  final String labelKeluar;
-  final String labelHapusAkun;
 
-  const _KartuAkun({
-    required this.onKeluar,
-    required this.onHapusAkun,
-    required this.labelKeluar,
-    required this.labelHapusAkun,
-  });
+  const _KartuAkun({required this.onKeluar, required this.onHapusAkun});
 
   @override
   Widget build(BuildContext context) {
@@ -678,21 +629,22 @@ class _KartuAkun extends StatelessWidget {
       decoration: _dekorasiKartu,
       child: Column(
         children: [
+          // Baris Keluar
           InkWell(
             onTap: onKeluar,
             borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(20),
               topRight: Radius.circular(20),
             ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               child: Row(
                 children: [
-                  const Icon(Icons.logout, size: 24, color: AppColors.textPrimary),
-                  const SizedBox(width: 8),
+                  Icon(Icons.logout, size: 24, color: AppColors.textPrimary),
+                  SizedBox(width: 8),
                   Text(
-                    labelKeluar,
-                    style: const TextStyle(
+                    'Keluar',
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.normal,
                       color: AppColors.textPrimary,
@@ -703,21 +655,22 @@ class _KartuAkun extends StatelessWidget {
             ),
           ),
           const Divider(height: 1, color: AppColors.border, indent: 56),
+          // Tombol Hapus Akun
           InkWell(
             onTap: onHapusAkun,
             borderRadius: const BorderRadius.only(
               bottomLeft: Radius.circular(20),
               bottomRight: Radius.circular(20),
             ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               child: Row(
                 children: [
-                  const Icon(Icons.delete_outline, size: 24, color: AppColors.primary),
-                  const SizedBox(width: 8),
+                  Icon(Icons.delete_outline, size: 24, color: AppColors.primary),
+                  SizedBox(width: 8),
                   Text(
-                    labelHapusAkun,
-                    style: const TextStyle(
+                    'Hapus Akun',
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.normal,
                       color: AppColors.primary,

@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../core/locale/app_strings.dart';
 import '../../theme/app_theme.dart';
 import '../../model/data_profil.dart';
 import '../../services/profil/profil_service.dart';
@@ -84,10 +83,9 @@ class _EditProfilPageState extends State<EditProfilPage> {
       '${_tanggalLahir.day} - ${_tanggalLahir.month} - ${_tanggalLahir.year}';
 
   Future<void> _simpan() async {
-    final s = AppStrings.of(context);
     if (_namaCtrl.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(s.fullNameRequired)));
+          const SnackBar(content: Text('Nama lengkap tidak boleh kosong')));
       return;
     }
 
@@ -95,7 +93,8 @@ class _EditProfilPageState extends State<EditProfilPage> {
     if (goldar.isNotEmpty &&
         !RegExp(r'^(A|B|AB|O)[+-]$').hasMatch(goldar)) {
       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(s.bloodTypeFormatInvalid)));
+          const SnackBar(
+              content: Text('Golongan darah harus diakhiri + atau - (contoh: O+, AB-)')));
       return;
     }
 
@@ -178,11 +177,67 @@ class _EditProfilPageState extends State<EditProfilPage> {
 
       await _service.updateProfil(dataUpdate);
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(s.profileUpdated)));
-        Navigator.of(context).pop();
-      }
+      if (!mounted) return;
+
+      // Popup sukses (Frame 6)
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => Dialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          backgroundColor: AppColors.background,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 72, height: 72,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: const Color(0xFFFFD8D8),
+                    border: Border.all(color: AppColors.primary, width: 2),
+                  ),
+                  child: const Icon(Icons.check,
+                      size: 36, color: AppColors.primary),
+                ),
+                const SizedBox(height: 16),
+                const Text('Data Profile Berhasil Diganti',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 10),
+                const Text(
+                  'Anda telah berhasil mengganti data profile baru. Silahkan coba buka kembali',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      fontSize: 13, color: AppColors.textSecondary),
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size.fromHeight(44),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                      elevation: 0,
+                    ),
+                    child: const Text('Kembali',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      if (mounted) Navigator.of(context).pop();
     } on ApiException catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context)
@@ -191,7 +246,7 @@ class _EditProfilPageState extends State<EditProfilPage> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(s.saveFailed)));
+            const SnackBar(content: Text('Gagal menyimpan, coba lagi.')));
       }
     } finally {
       if (mounted) setState(() => _sedangSimpan = false);
@@ -200,7 +255,6 @@ class _EditProfilPageState extends State<EditProfilPage> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppStrings.of(context);
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -216,10 +270,10 @@ class _EditProfilPageState extends State<EditProfilPage> {
                     child: const Icon(Icons.arrow_back,
                         size: 28, color: AppColors.textPrimary),
                   ),
-                  Expanded(
-                    child: Text(s.editProfileTitle,
+                  const Expanded(
+                    child: Text('Edit Profil',
                         textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 16,
+                        style: TextStyle(fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: AppColors.textPrimary)),
                   ),
@@ -312,8 +366,8 @@ class _EditProfilPageState extends State<EditProfilPage> {
                                       fontWeight: FontWeight.bold,
                                       color: AppColors.primary)),
                               const SizedBox(height: 2),
-                              Text(s.totalDonations,
-                                  style: const TextStyle(fontSize: 10,
+                              const Text('Total Donasi',
+                                  style: TextStyle(fontSize: 10,
                                       color: AppColors.textPrimary)),
                             ],
                           ),
@@ -329,8 +383,8 @@ class _EditProfilPageState extends State<EditProfilPage> {
                                       fontWeight: FontWeight.bold,
                                       color: AppColors.primary)),
                               const SizedBox(height: 2),
-                              Text(s.mlBlood,
-                                  style: const TextStyle(fontSize: 10,
+                              const Text('ml Darah',
+                                  style: TextStyle(fontSize: 10,
                                       color: AppColors.textPrimary)),
                             ],
                           ),
@@ -343,8 +397,8 @@ class _EditProfilPageState extends State<EditProfilPage> {
               const SizedBox(height: 20),
 
               // Form
-              Text(s.personalInfoSection,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold,
+              const Text('Informasi Pribadi',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,
                       color: AppColors.textPrimary)),
               const SizedBox(height: 8),
               Container(
@@ -362,28 +416,32 @@ class _EditProfilPageState extends State<EditProfilPage> {
                 child: Column(
                   children: [
                     // Nama Lengkap — bisa diedit
-                    _BarisEdit(label: s.fullNameLabel, ctrl: _namaCtrl),
+                    _BarisEdit(label: 'Nama Lengkap', ctrl: _namaCtrl),
                     const Divider(height: 1, color: AppColors.border),
 
-                    _BarisEdit(label: s.phoneProfilLabel, ctrl: _noTelpCtrl,
+                    // No Telepon — bisa diedit
+                    _BarisEdit(label: 'No Telepon', ctrl: _noTelpCtrl,
                         tipe: TextInputType.phone),
                     const Divider(height: 1, color: AppColors.border),
 
+                    // Tanggal Lahir — tap buka date picker
                     _BarisTanggalLahir(
-                      label: s.dobLabel,
                       nilai: _tanggalLahirFormat,
                       onTap: _pilihTanggalLahir,
                     ),
                     const Divider(height: 1, color: AppColors.border),
 
-                    _BarisEdit(label: s.addressLabel, ctrl: _alamatCtrl, maxLines: 2),
+                    // Alamat — bisa diedit
+                    _BarisEdit(label: 'Alamat', ctrl: _alamatCtrl, maxLines: 2),
                     const Divider(height: 1, color: AppColors.border),
 
-                    _BarisEdit(label: s.emailLabel, ctrl: _emailCtrl,
+                    // Email — bisa diedit
+                    _BarisEdit(label: 'Email', ctrl: _emailCtrl,
                         tipe: TextInputType.emailAddress),
                     const Divider(height: 1, color: AppColors.border),
 
-                    _BarisGolonganDarah(ctrl: _golDarahCtrl, hint: s.bloodTypeExampleHint, label: s.bloodTypeLabel),
+                    // Golongan Darah — textfield dengan formatter, ketik manual
+                    _BarisGolonganDarah(ctrl: _golDarahCtrl),
                   ],
                 ),
               ),
@@ -402,8 +460,8 @@ class _EditProfilPageState extends State<EditProfilPage> {
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12)),
                       ),
-                      child: Text(s.cancelButton,
-                          style: const TextStyle(fontSize: 14)),
+                      child: const Text('Batal',
+                          style: TextStyle(fontSize: 14)),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -422,8 +480,8 @@ class _EditProfilPageState extends State<EditProfilPage> {
                           ? const SizedBox(width: 18, height: 18,
                               child: CircularProgressIndicator(
                                   strokeWidth: 2, color: Colors.white))
-                          : Text(s.saveButton,
-                              style: const TextStyle(fontSize: 14)),
+                          : const Text('Simpan',
+                              style: TextStyle(fontSize: 14)),
                     ),
                   ),
                 ],
@@ -508,11 +566,10 @@ class _BarisEdit extends StatelessWidget {
 // Baris tanggal lahir — tap buka date picker
 // ---------------------------------------------------------------------------
 class _BarisTanggalLahir extends StatelessWidget {
-  final String label;
   final String nilai;
   final VoidCallback onTap;
 
-  const _BarisTanggalLahir({required this.label, required this.nilai, required this.onTap});
+  const _BarisTanggalLahir({required this.nilai, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -521,10 +578,10 @@ class _BarisTanggalLahir extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          SizedBox(
+          const SizedBox(
             width: 110,
-            child: Text(label,
-                style: const TextStyle(fontSize: 14, color: AppColors.textPrimary)),
+            child: Text('Tanggal Lahir',
+                style: TextStyle(fontSize: 14, color: AppColors.textPrimary)),
           ),
           const Text(': ',
               style: TextStyle(fontSize: 14, color: AppColors.textPrimary)),
@@ -561,10 +618,8 @@ class _BarisTanggalLahir extends StatelessWidget {
 // ---------------------------------------------------------------------------
 class _BarisGolonganDarah extends StatelessWidget {
   final TextEditingController ctrl;
-  final String hint;
-  final String label;
 
-  const _BarisGolonganDarah({required this.ctrl, required this.hint, required this.label});
+  const _BarisGolonganDarah({required this.ctrl});
 
   @override
   Widget build(BuildContext context) {
@@ -572,10 +627,10 @@ class _BarisGolonganDarah extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
-          SizedBox(
+          const SizedBox(
             width: 110,
-            child: Text(label,
-                style: const TextStyle(fontSize: 14, color: AppColors.textPrimary)),
+            child: Text('Golongan Darah',
+                style: TextStyle(fontSize: 14, color: AppColors.textPrimary)),
           ),
           const Text(': ',
               style: TextStyle(fontSize: 14, color: AppColors.textPrimary)),
@@ -588,12 +643,12 @@ class _BarisGolonganDarah extends StatelessWidget {
                 inputFormatters: [_FormatGolonganDarah()],
                 style: const TextStyle(
                     fontSize: 14, color: AppColors.textPrimary),
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   border: InputBorder.none,
                   isDense: true,
                   contentPadding:
-                      const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-                  hintText: hint,
+                      EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                  hintText: 'Contoh: O+',
                 ),
               ),
             ),
