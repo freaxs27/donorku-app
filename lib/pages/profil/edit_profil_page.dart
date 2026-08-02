@@ -98,14 +98,73 @@ class _EditProfilPageState extends State<EditProfilPage> {
       return;
     }
 
+    // Popup konfirmasi (Frame 5)
+    final konfirmasi = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: AppColors.background,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset('assets/images/icon-tanya.png', width: 72, height: 72),
+              const SizedBox(height: 16),
+              const Text('Konfirmasi Ubah',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 10),
+              const Text('Apakah anda yakin ingin mengubah data profil?',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.textPrimary,
+                        side: const BorderSide(color: AppColors.border),
+                        minimumSize: const Size.fromHeight(44),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: const Text('Batal'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.of(context).pop(true),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size.fromHeight(44),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                        elevation: 0,
+                      ),
+                      child: const Text('Ubah',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (konfirmasi != true || !mounted) return;
+
     setState(() => _sedangSimpan = true);
     try {
-      // Upload foto dulu kalau ada foto baru dipilih
       if (_fotoBaruDipilih != null) {
         await _service.uploadFotoProfil(_fotoBaruDipilih!);
       }
 
-      // Update data profil teks
       final dataUpdate = <String, String>{
         'nama_lengkap': _namaCtrl.text.trim(),
         'no_hp': _noTelpCtrl.text.trim(),
@@ -118,11 +177,67 @@ class _EditProfilPageState extends State<EditProfilPage> {
 
       await _service.updateProfil(dataUpdate);
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Profil berhasil diperbarui')));
-        Navigator.of(context).pop();
-      }
+      if (!mounted) return;
+
+      // Popup sukses (Frame 6)
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => Dialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          backgroundColor: AppColors.background,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 72, height: 72,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: const Color(0xFFFFD8D8),
+                    border: Border.all(color: AppColors.primary, width: 2),
+                  ),
+                  child: const Icon(Icons.check,
+                      size: 36, color: AppColors.primary),
+                ),
+                const SizedBox(height: 16),
+                const Text('Data Profile Berhasil Diganti',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 10),
+                const Text(
+                  'Anda telah berhasil mengganti data profile baru. Silahkan coba buka kembali',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      fontSize: 13, color: AppColors.textSecondary),
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size.fromHeight(44),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                      elevation: 0,
+                    ),
+                    child: const Text('Kembali',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      if (mounted) Navigator.of(context).pop();
     } on ApiException catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context)
