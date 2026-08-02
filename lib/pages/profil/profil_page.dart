@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
-import '../auth/login_page.dart';
 import 'galeri_sertifikat_page.dart';
 import 'pengaturan_page.dart';
 import 'edit_profil_page.dart';
