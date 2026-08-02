@@ -195,32 +195,6 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
             const SizedBox(height: 20),
 
-            OutlinedButton.icon(
-              onPressed: () {
-                // TODO: integrasi daftar dengan Google
-              },
-              icon: Image.asset(
-                'assets/icons/social/google.png',
-                width: 20,
-                height: 20,
-              ),
-              label: Text(s.registerWithGoogle),
-            ),
-            const SizedBox(height: 12),
-
-            OutlinedButton.icon(
-              onPressed: () {
-                // TODO: integrasi daftar dengan Facebook
-              },
-              icon: Image.asset(
-                'assets/icons/social/facebook.png',
-                width: 20,
-                height: 20,
-              ),
-              label: Text(s.registerWithFacebook),
-            ),
-            const SizedBox(height: 16),
-
             Center(
               child: RichText(
                 text: TextSpan(

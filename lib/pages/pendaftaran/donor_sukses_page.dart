@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../core/locale/app_strings.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/main_layout.dart';
+import '../../services/feedback/feedback_service.dart';
+import '../../services/core/api_exception.dart';
 
 // (D-005).
 class DonorSuksesPage extends StatefulWidget {
@@ -29,7 +30,6 @@ class _DonorSuksesPageState extends State<DonorSuksesPage> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppStrings.of(context);
     return Scaffold(
       body: SafeArea(
         child: Center(
@@ -47,8 +47,8 @@ class _DonorSuksesPageState extends State<DonorSuksesPage> {
                 child: const Icon(Icons.check, color: AppColors.primary, size: 40),
               ),
               const SizedBox(height: 24),
-              Text(
-                s.registrationSuccess,
+              const Text(
+                'Berhasil melakukan pendaftaran',
                 style: AppTextStyles.subheading,
               ),
             ],
@@ -67,8 +67,10 @@ class _ModalFeedback extends StatefulWidget {
 }
 
 class _ModalFeedbackState extends State<_ModalFeedback> {
-  int _rating = 3; 
+  int _rating = 3;
   final TextEditingController _saranController = TextEditingController();
+  final FeedbackService _service = FeedbackService();
+  bool _sedangKirim = false;
 
   @override
   void dispose() {
@@ -76,14 +78,27 @@ class _ModalFeedbackState extends State<_ModalFeedback> {
     super.dispose();
   }
 
-  void _kirimFeedback() {
-    Navigator.of(context).pop(); 
-    MainLayoutScope.of(context)?.pindahTab(0); 
+  Future<void> _kirimFeedback() async {
+    setState(() => _sedangKirim = true);
+    try {
+      await _service.kirimFeedback(
+        rating: _rating,
+        saranKeluhan: _saranController.text.trim(),
+      );
+    } on ApiException catch (_) {
+      // Gagal kirim feedback — tidak perlu block user, lanjut saja
+    } catch (_) {
+      // Sama
+    } finally {
+      if (mounted) {
+        Navigator.of(context).pop();
+        MainLayoutScope.of(context)?.pindahTab(0);
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final s = AppStrings.of(context);
     return Dialog(
       backgroundColor: AppColors.background,
       insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 120),
@@ -96,8 +111,8 @@ class _ModalFeedbackState extends State<_ModalFeedback> {
           children: [
             Row(
               children: [
-                Expanded(
-                  child: Text(s.feedbackTitle, textAlign: TextAlign.center, style: AppTextStyles.subheading),
+                const Expanded(
+                  child: Text('FeedBack', textAlign: TextAlign.center, style: AppTextStyles.subheading),
                 ),
                 GestureDetector(
                   onTap: () => Navigator.of(context).pop(),
@@ -107,7 +122,7 @@ class _ModalFeedbackState extends State<_ModalFeedback> {
             ),
             const SizedBox(height: 16),
 
-            Text(s.experienceQuestion, style: AppTextStyles.body),
+            const Text('Bagaimana Pengalaman Anda?', style: AppTextStyles.body),
             const SizedBox(height: 10),
 
             Container(
@@ -134,7 +149,7 @@ class _ModalFeedbackState extends State<_ModalFeedback> {
             ),
             const SizedBox(height: 16),
 
-            Text(s.feedbackHintLabel, style: AppTextStyles.body),
+            const Text('Tulis Saran atau Keluhan Anda', style: AppTextStyles.body),
             const SizedBox(height: 10),
 
             TextField(
@@ -160,8 +175,14 @@ class _ModalFeedbackState extends State<_ModalFeedback> {
             const SizedBox(height: 20),
 
             ElevatedButton(
-              onPressed: _kirimFeedback,
-              child: Text(s.sendFeedbackButton),
+              onPressed: _sedangKirim ? null : _kirimFeedback,
+              child: _sedangKirim
+                  ? const SizedBox(
+                      width: 18, height: 18,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Text('Kirim FeedBack'),
             ),
           ],
         ),

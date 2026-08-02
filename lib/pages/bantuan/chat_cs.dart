@@ -43,6 +43,10 @@ class _ChatCsPageState extends State<ChatCsPage> {
     super.dispose();
   }
 
+  void _pilihTopik(String topik) {
+    setState(() => _topikTerpilih = topik);
+  }
+
   Future<void> _kirimPesan() async {
     final topik = _topikTerpilih;
     final pesan = _pesanController.text.trim();
@@ -88,14 +92,7 @@ class _ChatCsPageState extends State<ChatCsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppStrings.of(context);
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: false,
-        leading: const BackButton(color: AppColors.textPrimary),
-        title: Text(s.contactSupportTitle, style: AppTextStyles.subheading),
-        titleSpacing: 0,
-      ),
       body: SafeArea(
         child: Column(
           children: [
@@ -128,7 +125,7 @@ class _ChatCsPageState extends State<ChatCsPage> {
                     ),
                     const SizedBox(height: 24),
 
-                    // Foto Revan
+                    // Foto CS
                     Center(
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(16),
@@ -152,130 +149,96 @@ class _ChatCsPageState extends State<ChatCsPage> {
                     ),
                     const SizedBox(height: 16),
 
-                    Text(s.csGreetingName, style: AppTextStyles.heading),
-                    Text(s.csGreetingTeam, style: AppTextStyles.heading),
+                    const Text('Halo! Saya Revan',
+                        style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary)),
+                    const Text('dari Tim Dukungan',
+                        style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary)),
                     const SizedBox(height: 8),
-                    Text(
-                      s.csTopicPrompt,
-                      style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
+                    const Text(
+                      'Pilih topik dibawah ini agar saya\nbisa membantumu lebih cepat',
+                      style: TextStyle(
+                          fontSize: 14, color: AppColors.textSecondary),
                     ),
                     const SizedBox(height: 20),
 
+                    // Tombol topik
                     IntrinsicWidth(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          _TombolTopik(label: s.topicDonorIssue, onTap: () => _pilihTopik(s.topicDonorIssue)),
-                          const SizedBox(height: 12),
-                          _TombolTopik(label: s.topicAccountIssue, onTap: () => _pilihTopik(s.topicAccountIssue)),
-                          const SizedBox(height: 12),
-                          _TombolTopik(label: s.topicLocationInfo, onTap: () => _pilihTopik(s.topicLocationInfo)),
-                          const SizedBox(height: 12),
-                          _TombolTopik(label: s.topicOther, onTap: () => _pilihTopik(s.topicOther)),
-                        ],
+                        children: _daftarTopik.map((topik) {
+                          final terpilih = _topikTerpilih == topik;
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: _TombolTopik(
+                              label: topik,
+                              terpilih: terpilih,
+                              onTap: () => _pilihTopik(topik),
+                            ),
+                          );
+                        }).toList(),
                       ),
                     ),
-                    const SizedBox(height: 24),
-
-                    // Tombol topik — lebar mengikuti teks terpanjang
-                    ..._daftarTopik.map((topik) {
-                      final terpilih = _topikTerpilih == topik;
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: GestureDetector(
-                          onTap: () =>
-                              setState(() => _topikTerpilih = topik),
-                          child: ConstrainedBox(
-                            constraints: const BoxConstraints(
-                              minWidth: 160, // lebar minimum
-                            ),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 14),
-                              decoration: BoxDecoration(
-                                color: terpilih
-                                    ? AppColors.primary
-                                    : AppColors.surface,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: terpilih
-                                      ? AppColors.primary
-                                      : Colors.black87,
-                                  width: 1.2,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.06),
-                                    blurRadius: 4,
-                                    offset: Offset.zero,
-                                  ),
-                                ],
-                              ),
-                              child: Text(
-                                topik,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: terpilih
-                                      ? Colors.white
-                                      : AppColors.textPrimary,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    }),
-
                     const SizedBox(height: 8),
                   ],
                 ),
               ),
             ),
 
-            // Field chat di bawah — sejajar dengan topik, outline hitam
+            // Field chat di bawah
             Padding(
-              padding: const EdgeInsets.fromLTRB(AppDimens.paddingL, 8, AppDimens.paddingL, 16),
+              padding: const EdgeInsets.fromLTRB(
+                  AppDimens.paddingL, 8, AppDimens.paddingL, 16),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                 decoration: BoxDecoration(
                   color: AppColors.surface,
                   borderRadius: BorderRadius.circular(AppDimens.radiusL),
-                  border: Border.all(color: AppColors.border),
+                  border: Border.all(color: Colors.black87, width: 1.2),
                 ),
                 child: Row(
                   children: [
                     Expanded(
                       child: TextField(
                         controller: _pesanController,
-                        decoration: InputDecoration(
-                          hintText: s.csMessageHint,
+                        focusNode: _focusNode,
+                        decoration: const InputDecoration(
+                          hintText: 'Ketik pesan untuk admin disini...',
                           filled: false,
                           border: InputBorder.none,
                           enabledBorder: InputBorder.none,
                           focusedBorder: InputBorder.none,
                         ),
+                        onSubmitted: (_) => _kirimPesan(),
                       ),
                     ),
                     GestureDetector(
-                      onTap: _kirimPesan,
-                      child: const Icon(Icons.send, color: AppColors.textSecondary),
+                      onTap: _sedangKirim ? null : _kirimPesan,
+                      child: _sedangKirim
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: AppColors.textSecondary),
+                            )
+                          : Image.asset(
+                              'assets/icons/Send.png',
+                              width: 24,
+                              height: 24,
+                              errorBuilder: (_, __, ___) => const Icon(
+                                  Icons.send,
+                                  color: AppColors.textSecondary),
+                            ),
                     ),
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Colors.black87, width: 1.2),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Colors.black87, width: 1.2),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Colors.black87, width: 1.5),
-                  ),
+                  ],
                 ),
-                onSubmitted: (_) => _kirimPesan(),
               ),
             ),
           ],
@@ -287,20 +250,39 @@ class _ChatCsPageState extends State<ChatCsPage> {
 
 class _TombolTopik extends StatelessWidget {
   final String label;
+  final bool terpilih;
   final VoidCallback onTap;
 
-  const _TombolTopik({required this.label, required this.onTap});
+  const _TombolTopik({
+    required this.label,
+    required this.terpilih,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return OutlinedButton(
-      style: OutlinedButton.styleFrom(
-        alignment: Alignment.centerLeft,
-        minimumSize: const Size(0, 44),
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding:
+            const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        decoration: BoxDecoration(
+          color: terpilih ? AppColors.primary : AppColors.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: terpilih ? AppColors.primary : Colors.black87,
+            width: 1.2,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: terpilih ? Colors.white : AppColors.textPrimary,
+          ),
+        ),
       ),
-      onPressed: onTap,
-      child: Text(label, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
     );
   }
 }

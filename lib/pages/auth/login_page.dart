@@ -197,47 +197,6 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 20),
 
-              // Divider "Atau"
-              Row(
-                children: [
-                  const Expanded(child: Divider(color: AppColors.border)),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: Text(s.orDivider, style: AppTextStyles.caption),
-                  ),
-                  const Expanded(child: Divider(color: AppColors.border)),
-                ],
-              ),
-              const SizedBox(height: 20),
-
-              // Login dengan Google
-              OutlinedButton.icon(
-                onPressed: () {
-                  // TODO: integrasi login Google
-                },
-                icon: Image.asset(
-                  'assets/icons/social/google.png',
-                  width: 20,
-                  height: 20,
-                ),
-                label: Text(s.loginWithGoogle),
-              ),
-              const SizedBox(height: 12),
-
-              // Login dengan Facebook
-              OutlinedButton.icon(
-                onPressed: () {
-                  // TODO: integrasi login Facebook
-                },
-                icon: Image.asset(
-                  'assets/icons/social/facebook.png',
-                  width: 20,
-                  height: 20,
-                ),
-                label: Text(s.loginWithFacebook),
-              ),
-              const SizedBox(height: 20),
-
               // Link ke Register
               Center(
                 child: RichText(
