@@ -468,6 +468,30 @@ class _KartuLokasiPeta extends StatelessWidget {
                             : AppColors.textPrimary,
                       ),
                     ),
+                    if (data.tanggalFormat != null) ...[
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          const Icon(Icons.calendar_today_outlined,
+                              size: 13, color: AppColors.textSecondary),
+                          const SizedBox(width: 2),
+                          Text(data.tanggalFormat!,
+                              style: AppTextStyles.caption),
+                        ],
+                      ),
+                    ],
+                    if (data.jadwalLabel != null) ...[
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          const Icon(Icons.access_time,
+                              size: 13, color: AppColors.textSecondary),
+                          const SizedBox(width: 2),
+                          Text(data.jadwalLabel!,
+                              style: AppTextStyles.caption),
+                        ],
+                      ),
+                    ],
                   ],
                 ),
               ),

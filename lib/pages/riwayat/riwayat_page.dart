@@ -7,7 +7,7 @@ import '../../model/item_pendaftaran.dart';
 import '../../services/riwayat/riwayat_service.dart';
 import '../../services/core/api_exception.dart';
 
-/// Halaman Riwayat (RW-001) — dua tab: Donor & Pendaftaran.
+// RW-001) 
 class RiwayatPage extends StatefulWidget {
   const RiwayatPage({super.key});
 
@@ -16,10 +16,8 @@ class RiwayatPage extends StatefulWidget {
 }
 
 class _RiwayatPageState extends State<RiwayatPage> {
-  // ── Tab ──────────────────────────────────────────────────────────────────
   int _tabAktif = 0; // 0 = Donor, 1 = Pendaftaran
 
-  // ── Tab Donor ─────────────────────────────────────────────────────────────
   static const List<_FilterChipData> _filters = [
     _FilterChipData(id: 'all',     label: 'ALL'),
     _FilterChipData(id: '1bulan',  label: '1 Bulan Terakhir'),
@@ -34,7 +32,6 @@ class _RiwayatPageState extends State<RiwayatPage> {
   String? _pesanErrorDonor;
   RiwayatResponse? _dataDonor;
 
-  // ── Tab Pendaftaran ───────────────────────────────────────────────────────
   bool _sedangMemuatDaftar = false;
   String? _pesanErrorDaftar;
   List<ItemPendaftaran> _dataDaftar = [];
@@ -47,7 +44,6 @@ class _RiwayatPageState extends State<RiwayatPage> {
     _muatDaftar();
   }
 
-  // ── Loader: Donor ─────────────────────────────────────────────────────────
   Future<void> _muatDonor() async {
     setState(() { _sedangMemuatDonor = true; _pesanErrorDonor = null; });
     try {
@@ -65,7 +61,6 @@ class _RiwayatPageState extends State<RiwayatPage> {
     }
   }
 
-  // ── Loader: Pendaftaran ───────────────────────────────────────────────────
   Future<void> _muatDaftar() async {
     setState(() { _sedangMemuatDaftar = true; _pesanErrorDaftar = null; });
     try {
@@ -118,9 +113,10 @@ class _RiwayatPageState extends State<RiwayatPage> {
       await _service.batalkanPendaftaran(item.idPendaftaran);
       await _muatDaftar();
     } on ApiException catch (e) {
-      if (e.statusCode == 401 || !mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(e.message)));
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(e.message)));
+      }
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -148,7 +144,6 @@ class _RiwayatPageState extends State<RiwayatPage> {
         _          => '-',
       };
 
-  // ── Build ─────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -163,7 +158,6 @@ class _RiwayatPageState extends State<RiwayatPage> {
 
           const SizedBox(height: 14),
 
-          // Tab pill switcher
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppDimens.paddingL),
             child: Container(
@@ -199,7 +193,6 @@ class _RiwayatPageState extends State<RiwayatPage> {
 
           const SizedBox(height: 4),
 
-          // Konten tab
           Expanded(
             child: _tabAktif == 0 ? _buildTabDonor() : _buildTabDaftar(),
           ),
@@ -208,7 +201,6 @@ class _RiwayatPageState extends State<RiwayatPage> {
     );
   }
 
-  // ── Tab Donor ─────────────────────────────────────────────────────────────
   Widget _buildTabDonor() {
     if (_sedangMemuatDonor) {
       return const Center(child: CircularProgressIndicator());
@@ -276,7 +268,6 @@ class _RiwayatPageState extends State<RiwayatPage> {
     );
   }
 
-  // ── Tab Pendaftaran ───────────────────────────────────────────────────────
   Widget _buildTabDaftar() {
     if (_sedangMemuatDaftar) {
       return const Center(child: CircularProgressIndicator());
@@ -306,7 +297,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
       child: ListView.separated(
         padding: const EdgeInsets.all(AppDimens.paddingL),
         itemCount: _dataDaftar.length,
-        separatorBuilder: (_, _) => const SizedBox(height: 12),
+        separatorBuilder: (_, __) => const SizedBox(height: 12),
         itemBuilder: (context, i) {
           final item = _dataDaftar[i];
           return _KartuPendaftaran(
@@ -320,7 +311,6 @@ class _RiwayatPageState extends State<RiwayatPage> {
   }
 }
 
-// ── Pill Tab ──────────────────────────────────────────────────────────────────
 class _PillTab extends StatelessWidget {
   final String label;
   final bool aktif;
@@ -766,8 +756,8 @@ class _KartuRiwayat extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 99,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      constraints: const BoxConstraints(minHeight: 99),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: _dekorasiKartu,
       child: Row(
         children: [
@@ -804,8 +794,9 @@ class _KartuRiwayat extends StatelessWidget {
                             blurRadius: 4, offset: Offset.zero),
                       ],
                     ),
-                    child: const Text('-',
-                        style: TextStyle(fontSize: 12,
+                    child: Text(
+                        item.golonganDarah ?? '-',
+                        style: const TextStyle(fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: AppColors.primary)),
                   ),

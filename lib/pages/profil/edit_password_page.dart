@@ -4,7 +4,6 @@ import '../../core/validators/app_validators.dart';
 import '../../services/profil/profil_service.dart';
 import '../../services/core/api_exception.dart';
 
-/// Halaman Edit Password (P-001 varian Edit Password) — sesuai desain Figma.
 class EditPasswordPage extends StatefulWidget {
   const EditPasswordPage({super.key});
 
@@ -36,6 +35,7 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
     final passBr = _passBrCtrl.text;
     final konfirm = _konfirmasiCtrl.text;
 
+    // Validasi di sisi Flutter dulu sebelum kirim ke server
     if (passSkr.isEmpty || passBr.isEmpty || konfirm.isEmpty) {
       _tampilkanPesan('Semua field wajib diisi');
       return;
@@ -93,17 +93,13 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
                         size: 28, color: AppColors.textPrimary),
                   ),
                   const Expanded(
-                    child: Text(
-                      'Edit Password',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary),
-                    ),
+                    child: Text('Edit Password',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary)),
                   ),
-                  const Icon(Icons.settings_outlined,
-                      size: 26, color: AppColors.textPrimary),
+                  const SizedBox(width: 28),
                 ],
               ),
               const SizedBox(height: 32),
@@ -123,8 +119,7 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.25),
-                      blurRadius: 4,
-                      offset: Offset.zero,
+                      blurRadius: 4, offset: Offset.zero,
                     ),
                   ],
                 ),
@@ -221,10 +216,7 @@ class _LabelField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Text(label,
-        style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.normal,
-            color: AppColors.textPrimary));
+        style: const TextStyle(fontSize: 14, color: AppColors.textPrimary));
   }
 }
 
@@ -246,6 +238,7 @@ class _InputPassword extends StatelessWidget {
     return TextField(
       controller: ctrl,
       obscureText: !lihat,
+      keyboardType: TextInputType.visiblePassword,
       style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
       decoration: InputDecoration(
         hintText: hint,
@@ -268,8 +261,7 @@ class _InputPassword extends StatelessWidget {
           onTap: onToggle,
           child: Icon(
             lihat ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-            size: 20,
-            color: AppColors.textSecondary,
+            size: 20, color: AppColors.textSecondary,
           ),
         ),
       ),
