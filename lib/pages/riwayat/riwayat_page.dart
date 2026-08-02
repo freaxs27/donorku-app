@@ -48,10 +48,13 @@ class _RiwayatPageState extends State<RiwayatPage> {
     setState(() { _sedangMemuatDonor = true; _pesanErrorDonor = null; });
     try {
       final hasil = await _service.ambilRiwayat(_filterAktif);
+      if (!mounted) return;
       setState(() => _dataDonor = hasil);
     } on ApiException catch (e) {
+      if (e.statusCode == 401 || !mounted) return;
       setState(() => _pesanErrorDonor = e.message);
     } catch (e) {
+      if (!mounted) return;
       setState(() => _pesanErrorDonor = 'Terjadi kesalahan, coba lagi.');
     } finally {
       if (mounted) setState(() => _sedangMemuatDonor = false);
@@ -62,10 +65,13 @@ class _RiwayatPageState extends State<RiwayatPage> {
     setState(() { _sedangMemuatDaftar = true; _pesanErrorDaftar = null; });
     try {
       final hasil = await _service.ambilDaftarPendaftaran();
+      if (!mounted) return;
       setState(() => _dataDaftar = hasil);
     } on ApiException catch (e) {
+      if (e.statusCode == 401 || !mounted) return;
       setState(() => _pesanErrorDaftar = e.message);
     } catch (_) {
+      if (!mounted) return;
       setState(() => _pesanErrorDaftar = 'Terjadi kesalahan, coba lagi.');
     } finally {
       if (mounted) setState(() => _sedangMemuatDaftar = false);

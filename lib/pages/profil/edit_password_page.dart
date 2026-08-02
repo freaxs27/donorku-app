@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
+import '../../core/validators/app_validators.dart';
 import '../../services/profil/profil_service.dart';
 import '../../services/core/api_exception.dart';
 
@@ -11,16 +12,15 @@ class EditPasswordPage extends StatefulWidget {
 }
 
 class _EditPasswordPageState extends State<EditPasswordPage> {
-  final _passSkrCtrl    = TextEditingController();
-  final _passBrCtrl     = TextEditingController();
+  final _passSkrCtrl = TextEditingController();
+  final _passBrCtrl = TextEditingController();
   final _konfirmasiCtrl = TextEditingController();
+  final ProfilService _service = ProfilService();
 
-  bool _lihatSkr    = false;
-  bool _lihatBr     = false;
+  bool _lihatSkr = false;
+  bool _lihatBr = false;
   bool _lihatKonfir = false;
   bool _sedangSimpan = false;
-
-  final ProfilService _service = ProfilService();
 
   @override
   void dispose() {
@@ -31,21 +31,23 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
   }
 
   Future<void> _simpan() async {
-    final passSkr  = _passSkrCtrl.text.trim();
-    final passBr   = _passBrCtrl.text.trim();
-    final konfirm  = _konfirmasiCtrl.text.trim();
+    final passSkr = _passSkrCtrl.text;
+    final passBr = _passBrCtrl.text;
+    final konfirm = _konfirmasiCtrl.text;
 
     // Validasi di sisi Flutter dulu sebelum kirim ke server
     if (passSkr.isEmpty || passBr.isEmpty || konfirm.isEmpty) {
       _tampilkanPesan('Semua field wajib diisi');
       return;
     }
-    if (passBr.length < 8) {
-      _tampilkanPesan('Password baru minimal 8 karakter');
+    final errPass = AppValidators.password(passBr);
+    if (errPass != null) {
+      _tampilkanPesan(errPass);
       return;
     }
-    if (passBr != konfirm) {
-      _tampilkanPesan('Konfirmasi password tidak cocok');
+    final errKonfirm = AppValidators.passwordConfirm(passBr, konfirm);
+    if (errKonfirm != null) {
+      _tampilkanPesan(errKonfirm);
       return;
     }
 
@@ -56,11 +58,11 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
         passwordBaru: passBr,
         konfirmasiPasswordBaru: konfirm,
       );
-      if (mounted) {
-        _tampilkanPesan('Password berhasil diubah');
-        Navigator.of(context).pop();
-      }
+      if (!mounted) return;
+      _tampilkanPesan('Password berhasil diubah');
+      Navigator.of(context).pop();
     } on ApiException catch (e) {
+      if (e.statusCode == 401) return;
       if (mounted) _tampilkanPesan(e.message);
     } catch (_) {
       if (mounted) _tampilkanPesan('Gagal mengubah password, coba lagi.');
@@ -83,7 +85,6 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Header
               Row(
                 children: [
                   GestureDetector(
@@ -102,12 +103,14 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
                 ],
               ),
               const SizedBox(height: 32),
-
-              const Text('Ubah Password',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary)),
+              const Text(
+                'Ubah Password',
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary),
+              ),
               const SizedBox(height: 16),
-
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -154,12 +157,13 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
                 ),
               ),
               const SizedBox(height: 24),
-
               Row(
                 children: [
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: () => Navigator.of(context).pop(),
+                      onPressed: _sedangSimpan
+                          ? null
+                          : () => Navigator.of(context).pop(),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.textPrimary,
                         side: const BorderSide(color: AppColors.border),
@@ -167,8 +171,7 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12)),
                       ),
-                      child: const Text('Batal',
-                          style: TextStyle(fontSize: 14)),
+                      child: const Text('Batal', style: TextStyle(fontSize: 14)),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -184,9 +187,14 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
                         elevation: 0,
                       ),
                       child: _sedangSimpan
-                          ? const SizedBox(width: 18, height: 18,
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
                               child: CircularProgressIndicator(
-                                  strokeWidth: 2, color: Colors.white))
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
                           : const Text('Simpan',
                               style: TextStyle(fontSize: 14)),
                     ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../theme/app_theme.dart';
+import '../../../core/validators/app_validators.dart';
 import '../../../services/auth/auth_service.dart';
 import '../../../services/core/api_exception.dart';
 import 'reset_sukses_page.dart';
@@ -35,16 +36,14 @@ class _AturPasswordPageState extends State<AturPasswordPage> {
     final password = _passwordController.text;
     final konfirmasi = _konfirmasiController.text;
 
-    if (password.isEmpty) {
-      _tampilkanPesan('Password wajib diisi');
+    final errPass = AppValidators.password(password);
+    if (errPass != null) {
+      _tampilkanPesan(errPass);
       return;
     }
-    if (password.length < 6) {
-      _tampilkanPesan('Password minimal 6 karakter');
-      return;
-    }
-    if (password != konfirmasi) {
-      _tampilkanPesan('Konfirmasi password tidak sama');
+    final errKonfirm = AppValidators.passwordConfirm(password, konfirmasi);
+    if (errKonfirm != null) {
+      _tampilkanPesan(errKonfirm);
       return;
     }
 
