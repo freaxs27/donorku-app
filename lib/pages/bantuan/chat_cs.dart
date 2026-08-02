@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
+import '../../core/locale/app_strings.dart';
 
 // (CA-001).
 class ChatCsPage extends StatefulWidget {
@@ -33,11 +34,12 @@ class _ChatCsPageState extends State<ChatCsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
         leading: const BackButton(color: AppColors.textPrimary),
-        title: const Text('Hubungi Staf Dukungan', style: AppTextStyles.subheading),
+        title: Text(s.contactSupportTitle, style: AppTextStyles.subheading),
         titleSpacing: 0,
       ),
       body: SafeArea(
@@ -65,11 +67,11 @@ class _ChatCsPageState extends State<ChatCsPage> {
                     ),
                     const SizedBox(height: 16),
 
-                    const Text('Halo! Saya Revan', style: AppTextStyles.heading),
-                    const Text('dari Tim Dukungan', style: AppTextStyles.heading),
+                    Text(s.csGreetingName, style: AppTextStyles.heading),
+                    Text(s.csGreetingTeam, style: AppTextStyles.heading),
                     const SizedBox(height: 8),
                     Text(
-                      'Pilih topik dibawah ini agar saya bisa membantumu lebih cepat',
+                      s.csTopicPrompt,
                       style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
                     ),
                     const SizedBox(height: 20),
@@ -78,13 +80,13 @@ class _ChatCsPageState extends State<ChatCsPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          _TombolTopik(label: 'Masalah Donor', onTap: () => _pilihTopik('Masalah Donor')),
+                          _TombolTopik(label: s.topicDonorIssue, onTap: () => _pilihTopik(s.topicDonorIssue)),
                           const SizedBox(height: 12),
-                          _TombolTopik(label: 'Masalah Akun', onTap: () => _pilihTopik('Masalah Akun')),
+                          _TombolTopik(label: s.topicAccountIssue, onTap: () => _pilihTopik(s.topicAccountIssue)),
                           const SizedBox(height: 12),
-                          _TombolTopik(label: 'Informasi Lokasi', onTap: () => _pilihTopik('Informasi Lokasi')),
+                          _TombolTopik(label: s.topicLocationInfo, onTap: () => _pilihTopik(s.topicLocationInfo)),
                           const SizedBox(height: 12),
-                          _TombolTopik(label: 'Lainnya', onTap: () => _pilihTopik('Lainnya')),
+                          _TombolTopik(label: s.topicOther, onTap: () => _pilihTopik(s.topicOther)),
                         ],
                       ),
                     ),
@@ -107,8 +109,8 @@ class _ChatCsPageState extends State<ChatCsPage> {
                     Expanded(
                       child: TextField(
                         controller: _pesanController,
-                        decoration: const InputDecoration(
-                          hintText: 'Ketik pesan untuk admin disini...',
+                        decoration: InputDecoration(
+                          hintText: s.csMessageHint,
                           filled: false,
                           border: InputBorder.none,
                           enabledBorder: InputBorder.none,

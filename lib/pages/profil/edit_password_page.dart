@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/locale/app_strings.dart';
 import '../../theme/app_theme.dart';
 import '../../core/validators/app_validators.dart';
 import '../../services/profil/profil_service.dart';
@@ -37,7 +38,7 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
 
     // Validasi di sisi Flutter dulu sebelum kirim ke server
     if (passSkr.isEmpty || passBr.isEmpty || konfirm.isEmpty) {
-      _tampilkanPesan('Semua field wajib diisi');
+      _tampilkanPesan(AppStrings.of(context).allFieldsRequired);
       return;
     }
     final errPass = AppValidators.password(passBr);
@@ -59,13 +60,13 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
         konfirmasiPasswordBaru: konfirm,
       );
       if (!mounted) return;
-      _tampilkanPesan('Password berhasil diubah');
+      _tampilkanPesan(AppStrings.of(context).passwordChanged);
       Navigator.of(context).pop();
     } on ApiException catch (e) {
       if (e.statusCode == 401) return;
       if (mounted) _tampilkanPesan(e.message);
     } catch (_) {
-      if (mounted) _tampilkanPesan('Gagal mengubah password, coba lagi.');
+      if (mounted) _tampilkanPesan(AppStrings.of(context).changePasswordFailed);
     } finally {
       if (mounted) setState(() => _sedangSimpan = false);
     }
@@ -78,6 +79,7 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -92,10 +94,10 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
                     child: const Icon(Icons.arrow_back,
                         size: 28, color: AppColors.textPrimary),
                   ),
-                  const Expanded(
-                    child: Text('Edit Password',
+                  Expanded(
+                    child: Text(s.editPasswordTitle,
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 16,
+                        style: const TextStyle(fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: AppColors.textPrimary)),
                   ),
@@ -103,9 +105,9 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
                 ],
               ),
               const SizedBox(height: 32),
-              const Text(
-                'Ubah Password',
-                style: TextStyle(
+              Text(
+                s.changePasswordTitle,
+                style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textPrimary),
@@ -126,29 +128,29 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _LabelField(label: 'Password Saat Ini'),
+                    _LabelField(label: s.currentPasswordLabel),
                     const SizedBox(height: 6),
                     _InputPassword(
                       ctrl: _passSkrCtrl,
-                      hint: 'Masukkan password sekarang',
+                      hint: s.currentPasswordHint,
                       lihat: _lihatSkr,
                       onToggle: () => setState(() => _lihatSkr = !_lihatSkr),
                     ),
                     const SizedBox(height: 16),
-                    _LabelField(label: 'Password Baru'),
+                    _LabelField(label: s.newPasswordLabel),
                     const SizedBox(height: 6),
                     _InputPassword(
                       ctrl: _passBrCtrl,
-                      hint: 'Masukkan password baru',
+                      hint: s.newPasswordHint,
                       lihat: _lihatBr,
                       onToggle: () => setState(() => _lihatBr = !_lihatBr),
                     ),
                     const SizedBox(height: 16),
-                    _LabelField(label: 'Konfirmasi Password Baru'),
+                    _LabelField(label: s.confirmNewPasswordLabel),
                     const SizedBox(height: 6),
                     _InputPassword(
                       ctrl: _konfirmasiCtrl,
-                      hint: 'Masukkan kembali password baru',
+                      hint: s.confirmNewPasswordHint,
                       lihat: _lihatKonfir,
                       onToggle: () =>
                           setState(() => _lihatKonfir = !_lihatKonfir),
@@ -171,7 +173,7 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12)),
                       ),
-                      child: const Text('Batal', style: TextStyle(fontSize: 14)),
+                      child: Text(s.cancelButton, style: const TextStyle(fontSize: 14)),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -195,8 +197,8 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
                                 color: Colors.white,
                               ),
                             )
-                          : const Text('Simpan',
-                              style: TextStyle(fontSize: 14)),
+                          : Text(s.saveButton,
+                              style: const TextStyle(fontSize: 14)),
                     ),
                   ),
                 ],

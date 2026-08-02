@@ -1,3 +1,5 @@
+import '../core/locale/app_strings.dart';
+
 class ItemPendaftaran {
   final int idPendaftaran;
   final int nomorAntrian;
@@ -32,23 +34,11 @@ class ItemPendaftaran {
   /// Prioritas: kalau sudah ada hasil riwayat dari admin → pakai itu.
   /// Kalau belum → pakai status pendaftaran.
   String get statusLabel {
+    final s = AppStrings.current;
     if (riwayat != null) {
-      return switch (riwayat!.statusDonor) {
-        'berhasil' => 'Berhasil',
-        'gagal'    => 'Gagal',
-        'ditunda'  => 'Ditunda',
-        _          => riwayat!.statusDonor,
-      };
+      return s.labelStatusDonor(riwayat!.statusDonor);
     }
-    return switch (statusPendaftaran) {
-      'menunggu'    => 'Menunggu',
-      'diterima'    => 'Diterima',
-      'ditolak'     => 'Ditolak',
-      'dibatalkan'  => 'Dibatalkan',
-      'selesai'     => 'Selesai',
-      'batal_hadir' => 'Tidak Hadir',
-      _             => statusPendaftaran,
-    };
+    return s.labelStatusPendaftaran(statusPendaftaran);
   }
 
   /// Warna badge status
@@ -104,12 +94,7 @@ class JadwalPendaftaran {
 
   String get tanggalFormat {
     if (tanggalPelaksanaan == null) return '-';
-    final t = DateTime.parse(tanggalPelaksanaan!);
-    const bulan = [
-      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
-    ];
-    return '${t.day} ${bulan[t.month - 1]} ${t.year}';
+    return AppStrings.current.formatTanggal(DateTime.parse(tanggalPelaksanaan!));
   }
 }
 

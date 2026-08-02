@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'theme/app_theme.dart';
 import 'services/auth/session_service.dart';
 import 'services/core/api_client.dart';
+import 'core/locale/app_bahasa.dart';
+import 'core/locale/app_strings.dart';
 import 'pages/auth/login_page.dart';
 import 'widgets/main_shell.dart';
 
 final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await LocaleController.instance.muat();
   ApiClient.onUnauthorized = () {
     _navigatorKey.currentState?.pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => const LoginPage()),
@@ -23,12 +27,25 @@ class DonorkuApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Donorku',
-      navigatorKey: _navigatorKey,
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      home: const _AuthGate(),
+    return ListenableBuilder(
+      listenable: LocaleController.instance,
+      builder: (context, _) {
+        return MaterialApp(
+          title: 'Donorku',
+          navigatorKey: _navigatorKey,
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.lightTheme,
+          locale: LocaleController.instance.locale,
+          supportedLocales: AppBahasa.values.map((b) => b.locale).toList(),
+          localizationsDelegates: const [
+            AppStringsDelegate(),
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          home: const _AuthGate(),
+        );
+      },
     );
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../theme/app_theme.dart';
+import '../../../core/locale/app_strings.dart';
 import '../../../model/data_register.dart';
 import '../../../services/auth/auth_service.dart';
 import '../../../services/core/api_exception.dart';
@@ -51,7 +52,7 @@ class _FotoDiriPageState extends State<FotoDiriPage> {
         data.golonganDarah == null ||
         data.profesi == null ||
         data.jenisKelamin == null) {
-      _tampilkanPesan('Data KTP belum lengkap, silakan ulangi dari langkah sebelumnya');
+      _tampilkanPesan(AppStrings.of(context).ktpDataIncomplete);
       return;
     }
 
@@ -82,7 +83,7 @@ class _FotoDiriPageState extends State<FotoDiriPage> {
     } on ApiException catch (e) {
       _tampilkanPesan(e.message);
     } catch (e) {
-      _tampilkanPesan('Terjadi kesalahan tak terduga, coba lagi');
+      _tampilkanPesan(AppStrings.of(context).unexpectedError);
     } finally {
       if (mounted) setState(() => _sedangKirim = false);
     }
@@ -94,6 +95,7 @@ class _FotoDiriPageState extends State<FotoDiriPage> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Scaffold(
       appBar: AppBar(
         leading: const BackButton(color: AppColors.textPrimary),
@@ -103,12 +105,12 @@ class _FotoDiriPageState extends State<FotoDiriPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Center(
-              child: Text('Buat Akunmu', style: AppTextStyles.heading),
+            Center(
+              child: Text(s.createAccountTitle, style: AppTextStyles.heading),
             ),
             const SizedBox(height: 20),
 
-            const Text('Foto Diri', style: AppTextStyles.subheading),
+            Text(s.selfieTitle, style: AppTextStyles.subheading),
             const SizedBox(height: 12),
 
             GestureDetector(
@@ -143,7 +145,7 @@ class _FotoDiriPageState extends State<FotoDiriPage> {
                       height: 20,
                       child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                     )
-                  : const Text('Buat Akun'),
+                  : Text(s.createAccountButton),
             ),
             const SizedBox(height: 16),
 
@@ -152,9 +154,9 @@ class _FotoDiriPageState extends State<FotoDiriPage> {
                 TextSpan(
                   style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
                   children: [
-                    const TextSpan(text: 'Sudah punya akun? '),
+                    TextSpan(text: s.haveAccountPrompt),
                     TextSpan(
-                      text: 'login disini',
+                      text: s.loginHereLink,
                       style: const TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
                       recognizer: TapGestureRecognizer()
                         ..onTap = () {

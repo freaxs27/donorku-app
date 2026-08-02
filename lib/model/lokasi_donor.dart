@@ -1,5 +1,6 @@
 import 'package:latlong2/latlong.dart';
 import '../services/core/api_config.dart';
+import '../core/locale/app_strings.dart';
 
 class LokasiDonor {
   final int? idLokasi;
@@ -49,21 +50,20 @@ class LokasiDonor {
     );
   }
 
-  /// Format tanggal "5 Agustus 2026"
+  /// Format tanggal lokal sesuai bahasa aplikasi.
   String? get tanggalFormat {
     if (tanggalPelaksanaan == null) return null;
-    const bulan = [
-      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
-    ];
-    return '${tanggalPelaksanaan!.day} ${bulan[tanggalPelaksanaan!.month - 1]} ${tanggalPelaksanaan!.year}';
+    return AppStrings.current.formatTanggal(tanggalPelaksanaan!);
   }
 
   /// Label jam + sisa kuota untuk ditampilkan di kartu
   String? get jadwalLabel {
     if (jamMulai == null || jamSelesai == null) return null;
-    final kuota = sisaKuota != null ? '  Sisa $sisaKuota kuota' : '';
-    return '$jamMulai - $jamSelesai$kuota';
+    final s = AppStrings.current;
+    if (sisaKuota != null) {
+      return s.scheduleQuota(jamMulai!, jamSelesai!, sisaKuota!);
+    }
+    return '$jamMulai - $jamSelesai';
   }
 }
 

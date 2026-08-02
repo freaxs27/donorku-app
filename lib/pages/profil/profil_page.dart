@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/locale/app_strings.dart';
 import '../../theme/app_theme.dart';
 import '../../model/data_profil.dart';
 import '../../services/profil/profil_service.dart';
@@ -36,7 +37,7 @@ class _ProfilPageState extends State<ProfilPage> {
     } on ApiException catch (e) {
       setState(() => _pesanError = e.message);
     } catch (_) {
-      setState(() => _pesanError = 'Gagal memuat profil, coba lagi.');
+      setState(() => _pesanError = AppStrings.of(context).loadProfileFailed);
     } finally {
       if (mounted) setState(() => _sedangMemuat = false);
     }
@@ -44,6 +45,7 @@ class _ProfilPageState extends State<ProfilPage> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return SafeArea(
       child: _sedangMemuat
           ? const Center(child: CircularProgressIndicator())
@@ -55,15 +57,15 @@ class _ProfilPageState extends State<ProfilPage> {
                       Text(_pesanError!, style: AppTextStyles.caption,
                           textAlign: TextAlign.center),
                       const SizedBox(height: 8),
-                      TextButton(onPressed: _muatData, child: const Text('Coba lagi')),
+                      TextButton(onPressed: _muatData, child: Text(s.tryAgain)),
                     ],
                   ),
                 )
-              : _buildKonten(),
+              : _buildKonten(s),
     );
   }
 
-  Widget _buildKonten() {
+  Widget _buildKonten(AppStrings s) {
     final data = _data;
     if (data == null) return const SizedBox.shrink();
 
@@ -80,7 +82,7 @@ class _ProfilPageState extends State<ProfilPage> {
               children: [
                 const SizedBox(width: 28),
                 Expanded(
-                  child: Text('Profil',
+                  child: Text(s.profileTitle,
                       textAlign: TextAlign.center,
                       style: AppTextStyles.subheading.copyWith(
                           fontSize: 16, fontWeight: FontWeight.bold)),
@@ -132,8 +134,8 @@ class _ProfilPageState extends State<ProfilPage> {
                                     fontSize: 24, fontWeight: FontWeight.bold,
                                     color: AppColors.primary)),
                             const SizedBox(height: 2),
-                            const Text('Total Donasi',
-                                style: TextStyle(fontSize: 10,
+                            Text(s.totalDonations,
+                                style: const TextStyle(fontSize: 10,
                                     color: AppColors.textPrimary)),
                           ],
                         ),
@@ -149,8 +151,8 @@ class _ProfilPageState extends State<ProfilPage> {
                                     fontSize: 24, fontWeight: FontWeight.bold,
                                     color: AppColors.primary)),
                             const SizedBox(height: 2),
-                            const Text('ml Darah',
-                                style: TextStyle(fontSize: 10,
+                            Text(s.mlBlood,
+                                style: const TextStyle(fontSize: 10,
                                     color: AppColors.textPrimary)),
                           ],
                         ),
@@ -163,9 +165,9 @@ class _ProfilPageState extends State<ProfilPage> {
             const SizedBox(height: 20),
 
             // Informasi Pribadi
-            const _JudulSection(text: 'Informasi Pribadi'),
+            _JudulSection(text: s.personalInfoSection),
             const SizedBox(height: 8),
-            _KartuInfoPribadi(data: data),
+            _KartuInfoPribadi(data: data, s: s),
             const SizedBox(height: 12),
 
             // Tombol Edit Profil + Edit Password
@@ -188,8 +190,8 @@ class _ProfilPageState extends State<ProfilPage> {
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12)),
                     ),
-                    child: const Text('Edit Profil',
-                        style: TextStyle(fontSize: 14)),
+                    child: Text(s.editProfileButton,
+                        style: const TextStyle(fontSize: 14)),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -207,8 +209,8 @@ class _ProfilPageState extends State<ProfilPage> {
                           borderRadius: BorderRadius.circular(12)),
                       elevation: 0,
                     ),
-                    child: const Text('Edit Password',
-                        style: TextStyle(fontSize: 14)),
+                    child: Text(s.editPasswordButton,
+                        style: const TextStyle(fontSize: 14)),
                   ),
                 ),
               ],
@@ -216,12 +218,12 @@ class _ProfilPageState extends State<ProfilPage> {
             const SizedBox(height: 20),
 
             // Lainnya
-            const _JudulSection(text: 'Lainnya'),
+            _JudulSection(text: s.otherSection),
             const SizedBox(height: 8),
-            const Text('Sertifikasi Pendonor',
-                style: TextStyle(fontSize: 16, color: AppColors.textPrimary)),
+            Text(s.donorCertification,
+                style: const TextStyle(fontSize: 16, color: AppColors.textPrimary)),
             const SizedBox(height: 8),
-            _KartuSertifikasi(),
+            _KartuSertifikasi(openGalleryLabel: s.openGalleryButton),
           ],
         ),
       ),
@@ -276,17 +278,18 @@ class _JudulSection extends StatelessWidget {
 
 class _KartuInfoPribadi extends StatelessWidget {
   final DataProfil data;
-  const _KartuInfoPribadi({required this.data});
+  final AppStrings s;
+  const _KartuInfoPribadi({required this.data, required this.s});
 
   @override
   Widget build(BuildContext context) {
     final baris = [
-      ('Nama Lengkap', data.namaLengkap),
-      ('No Telepon', data.noHp ?? '-'),
-      ('Tanggal Lahir', data.tanggalLahirFormat),
-      ('Alamat', data.alamat ?? '-'),
-      ('Email', data.email),
-      ('Golongan Darah', data.golonganDarah),
+      (s.fullNameLabel, data.namaLengkap),
+      (s.phoneProfilLabel, data.noHp ?? '-'),
+      (s.dobLabel, data.tanggalLahirFormat),
+      (s.addressLabel, data.alamat ?? '-'),
+      (s.emailLabel, data.email),
+      (s.bloodTypeLabel, data.golonganDarah),
     ];
 
     return Container(
@@ -328,6 +331,9 @@ class _KartuInfoPribadi extends StatelessWidget {
 }
 
 class _KartuSertifikasi extends StatelessWidget {
+  final String openGalleryLabel;
+  const _KartuSertifikasi({required this.openGalleryLabel});
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -361,7 +367,7 @@ class _KartuSertifikasi extends StatelessWidget {
                     borderRadius: BorderRadius.circular(10)),
                 elevation: 0,
               ),
-              child: const Text('Buka Galeri', style: TextStyle(fontSize: 14)),
+              child: Text(openGalleryLabel, style: const TextStyle(fontSize: 14)),
             ),
           ),
         ],

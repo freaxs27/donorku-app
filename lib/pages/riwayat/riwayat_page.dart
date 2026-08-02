@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../../core/locale/app_strings.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/header_halaman.dart';
 import '../../model/riwayat_donor.dart';
@@ -18,11 +19,11 @@ class RiwayatPage extends StatefulWidget {
 class _RiwayatPageState extends State<RiwayatPage> {
   int _tabAktif = 0; // 0 = Donor, 1 = Pendaftaran
 
-  static const List<_FilterChipData> _filters = [
-    _FilterChipData(id: 'all',     label: 'ALL'),
-    _FilterChipData(id: '1bulan',  label: '1 Bulan Terakhir'),
-    _FilterChipData(id: '6bulan',  label: '6 Bulan Terakhir'),
-    _FilterChipData(id: '1tahun',  label: '1 Tahun Terakhir'),
+  List<_FilterChipData> _filters(AppStrings s) => [
+    const _FilterChipData(id: 'all', label: 'ALL'),
+    _FilterChipData(id: '1bulan', label: s.filterLastMonth),
+    _FilterChipData(id: '6bulan', label: s.filterLast6Months),
+    _FilterChipData(id: '1tahun', label: s.filterLastYear),
   ];
 
   final RiwayatService _service = RiwayatService();
@@ -55,7 +56,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
       setState(() => _pesanErrorDonor = e.message);
     } catch (e) {
       if (!mounted) return;
-      setState(() => _pesanErrorDonor = 'Terjadi kesalahan, coba lagi.');
+      setState(() => _pesanErrorDonor = AppStrings.of(context).errorTryAgain);
     } finally {
       if (mounted) setState(() => _sedangMemuatDonor = false);
     }
@@ -72,7 +73,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
       setState(() => _pesanErrorDaftar = e.message);
     } catch (_) {
       if (!mounted) return;
-      setState(() => _pesanErrorDaftar = 'Terjadi kesalahan, coba lagi.');
+      setState(() => _pesanErrorDaftar = AppStrings.of(context).errorTryAgain);
     } finally {
       if (mounted) setState(() => _sedangMemuatDaftar = false);
     }
@@ -85,23 +86,23 @@ class _RiwayatPageState extends State<RiwayatPage> {
   }
 
   Future<void> _batalkan(ItemPendaftaran item) async {
+    final s = AppStrings.of(context);
     final konfirmasi = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Batalkan Pendaftaran?'),
+        title: Text(s.cancelRegistrationTitle),
         content: Text(
-          'Yakin ingin membatalkan pendaftaran donor di ${item.jadwal.lokasi} '
-          'pada ${item.jadwal.tanggalFormat}?',
+          s.cancelRegistrationMessage(item.jadwal.lokasi, item.jadwal.tanggalFormat),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Tidak'),
+            child: Text(s.noLabel),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Ya, Batalkan',
-                style: TextStyle(color: AppColors.primary)),
+            child: Text(s.yesCancelButton,
+                style: const TextStyle(color: AppColors.primary)),
           ),
         ],
       ),
@@ -120,7 +121,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Gagal membatalkan, coba lagi.')),
+          SnackBar(content: Text(AppStrings.of(context).cancelFailed)),
         );
       }
     } finally {
@@ -128,32 +129,29 @@ class _RiwayatPageState extends State<RiwayatPage> {
     }
   }
 
-  String _formatTanggalBolehDonor(DateTime? t) {
-    if (t == null) return 'Sekarang';
-    const bulan = [
-      'Januari','Februari','Maret','April','Mei','Juni',
-      'Juli','Agustus','September','Oktober','November','Desember',
-    ];
-    return '${t.day} ${bulan[t.month - 1]} ${t.year}';
+  String _formatTanggalBolehDonor(BuildContext context, DateTime? t) {
+    if (t == null) return AppStrings.of(context).nowLabel;
+    return AppStrings.of(context).formatTanggal(t);
   }
 
-  String _labelSkrining(String? s) => switch (s) {
-        'negatif' => 'Negatif',
-        'positif' => 'Positif',
+  String _labelSkrining(AppStrings s, String? status) => switch (status) {
+        'negatif' => s.screeningNegative,
+        'positif' => s.screeningPositive,
         'pending'  => 'Pending',
         _          => '-',
       };
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return SafeArea(
       child: Column(
         children: [
           // Judul
-          const Padding(
-            padding: EdgeInsets.fromLTRB(
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
                 AppDimens.paddingL, AppDimens.paddingM, AppDimens.paddingL, 0),
-            child: HeaderHalaman(judul: 'Riwayat Donor'),
+            child: HeaderHalaman(judul: s.historyTitle),
           ),
 
           const SizedBox(height: 14),
@@ -177,12 +175,12 @@ class _RiwayatPageState extends State<RiwayatPage> {
               child: Row(
                 children: [
                   _PillTab(
-                    label: 'Riwayat Donor',
+                    label: s.historyTab,
                     aktif: _tabAktif == 0,
                     onTap: () => setState(() => _tabAktif = 0),
                   ),
                   _PillTab(
-                    label: 'Pendaftaran',
+                    label: s.registrationTab,
                     aktif: _tabAktif == 1,
                     onTap: () => setState(() => _tabAktif = 1),
                   ),
@@ -194,14 +192,14 @@ class _RiwayatPageState extends State<RiwayatPage> {
           const SizedBox(height: 4),
 
           Expanded(
-            child: _tabAktif == 0 ? _buildTabDonor() : _buildTabDaftar(),
+            child: _tabAktif == 0 ? _buildTabDonor(s) : _buildTabDaftar(s),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildTabDonor() {
+  Widget _buildTabDonor(AppStrings s) {
     if (_sedangMemuatDonor) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -213,7 +211,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
             Text(_pesanErrorDonor!, style: AppTextStyles.caption,
                 textAlign: TextAlign.center),
             const SizedBox(height: 8),
-            TextButton(onPressed: _muatDonor, child: const Text('Coba lagi')),
+            TextButton(onPressed: _muatDonor, child: Text(s.tryAgain)),
           ],
         ),
       );
@@ -231,30 +229,34 @@ class _RiwayatPageState extends State<RiwayatPage> {
           _KartuRingkasan(totalDonasi: data.totalDonasi, totalMl: data.totalMlDarah),
           const SizedBox(height: 12),
           _KartuDonorKembali(
+            label: s.canDonateAgain,
             tanggal: data.bolehDonorSekarang
-                ? 'Sekarang'
-                : _formatTanggalBolehDonor(data.tanggalBolehDonor),
+                ? s.nowLabel
+                : _formatTanggalBolehDonor(context, data.tanggalBolehDonor),
           ),
           const SizedBox(height: 16),
           _BarisFilter(
-            filters: _filters,
+            filters: _filters(s),
             aktif: _filterAktif,
             onPilih: _gantiFilter,
           ),
           const SizedBox(height: 16),
           if (data.statusKesehatan != null) ...[
             _KartuStatusKesehatan(
+              labelStatus: s.healthStatusTitle,
+              labelHemoglobin: s.hemoglobinLabel,
+              labelNormal: s.normalLabel,
               hemoglobin: data.statusKesehatan!.hemoglobin ?? '-',
               tekananDarah: data.statusKesehatan!.tekananDarahFormat ?? '-',
-              hasilTes: _labelSkrining(data.statusKesehatan!.statusSkrining),
+              hasilTes: _labelSkrining(s, data.statusKesehatan!.statusSkrining),
             ),
             const SizedBox(height: 12),
           ],
           if (data.riwayat.isEmpty)
-            const Padding(
-              padding: EdgeInsets.only(top: 24),
+            Padding(
+              padding: const EdgeInsets.only(top: 24),
               child: Center(
-                child: Text('Belum ada riwayat donor pada periode ini',
+                child: Text(s.noHistoryInPeriod,
                     style: AppTextStyles.caption, textAlign: TextAlign.center),
               ),
             )
@@ -268,7 +270,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
     );
   }
 
-  Widget _buildTabDaftar() {
+  Widget _buildTabDaftar(AppStrings s) {
     if (_sedangMemuatDaftar) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -280,14 +282,14 @@ class _RiwayatPageState extends State<RiwayatPage> {
             Text(_pesanErrorDaftar!, style: AppTextStyles.caption,
                 textAlign: TextAlign.center),
             const SizedBox(height: 8),
-            TextButton(onPressed: _muatDaftar, child: const Text('Coba lagi')),
+            TextButton(onPressed: _muatDaftar, child: Text(s.tryAgain)),
           ],
         ),
       );
     }
     if (_dataDaftar.isEmpty) {
-      return const Center(
-        child: Text('Belum ada pendaftaran donor',
+      return Center(
+        child: Text(s.noRegistrations,
             style: AppTextStyles.caption),
       );
     }
@@ -304,6 +306,8 @@ class _RiwayatPageState extends State<RiwayatPage> {
             item: item,
             sedangBatalkan: _sedangBatalkan == item.idPendaftaran,
             onBatalkan: () => _batalkan(item),
+            queueLabel: s.queueNumber(item.nomorAntrian),
+            cancelLabel: s.cancelRegistrationButton,
           );
         },
       ),
@@ -349,11 +353,15 @@ class _KartuPendaftaran extends StatelessWidget {
   final ItemPendaftaran item;
   final bool sedangBatalkan;
   final VoidCallback onBatalkan;
+  final String queueLabel;
+  final String cancelLabel;
 
   const _KartuPendaftaran({
     required this.item,
     required this.sedangBatalkan,
     required this.onBatalkan,
+    required this.queueLabel,
+    required this.cancelLabel,
   });
 
   @override
@@ -397,8 +405,7 @@ class _KartuPendaftaran extends StatelessWidget {
           _baris(Icons.access_time,
               '${item.jadwal.jamMulai} - ${item.jadwal.jamSelesai}'),
           const SizedBox(height: 4),
-          _baris(Icons.confirmation_number_outlined,
-              'Antrian #${item.nomorAntrian}'),
+          _baris(Icons.confirmation_number_outlined, queueLabel),
           if (item.riwayat?.darahTerkumpul != null) ...[
             const SizedBox(height: 4),
             _baris(Icons.water_drop_outlined,
@@ -422,8 +429,8 @@ class _KartuPendaftaran extends StatelessWidget {
                         width: 16, height: 16,
                         child: CircularProgressIndicator(
                             strokeWidth: 2, color: AppColors.primary))
-                    : const Text('Batalkan Pendaftaran',
-                        style: TextStyle(fontSize: 13)),
+                    : Text(cancelLabel,
+                        style: const TextStyle(fontSize: 13)),
               ),
             ),
           ],
@@ -505,6 +512,7 @@ class _KartuRingkasan extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 18),
       decoration: _dekorasiKartu,
@@ -517,7 +525,7 @@ class _KartuRingkasan extends StatelessWidget {
                       fontSize: 40, fontWeight: FontWeight.bold,
                       color: AppColors.primary, height: 1)),
               const SizedBox(height: 4),
-              Text('Total Donasi',
+              Text(s.totalDonations,
                   style: AppTextStyles.caption.copyWith(fontSize: 10)),
             ]),
           ),
@@ -529,7 +537,7 @@ class _KartuRingkasan extends StatelessWidget {
                       fontSize: 40, fontWeight: FontWeight.bold,
                       color: AppColors.primary, height: 1)),
               const SizedBox(height: 4),
-              Text('ml Darah',
+              Text(s.mlBlood,
                   style: AppTextStyles.caption.copyWith(fontSize: 10)),
             ]),
           ),
@@ -541,8 +549,9 @@ class _KartuRingkasan extends StatelessWidget {
 
 // ── Kartu Donor Kembali ───────────────────────────────────────────────────────
 class _KartuDonorKembali extends StatelessWidget {
+  final String label;
   final String tanggal;
-  const _KartuDonorKembali({required this.tanggal});
+  const _KartuDonorKembali({required this.label, required this.tanggal});
 
   @override
   Widget build(BuildContext context) {
@@ -555,7 +564,7 @@ class _KartuDonorKembali extends StatelessWidget {
               size: 30, color: AppColors.textPrimary),
           const SizedBox(width: 16),
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('Dapat Donor Kembali', style: AppTextStyles.body),
+            Text(label, style: AppTextStyles.body),
             const SizedBox(height: 2),
             Text(tanggal,
                 style: const TextStyle(
@@ -639,11 +648,17 @@ class _ChipFilter extends StatelessWidget {
 
 // ── Kartu Status Kesehatan ────────────────────────────────────────────────────
 class _KartuStatusKesehatan extends StatelessWidget {
+  final String labelStatus;
+  final String labelHemoglobin;
+  final String labelNormal;
   final String hemoglobin;
   final String tekananDarah;
   final String hasilTes;
 
   const _KartuStatusKesehatan({
+    required this.labelStatus,
+    required this.labelHemoglobin,
+    required this.labelNormal,
     required this.hemoglobin,
     required this.tekananDarah,
     required this.hasilTes,
@@ -671,8 +686,8 @@ class _KartuStatusKesehatan extends StatelessWidget {
               Image.asset('assets/icons/riwayat/tekanan_darah.png',
                   width: 18, height: 18),
               const SizedBox(width: 8),
-              const Text('Status Kesehatan',
-                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600)),
+              Text(labelStatus,
+                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600)),
             ]),
           ),
           const SizedBox(height: 12),
@@ -681,8 +696,8 @@ class _KartuStatusKesehatan extends StatelessWidget {
               child: _MiniMetrik(
                 iconAsset: 'assets/icons/riwayat/hemoglobin.png',
                 baris1: Text.rich(TextSpan(children: [
-                  const TextSpan(text: 'Hemoglobin\n',
-                      style: TextStyle(fontSize: 9, fontWeight: FontWeight.w600)),
+                  TextSpan(text: '$labelHemoglobin\n',
+                      style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w600)),
                   TextSpan(text: hemoglobin,
                       style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w600)),
                   const TextSpan(text: ' g/dL',
@@ -699,8 +714,8 @@ class _KartuStatusKesehatan extends StatelessWidget {
                       style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w600)),
                   const TextSpan(text: ' mmHg\n',
                       style: TextStyle(fontSize: 7, fontWeight: FontWeight.w400)),
-                  const TextSpan(text: 'Normal',
-                      style: TextStyle(fontSize: 9, fontWeight: FontWeight.w600)),
+                  TextSpan(text: labelNormal,
+                      style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w600)),
                 ])),
               ),
             ),

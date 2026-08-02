@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/locale/app_strings.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/header_halaman.dart';
 import '../../model/jadwal_ringkas.dart';
@@ -33,11 +34,6 @@ class DonorKonfirmasiPage extends StatefulWidget {
 }
 
 class _DonorKonfirmasiPageState extends State<DonorKonfirmasiPage> {
-  static const List<String> _namaBulan = [
-    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
-  ];
-
   final PendaftaranService _pendaftaranService = PendaftaranService();
   final ProfilService _profilService = ProfilService();
 
@@ -75,8 +71,8 @@ class _DonorKonfirmasiPageState extends State<DonorKonfirmasiPage> {
     });
   }
 
-  String _formatTanggal(DateTime t) {
-    return '${t.day} ${_namaBulan[t.month - 1]} ${t.year}';
+  String _formatTanggal(BuildContext context, DateTime t) {
+    return AppStrings.of(context).formatTanggal(t);
   }
 
   Future<void> _daftarDonor() async {
@@ -98,7 +94,7 @@ class _DonorKonfirmasiPageState extends State<DonorKonfirmasiPage> {
       if (e.statusCode == 401) return;
       _tampilkanPesan(e.message);
     } catch (e) {
-      _tampilkanPesan('Terjadi kesalahan tak terduga, coba lagi');
+      _tampilkanPesan(AppStrings.of(context).unexpectedError);
     } finally {
       if (mounted) setState(() => _sedangKirim = false);
     }
@@ -110,6 +106,7 @@ class _DonorKonfirmasiPageState extends State<DonorKonfirmasiPage> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     final jadwal = widget.jadwalTerpilih;
 
     return Scaffold(
@@ -123,7 +120,7 @@ class _DonorKonfirmasiPageState extends State<DonorKonfirmasiPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     HeaderHalaman(
-                      judul: 'Donor',
+                      judul: s.donorTitle,
                       leadingIcon: Icons.arrow_back,
                       onTapLeading: () => Navigator.of(context).pop(),
                     ),
@@ -140,20 +137,20 @@ class _DonorKonfirmasiPageState extends State<DonorKonfirmasiPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Konfirmasi Donor',
-                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.primary),
+                          Text(
+                            s.donationConfirmTitle,
+                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.primary),
                           ),
                           const SizedBox(height: 10),
-                          _baris('Nama', _nama),
-                          _baris('Email', _email),
-                          _baris('Golongan Darah', _golonganDarah),
+                          _baris(s.nameLabel, _nama),
+                          _baris(s.emailLabel, _email),
+                          _baris(s.bloodTypeLabel, _golonganDarah),
                           const SizedBox(height: 10),
                           const Divider(color: AppColors.primary, thickness: 0.8),
                           const SizedBox(height: 10),
-                          _baris('Tanggal Donor', _formatTanggal(jadwal.tanggalPelaksanaan)),
-                          _baris('Jam Donor', '${jadwal.jamMulaiFormat} - ${jadwal.jamSelesaiFormat}'),
-                          _baris('Lokasi Donor', jadwal.lokasi.namaLokasi),
+                          _baris(s.donationDateLabel, _formatTanggal(context, jadwal.tanggalPelaksanaan)),
+                          _baris(s.donationTimeLabel, '${jadwal.jamMulaiFormat} - ${jadwal.jamSelesaiFormat}'),
+                          _baris(s.donationLocationLabel, jadwal.lokasi.namaLokasi),
                         ],
                       ),
                     ),
@@ -170,9 +167,9 @@ class _DonorKonfirmasiPageState extends State<DonorKonfirmasiPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Kesehatan :',
-                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.primary),
+                          Text(
+                            s.healthSectionTitle,
+                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.primary),
                           ),
                           const SizedBox(height: 10),
                           for (int i = 0; i < widget.pertanyaan.length; i++)
@@ -190,7 +187,7 @@ class _DonorKonfirmasiPageState extends State<DonorKonfirmasiPage> {
                                   ),
                                   const SizedBox(width: 10),
                                   Text(
-                                    ': ${widget.jawaban[i] ? 'Ya' : 'Tidak'}',
+                                    ': ${widget.jawaban[i] ? s.yesLabel : s.noLabel}',
                                     style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600),
                                   ),
                                 ],
@@ -213,7 +210,7 @@ class _DonorKonfirmasiPageState extends State<DonorKonfirmasiPage> {
                         height: 20,
                         child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                       )
-                    : const Text('Daftar Donor'),
+                    : Text(s.registerDonorButton),
               ),
             ),
           ],

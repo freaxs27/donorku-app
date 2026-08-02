@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/locale/app_strings.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/header_halaman.dart';
 import '../../model/jadwal_ringkas.dart';
@@ -15,24 +16,8 @@ class KuisionerKesehatanPage extends StatefulWidget {
 }
 
 class _KuisionerKesehatanPageState extends State<KuisionerKesehatanPage> {
-  static const List<String> pertanyaanKuisioner = [
-    'Apakah Anda sedang demam, flu, batuk, atau sakit?',
-    'Apakah Anda merasa sehat hari ini?',
-    'Apakah pernah dirawat di rumah sakit',
-    'Apakah Anda sudah makan dalam 3-4 jam terakhir?',
-    'Apakah Anda mengonsumsi alkohol dalam 24 jam terakhir?',
-    'Apakah Anda sedang mengonsumsi obat-obatan tertentu?',
-    'Apakah Anda pernah pingsan atau pusing saat donor darah sebelumnya?',
-    'Apakah Anda memiliki riwayat penyakit jantung, tekanan darah, atau diabetes?',
-    'Apakah Anda pernah didiagnosis hepatitis, HIV/AIDS, atau penyakit menular darah?',
-    'Apakah Anda sedang hamil atau menyusui? (untuk wanita)',
-    'Apakah Anda baru menjalani operasi, atau tindakan medis dalam 6 bulan terakhir?',
-    'Apakah Anda baru menerima vaksinasi dalam 1 bulan terakhir?',
-    'Apakah Anda bersedia mendonorkan darah secara sukarela tanpa paksaan?',
-  ];
-
-  /// Urutan key ini WAJIB sama persis urutannya dengan [pertanyaanKuisioner]
-  /// di atas, dan HARUS sama persis dengan nama kolom di
+  /// Urutan key ini WAJIB sama persis urutannya dengan [questionnaireQuestions]
+  /// dari AppStrings, dan HARUS sama persis dengan nama kolom di
   /// `KuesionerKesehatan` (schema.prisma) / body yang dibaca backend
   /// (`route.ts` pendaftaran: `...jawaban` di-spread langsung ke Prisma).
   static const List<String> _keyKuisioner = [
@@ -51,9 +36,16 @@ class _KuisionerKesehatanPageState extends State<KuisionerKesehatanPage> {
     'bersedia_sukarela',
   ];
 
-  late final List<bool> _jawaban = List.filled(pertanyaanKuisioner.length, true);
+  late List<bool> _jawaban;
+
+  @override
+  void initState() {
+    super.initState();
+    _jawaban = List.filled(_keyKuisioner.length, true);
+  }
 
   void _selanjutnya() {
+    final pertanyaan = AppStrings.of(context).questionnaireQuestions;
     final jawabanMap = <String, bool>{
       for (int i = 0; i < _keyKuisioner.length; i++) _keyKuisioner[i]: _jawaban[i],
     };
@@ -62,7 +54,7 @@ class _KuisionerKesehatanPageState extends State<KuisionerKesehatanPage> {
       MaterialPageRoute(
         builder: (context) => DonorKonfirmasiPage(
           jadwalTerpilih: widget.jadwalTerpilih,
-          pertanyaan: pertanyaanKuisioner,
+          pertanyaan: pertanyaan,
           jawaban: _jawaban,
           jawabanMap: jawabanMap,
         ),
@@ -72,6 +64,9 @@ class _KuisionerKesehatanPageState extends State<KuisionerKesehatanPage> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
+    final pertanyaanKuisioner = s.questionnaireQuestions;
+
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -83,13 +78,13 @@ class _KuisionerKesehatanPageState extends State<KuisionerKesehatanPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     HeaderHalaman(
-                      judul: 'Kuesioner Kesehatan',
+                      judul: s.healthQuestionnaireTitle,
                       leadingIcon: Icons.arrow_back,
                       onTapLeading: () => Navigator.of(context).pop(),
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'Silahkan untuk menjawab beberapa pertanyaan di bawah sebelum lanjut',
+                      s.questionnaireIntro,
                       style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
                     ),
                     const SizedBox(height: 16),
@@ -110,7 +105,7 @@ class _KuisionerKesehatanPageState extends State<KuisionerKesehatanPage> {
               padding: const EdgeInsets.fromLTRB(AppDimens.paddingL, 0, AppDimens.paddingL, 16),
               child: ElevatedButton(
                 onPressed: _selanjutnya,
-                child: const Text('Selanjutnya'),
+                child: Text(s.nextButton),
               ),
             ),
           ],
@@ -133,6 +128,7 @@ class _KartuPertanyaan extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
@@ -147,9 +143,9 @@ class _KartuPertanyaan extends StatelessWidget {
             child: Text(pertanyaan, style: const TextStyle(fontSize: 12.5)),
           ),
           const SizedBox(width: 8),
-          _pilihanRadio(label: 'Ya', terpilih: jawabanYa, onTap: () => onUbah(true)),
+          _pilihanRadio(label: s.yesLabel, terpilih: jawabanYa, onTap: () => onUbah(true)),
           const SizedBox(width: 10),
-          _pilihanRadio(label: 'Tidak', terpilih: !jawabanYa, onTap: () => onUbah(false)),
+          _pilihanRadio(label: s.noLabel, terpilih: !jawabanYa, onTap: () => onUbah(false)),
         ],
       ),
     );

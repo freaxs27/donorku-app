@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import '../../core/locale/app_strings.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/header_halaman.dart';
 import '../../model/lokasi_donor.dart';
@@ -83,7 +84,7 @@ class _LokasiPageState extends State<LokasiPage> with TickerProviderStateMixin {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _pesanError = 'Gagal memuat data lokasi, coba lagi';
+        _pesanError = AppStrings.of(context).loadLocationFailed;
         _sedangMuat = false;
       });
     }
@@ -153,6 +154,8 @@ class _LokasiPageState extends State<LokasiPage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
+
     if (_sedangMuat && _semuaLokasi.isEmpty) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
@@ -167,7 +170,7 @@ class _LokasiPageState extends State<LokasiPage> with TickerProviderStateMixin {
               children: [
                 Text(_pesanError!, textAlign: TextAlign.center, style: AppTextStyles.body),
                 const SizedBox(height: 12),
-                ElevatedButton(onPressed: () => _muatData(), child: const Text('Coba Lagi')),
+                ElevatedButton(onPressed: () => _muatData(), child: Text(s.tryAgainButton)),
               ],
             ),
           ),
@@ -243,8 +246,8 @@ class _LokasiPageState extends State<LokasiPage> with TickerProviderStateMixin {
                       child: TextField(
                         controller: _searchController,
                         onSubmitted: (teks) => _muatData(search: teks),
-                        decoration: const InputDecoration(
-                          hintText: 'Cari Disini',
+                        decoration: InputDecoration(
+                          hintText: s.searchHint,
                           filled: false,
                           border: InputBorder.none,
                           enabledBorder: InputBorder.none,
@@ -302,7 +305,7 @@ class _LokasiPageState extends State<LokasiPage> with TickerProviderStateMixin {
                             AppDimens.paddingM, 12, AppDimens.paddingM, 0,
                           ),
                           child: HeaderHalaman(
-                            judul: 'Lokasi',
+                            judul: s.locationTitle,
                             leadingIcon: Icons.arrow_back,
                             onTapLeading: _toggleSheet,
                           ),
@@ -373,7 +376,7 @@ class _HeaderLokasi extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: AppDimens.paddingL, vertical: 4),
         child: HeaderHalaman(
-          judul: 'Lokasi',
+          judul: AppStrings.of(context).locationTitle,
           leadingIcon: tampilkanPanah ? Icons.arrow_back : null,
           onTapLeading: onTapBack,
         ),
@@ -390,6 +393,7 @@ class _KartuLokasiPeta extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimens.paddingM),
@@ -459,7 +463,11 @@ class _KartuLokasiPeta extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      data.statusDonor ?? 'Open Donor Darah',
+                      data.statusDonor == null
+                          ? s.openDonorStatus
+                          : (data.statusDonor == 'Belum Ada Jadwal'
+                              ? s.statusBelumAdaJadwal
+                              : data.statusDonor!),
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 13,
@@ -506,7 +514,7 @@ class _KartuLokasiPeta extends StatelessWidget {
                 shape: const StadiumBorder(),
               ),
               onPressed: onCekDetail,
-              child: const Text('Cek Detail Lokasi'),
+              child: Text(s.viewLocationDetails),
             ),
           ),
         ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import '../../../theme/app_theme.dart';
+import '../../../core/locale/app_strings.dart';
 import '../../../services/auth/auth_service.dart';
 import '../../../services/core/api_exception.dart';
 import 'atur_password_page.dart';
@@ -49,7 +50,7 @@ class _VerifikasiEmailPageState extends State<VerifikasiEmailPage> {
   Future<void> _verifikasi() async {
     final kode = _controllers.map((c) => c.text).join();
     if (kode.length != _jumlahKotak) {
-      _tampilkanPesan('Masukkan 6 digit kode OTP lengkap');
+      _tampilkanPesan(AppStrings.of(context).otpIncomplete);
       return;
     }
 
@@ -65,7 +66,7 @@ class _VerifikasiEmailPageState extends State<VerifikasiEmailPage> {
     } on ApiException catch (e) {
       _tampilkanPesan(e.message);
     } catch (e) {
-      _tampilkanPesan('Terjadi kesalahan tak terduga, coba lagi');
+      _tampilkanPesan(AppStrings.of(context).unexpectedError);
     } finally {
       if (mounted) setState(() => _sedangVerifikasi = false);
     }
@@ -79,7 +80,7 @@ class _VerifikasiEmailPageState extends State<VerifikasiEmailPage> {
     } on ApiException catch (e) {
       _tampilkanPesan(e.message);
     } catch (e) {
-      _tampilkanPesan('Gagal mengirim ulang kode, coba lagi');
+      _tampilkanPesan(AppStrings.of(context).resendCodeFailed);
     } finally {
       if (mounted) setState(() => _sedangKirimUlang = false);
     }
@@ -91,6 +92,7 @@ class _VerifikasiEmailPageState extends State<VerifikasiEmailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Scaffold(
       appBar: AppBar(
         leading: const BackButton(color: AppColors.textPrimary),
@@ -100,10 +102,10 @@ class _VerifikasiEmailPageState extends State<VerifikasiEmailPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Verifikasi Email', style: AppTextStyles.heading),
+            Text(s.verifyEmailTitle, style: AppTextStyles.heading),
             const SizedBox(height: 4),
             Text(
-              'Kami telah mengirim email kepada ${widget.email}\nMasukan kode yang ada di email',
+              s.verifyEmailSubtitle(widget.email),
               style: AppTextStyles.caption,
             ),
             const SizedBox(height: 24),
@@ -140,7 +142,7 @@ class _VerifikasiEmailPageState extends State<VerifikasiEmailPage> {
                       height: 20,
                       child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                     )
-                  : const Text('Verifikasi'),
+                  : Text(s.verifyButton),
             ),
             const SizedBox(height: 16),
 
@@ -149,9 +151,9 @@ class _VerifikasiEmailPageState extends State<VerifikasiEmailPage> {
                 text: TextSpan(
                   style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
                   children: [
-                    const TextSpan(text: 'Belum mendapatkan kode? '),
+                    TextSpan(text: s.noCodePrompt),
                     TextSpan(
-                      text: _sedangKirimUlang ? 'Mengirim...' : 'Kirim ulang',
+                      text: _sedangKirimUlang ? s.sendingLink : s.resendLink,
                       style: const TextStyle(
                         color: Colors.blue,
                         decoration: TextDecoration.underline,

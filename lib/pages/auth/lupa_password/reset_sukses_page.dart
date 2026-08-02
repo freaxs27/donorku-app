@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../theme/app_theme.dart';
+import '../../../core/locale/app_strings.dart';
 import '../login_page.dart';
 
 // (LP-004).
@@ -15,6 +16,7 @@ class ResetSuksesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -40,8 +42,8 @@ class ResetSuksesPage extends StatelessWidget {
               ),
               const SizedBox(height: 24),
 
-              const Text(
-                'Berhasil mengatur password',
+              Text(
+                s.passwordResetSuccess,
                 style: AppTextStyles.subheading,
               ),
               const SizedBox(height: 32),
@@ -50,7 +52,7 @@ class ResetSuksesPage extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () => _kembaliKeLogin(context),
-                  child: const Text('Kembali ke login'),
+                  child: Text(s.backToLogin),
                 ),
               ),
             ],

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../core/locale/app_strings.dart';
 import '../../theme/app_theme.dart';
 import '../../model/data_profil.dart';
 import '../../services/profil/profil_service.dart';
@@ -83,9 +84,10 @@ class _EditProfilPageState extends State<EditProfilPage> {
       '${_tanggalLahir.day} - ${_tanggalLahir.month} - ${_tanggalLahir.year}';
 
   Future<void> _simpan() async {
+    final s = AppStrings.of(context);
     if (_namaCtrl.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Nama lengkap tidak boleh kosong')));
+          SnackBar(content: Text(s.fullNameRequired)));
       return;
     }
 
@@ -93,8 +95,7 @@ class _EditProfilPageState extends State<EditProfilPage> {
     if (goldar.isNotEmpty &&
         !RegExp(r'^(A|B|AB|O)[+-]$').hasMatch(goldar)) {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Golongan darah harus diakhiri + atau - (contoh: O+, AB-)')));
+          SnackBar(content: Text(s.bloodTypeFormatInvalid)));
       return;
     }
 
@@ -120,7 +121,7 @@ class _EditProfilPageState extends State<EditProfilPage> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Profil berhasil diperbarui')));
+            SnackBar(content: Text(s.profileUpdated)));
         Navigator.of(context).pop();
       }
     } on ApiException catch (e) {
@@ -131,7 +132,7 @@ class _EditProfilPageState extends State<EditProfilPage> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Gagal menyimpan, coba lagi.')));
+            SnackBar(content: Text(s.saveFailed)));
       }
     } finally {
       if (mounted) setState(() => _sedangSimpan = false);
@@ -140,6 +141,7 @@ class _EditProfilPageState extends State<EditProfilPage> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -155,10 +157,10 @@ class _EditProfilPageState extends State<EditProfilPage> {
                     child: const Icon(Icons.arrow_back,
                         size: 28, color: AppColors.textPrimary),
                   ),
-                  const Expanded(
-                    child: Text('Edit Profil',
+                  Expanded(
+                    child: Text(s.editProfileTitle,
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 16,
+                        style: const TextStyle(fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: AppColors.textPrimary)),
                   ),
@@ -251,8 +253,8 @@ class _EditProfilPageState extends State<EditProfilPage> {
                                       fontWeight: FontWeight.bold,
                                       color: AppColors.primary)),
                               const SizedBox(height: 2),
-                              const Text('Total Donasi',
-                                  style: TextStyle(fontSize: 10,
+                              Text(s.totalDonations,
+                                  style: const TextStyle(fontSize: 10,
                                       color: AppColors.textPrimary)),
                             ],
                           ),
@@ -268,8 +270,8 @@ class _EditProfilPageState extends State<EditProfilPage> {
                                       fontWeight: FontWeight.bold,
                                       color: AppColors.primary)),
                               const SizedBox(height: 2),
-                              const Text('ml Darah',
-                                  style: TextStyle(fontSize: 10,
+                              Text(s.mlBlood,
+                                  style: const TextStyle(fontSize: 10,
                                       color: AppColors.textPrimary)),
                             ],
                           ),
@@ -282,8 +284,8 @@ class _EditProfilPageState extends State<EditProfilPage> {
               const SizedBox(height: 20),
 
               // Form
-              const Text('Informasi Pribadi',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,
+              Text(s.personalInfoSection,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold,
                       color: AppColors.textPrimary)),
               const SizedBox(height: 8),
               Container(
@@ -301,32 +303,28 @@ class _EditProfilPageState extends State<EditProfilPage> {
                 child: Column(
                   children: [
                     // Nama Lengkap — bisa diedit
-                    _BarisEdit(label: 'Nama Lengkap', ctrl: _namaCtrl),
+                    _BarisEdit(label: s.fullNameLabel, ctrl: _namaCtrl),
                     const Divider(height: 1, color: AppColors.border),
 
-                    // No Telepon — bisa diedit
-                    _BarisEdit(label: 'No Telepon', ctrl: _noTelpCtrl,
+                    _BarisEdit(label: s.phoneProfilLabel, ctrl: _noTelpCtrl,
                         tipe: TextInputType.phone),
                     const Divider(height: 1, color: AppColors.border),
 
-                    // Tanggal Lahir — tap buka date picker
                     _BarisTanggalLahir(
+                      label: s.dobLabel,
                       nilai: _tanggalLahirFormat,
                       onTap: _pilihTanggalLahir,
                     ),
                     const Divider(height: 1, color: AppColors.border),
 
-                    // Alamat — bisa diedit
-                    _BarisEdit(label: 'Alamat', ctrl: _alamatCtrl, maxLines: 2),
+                    _BarisEdit(label: s.addressLabel, ctrl: _alamatCtrl, maxLines: 2),
                     const Divider(height: 1, color: AppColors.border),
 
-                    // Email — bisa diedit
-                    _BarisEdit(label: 'Email', ctrl: _emailCtrl,
+                    _BarisEdit(label: s.emailLabel, ctrl: _emailCtrl,
                         tipe: TextInputType.emailAddress),
                     const Divider(height: 1, color: AppColors.border),
 
-                    // Golongan Darah — textfield dengan formatter, ketik manual
-                    _BarisGolonganDarah(ctrl: _golDarahCtrl),
+                    _BarisGolonganDarah(ctrl: _golDarahCtrl, hint: s.bloodTypeExampleHint, label: s.bloodTypeLabel),
                   ],
                 ),
               ),
@@ -345,8 +343,8 @@ class _EditProfilPageState extends State<EditProfilPage> {
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12)),
                       ),
-                      child: const Text('Batal',
-                          style: TextStyle(fontSize: 14)),
+                      child: Text(s.cancelButton,
+                          style: const TextStyle(fontSize: 14)),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -365,8 +363,8 @@ class _EditProfilPageState extends State<EditProfilPage> {
                           ? const SizedBox(width: 18, height: 18,
                               child: CircularProgressIndicator(
                                   strokeWidth: 2, color: Colors.white))
-                          : const Text('Simpan',
-                              style: TextStyle(fontSize: 14)),
+                          : Text(s.saveButton,
+                              style: const TextStyle(fontSize: 14)),
                     ),
                   ),
                 ],
@@ -451,10 +449,11 @@ class _BarisEdit extends StatelessWidget {
 // Baris tanggal lahir — tap buka date picker
 // ---------------------------------------------------------------------------
 class _BarisTanggalLahir extends StatelessWidget {
+  final String label;
   final String nilai;
   final VoidCallback onTap;
 
-  const _BarisTanggalLahir({required this.nilai, required this.onTap});
+  const _BarisTanggalLahir({required this.label, required this.nilai, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -463,10 +462,10 @@ class _BarisTanggalLahir extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const SizedBox(
+          SizedBox(
             width: 110,
-            child: Text('Tanggal Lahir',
-                style: TextStyle(fontSize: 14, color: AppColors.textPrimary)),
+            child: Text(label,
+                style: const TextStyle(fontSize: 14, color: AppColors.textPrimary)),
           ),
           const Text(': ',
               style: TextStyle(fontSize: 14, color: AppColors.textPrimary)),
@@ -503,8 +502,10 @@ class _BarisTanggalLahir extends StatelessWidget {
 // ---------------------------------------------------------------------------
 class _BarisGolonganDarah extends StatelessWidget {
   final TextEditingController ctrl;
+  final String hint;
+  final String label;
 
-  const _BarisGolonganDarah({required this.ctrl});
+  const _BarisGolonganDarah({required this.ctrl, required this.hint, required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -512,10 +513,10 @@ class _BarisGolonganDarah extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
-          const SizedBox(
+          SizedBox(
             width: 110,
-            child: Text('Golongan Darah',
-                style: TextStyle(fontSize: 14, color: AppColors.textPrimary)),
+            child: Text(label,
+                style: const TextStyle(fontSize: 14, color: AppColors.textPrimary)),
           ),
           const Text(': ',
               style: TextStyle(fontSize: 14, color: AppColors.textPrimary)),
@@ -528,12 +529,12 @@ class _BarisGolonganDarah extends StatelessWidget {
                 inputFormatters: [_FormatGolonganDarah()],
                 style: const TextStyle(
                     fontSize: 14, color: AppColors.textPrimary),
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   border: InputBorder.none,
                   isDense: true,
                   contentPadding:
-                      EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-                  hintText: 'Contoh: O+',
+                      const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                  hintText: hint,
                 ),
               ),
             ),

@@ -1,3 +1,5 @@
+import '../core/locale/app_strings.dart';
+
 class DataSertifikat {
   final int idRiwayat;
   final String nomorSertifikat;
@@ -29,13 +31,8 @@ class DataSertifikat {
     );
   }
 
-  String get tanggalFormat {
-    const bulan = [
-      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
-    ];
-    return '${tanggalDonor.day} ${bulan[tanggalDonor.month - 1]} ${tanggalDonor.year}';
-  }
+  String get tanggalFormat =>
+      AppStrings.current.formatTanggal(tanggalDonor);
 
   /// Label pendek untuk grid galeri: "Donor #N - DD Bulan YYYY"
   String labelGaleri(int urutan) => 'Donor #$urutan - $tanggalFormat';

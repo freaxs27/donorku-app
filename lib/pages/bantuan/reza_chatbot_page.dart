@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
+import '../../core/locale/app_strings.dart';
 
 // (C-001).
 class RezaChatbotPage extends StatefulWidget {
@@ -29,11 +30,12 @@ class _RezaChatbotPageState extends State<RezaChatbotPage> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
         leading: const BackButton(color: AppColors.textPrimary),
-        title: const Text('Reza Chatbot', style: AppTextStyles.subheading),
+        title: Text(s.rezaChatbotTitle, style: AppTextStyles.subheading),
         titleSpacing: 0,
       ),
       body: SafeArea(
@@ -47,17 +49,17 @@ class _RezaChatbotPageState extends State<RezaChatbotPage> {
                   children: [
                     const SizedBox(height: 40),
                     Text(
-                      'Halo, User',
+                      s.rezaGreeting,
                       style: AppTextStyles.body.copyWith(fontSize: 16, color: AppColors.textSecondary),
                     ),
                     const SizedBox(height: 2),
-                    const Text(
-                      'Reza di sini akan',
-                      style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                    Text(
+                      s.rezaIntroLine1,
+                      style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                     ),
-                    const Text(
-                      'membantumu',
-                      style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                    Text(
+                      s.rezaIntroLine2,
+                      style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                     ),
                     const SizedBox(height: 20),
 
@@ -67,13 +69,13 @@ class _RezaChatbotPageState extends State<RezaChatbotPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            _TombolSaran(label: 'Lorem Ipsum', onTap: () => _pilihSaran('Lorem Ipsum')),
+                            _TombolSaran(label: s.rezaSuggestionSyarat, onTap: () => _pilihSaran(s.rezaSuggestionSyarat)),
                             const SizedBox(height: 12),
-                            _TombolSaran(label: 'Lorem Ipsum', onTap: () => _pilihSaran('Lorem Ipsum')),
+                            _TombolSaran(label: s.rezaSuggestionJarak, onTap: () => _pilihSaran(s.rezaSuggestionJarak)),
                             const SizedBox(height: 12),
-                            _TombolSaran(label: 'Lorem Ipsum', onTap: () => _pilihSaran('Lorem Ipsum')),
+                            _TombolSaran(label: s.rezaSuggestionCaraDaftar, onTap: () => _pilihSaran(s.rezaSuggestionCaraDaftar)),
                             const SizedBox(height: 12),
-                            _TombolSaran(label: 'Lorem Ipsum', onTap: () => _pilihSaran('Lorem Ipsum')),
+                            _TombolSaran(label: s.rezaSuggestionLokasi, onTap: () => _pilihSaran(s.rezaSuggestionLokasi)),
                           ],
                         ),
                       ),
@@ -97,8 +99,8 @@ class _RezaChatbotPageState extends State<RezaChatbotPage> {
                     Expanded(
                       child: TextField(
                         controller: _pesanController,
-                        decoration: const InputDecoration(
-                          hintText: 'Tanya Reza Chatbot..',
+                        decoration: InputDecoration(
+                          hintText: s.rezaInputHint,
                           filled: false,
                           border: InputBorder.none,
                           enabledBorder: InputBorder.none,

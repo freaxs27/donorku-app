@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import '../../../theme/app_theme.dart';
+import '../../../core/locale/app_strings.dart';
 import '../../../core/validators/app_validators.dart';
 import '../../../model/data_register.dart';
 import 'foto_ktp_page.dart';
@@ -36,6 +37,7 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   void _lanjutkan() {
+    final s = AppStrings.of(context);
     final nama = _namaController.text.trim();
     final email = _emailController.text.trim();
     final noHp = _noHpController.text.trim();
@@ -44,11 +46,11 @@ class _RegisterPageState extends State<RegisterPage> {
     final konfirmasi = _konfirmasiController.text;
 
     if (nama.isEmpty || email.isEmpty || noHp.isEmpty || kota.isEmpty || password.isEmpty) {
-      _tampilkanPesan('Semua field wajib diisi');
+      _tampilkanPesan(s.allFieldsRequired);
       return;
     }
     if (!email.contains('@') || !email.contains('.')) {
-      _tampilkanPesan('Format email tidak valid');
+      _tampilkanPesan(s.invalidEmailFormat);
       return;
     }
     final errPass = AppValidators.password(password);
@@ -82,6 +84,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Scaffold(
       appBar: AppBar(
         leading: const BackButton(color: AppColors.textPrimary),
@@ -91,52 +94,52 @@ class _RegisterPageState extends State<RegisterPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Center(
-              child: Text('Buat Akunmu', style: AppTextStyles.heading),
+            Center(
+              child: Text(s.createAccountTitle, style: AppTextStyles.heading),
             ),
             const SizedBox(height: 20),
 
-            const Text('Nama Lengkap', style: AppTextStyles.body),
+            Text(s.fullNameLabel, style: AppTextStyles.body),
             const SizedBox(height: 8),
             TextField(
               controller: _namaController,
-              decoration: const InputDecoration(hintText: 'Masukan nama lengkap'),
+              decoration: InputDecoration(hintText: s.fullNameHint),
             ),
             const SizedBox(height: 16),
 
-            const Text('Email', style: AppTextStyles.body),
+            Text(s.emailLabel, style: AppTextStyles.body),
             const SizedBox(height: 8),
             TextField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(hintText: 'Masukan email'),
+              decoration: InputDecoration(hintText: s.emailHint),
             ),
             const SizedBox(height: 16),
 
-            const Text('No HP', style: AppTextStyles.body),
+            Text(s.phoneLabel, style: AppTextStyles.body),
             const SizedBox(height: 8),
             TextField(
               controller: _noHpController,
               keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(hintText: 'Masukan no hp'),
+              decoration: InputDecoration(hintText: s.phoneHint),
             ),
             const SizedBox(height: 16),
 
-            const Text('Kota', style: AppTextStyles.body),
+            Text(s.cityLabel, style: AppTextStyles.body),
             const SizedBox(height: 8),
             TextField(
               controller: _kotaController,
-              decoration: const InputDecoration(hintText: 'Masukan kota asal'),
+              decoration: InputDecoration(hintText: s.cityHint),
             ),
             const SizedBox(height: 16),
 
-            const Text('Password', style: AppTextStyles.body),
+            Text(s.passwordLabel, style: AppTextStyles.body),
             const SizedBox(height: 8),
             TextField(
               controller: _passwordController,
               obscureText: _obscurePassword,
               decoration: InputDecoration(
-                hintText: 'Masukan password',
+                hintText: s.passwordHint,
                 suffixIcon: IconButton(
                   icon: Icon(
                     _obscurePassword
@@ -152,13 +155,13 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
             const SizedBox(height: 16),
 
-            const Text('Konfirmasi Password', style: AppTextStyles.body),
+            Text(s.confirmPasswordLabel, style: AppTextStyles.body),
             const SizedBox(height: 8),
             TextField(
               controller: _konfirmasiController,
               obscureText: _obscureKonfirmasi,
               decoration: InputDecoration(
-                hintText: 'Masukan kembali password',
+                hintText: s.confirmPasswordHint,
                 suffixIcon: IconButton(
                   icon: Icon(
                     _obscureKonfirmasi
@@ -176,7 +179,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
             ElevatedButton(
               onPressed: _lanjutkan,
-              child: const Text('Selanjutnya'),
+              child: Text(s.nextButton),
             ),
             const SizedBox(height: 20),
 
@@ -185,7 +188,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 const Expanded(child: Divider(color: Colors.black26)),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Text('Atau', style: AppTextStyles.caption),
+                  child: Text(s.orDivider, style: AppTextStyles.caption),
                 ),
                 const Expanded(child: Divider(color: Colors.black26)),
               ],
@@ -201,7 +204,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 width: 20,
                 height: 20,
               ),
-              label: const Text('Daftar dengan Google'),
+              label: Text(s.registerWithGoogle),
             ),
             const SizedBox(height: 12),
 
@@ -214,7 +217,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 width: 20,
                 height: 20,
               ),
-              label: const Text('Daftar dengan Facebook'),
+              label: Text(s.registerWithFacebook),
             ),
             const SizedBox(height: 16),
 
@@ -223,9 +226,9 @@ class _RegisterPageState extends State<RegisterPage> {
                 text: TextSpan(
                   style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
                   children: [
-                    const TextSpan(text: 'Sudah punya akun? '),
+                    TextSpan(text: s.haveAccountPrompt),
                     TextSpan(
-                      text: 'login disini',
+                      text: s.loginHereLink,
                       style: const TextStyle(
                         color: Colors.blue,
                         decoration: TextDecoration.underline,

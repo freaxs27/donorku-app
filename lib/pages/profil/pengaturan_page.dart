@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../services/auth/session_service.dart';
+import '../../core/locale/app_bahasa.dart';
+import '../../core/locale/app_strings.dart';
 import '../auth/login_page.dart';
+import 'pilih_bahasa_page.dart';
 
 /// Halaman Pengaturan (P-002) — sesuai desain Figma.
 class PengaturanPage extends StatefulWidget {
@@ -30,15 +33,23 @@ class _PengaturanPageState extends State<PengaturanPage> {
     );
   }
 
+  void _bukaPilihBahasa() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const PilihBahasaPage()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
+    final namaBahasa = LocaleController.instance.bahasa.namaTampil;
+
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // ---- Header: back + judul "Pengaturan" ----
             Row(
               children: [
                 GestureDetector(
@@ -49,11 +60,11 @@ class _PengaturanPageState extends State<PengaturanPage> {
                     color: AppColors.textPrimary,
                   ),
                 ),
-                const Expanded(
+                Expanded(
                   child: Text(
-                    'Pengaturan',
+                    s.pengaturan,
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: AppColors.textPrimary,
@@ -65,35 +76,49 @@ class _PengaturanPageState extends State<PengaturanPage> {
             ),
             const SizedBox(height: 32),
 
-            // ---- Section: Notifikasi ----
-            const _JudulSection(text: 'Notifikasi'),
+            _JudulSection(text: s.notifikasi),
             const SizedBox(height: 8),
             _KartuNotifikasi(
               notifAktif: _notifAktif,
               notifEmail: _notifEmail,
               sms: _sms,
+              labelNotif: s.nyalakanNotifikasi,
+              labelEmail: s.notifikasiEmail,
+              labelSms: s.sms,
               onNotifAktif: (v) => setState(() => _notifAktif = v),
               onNotifEmail: (v) => setState(() => _notifEmail = v),
               onSms: (v) => setState(() => _sms = v),
             ),
             const SizedBox(height: 24),
 
-            // ---- Section: Aplikasi ----
-            const _JudulSection(text: 'Aplikasi'),
+            _JudulSection(text: s.aplikasi),
             const SizedBox(height: 8),
-            _KartuAplikasi(),
+            _KartuAplikasi(
+              labelBahasa: s.pilihBahasa,
+              labelTema: s.sesuaikanTema,
+              labelPrivasi: s.pengaturanPrivasi,
+              nilaiBahasa: namaBahasa,
+              onPilihBahasa: _bukaPilihBahasa,
+            ),
             const SizedBox(height: 24),
 
-            // ---- Section: Tentang Kami ----
-            const _JudulSection(text: 'Tentang Kami'),
+            _JudulSection(text: s.tentangKami),
             const SizedBox(height: 8),
-            _KartuTentangKami(),
+            _KartuTentangKami(
+              labelTentang: s.tentangDonorKu,
+              labelBantuan: s.bantuan,
+              labelSyarat: s.syaratKetentuan,
+              labelPrivasi: s.kebijakanPrivasi,
+            ),
             const SizedBox(height: 24),
 
-            // ---- Section: Akun ----
-            const _JudulSection(text: 'Akun'),
+            _JudulSection(text: s.akun),
             const SizedBox(height: 8),
-            _KartuAkun(onKeluar: _keluar),
+            _KartuAkun(
+              onKeluar: _keluar,
+              labelKeluar: s.keluar,
+              labelHapusAkun: s.hapusAkun,
+            ),
           ],
         ),
       ),
@@ -147,6 +172,9 @@ class _KartuNotifikasi extends StatelessWidget {
   final bool notifAktif;
   final bool notifEmail;
   final bool sms;
+  final String labelNotif;
+  final String labelEmail;
+  final String labelSms;
   final ValueChanged<bool> onNotifAktif;
   final ValueChanged<bool> onNotifEmail;
   final ValueChanged<bool> onSms;
@@ -155,6 +183,9 @@ class _KartuNotifikasi extends StatelessWidget {
     required this.notifAktif,
     required this.notifEmail,
     required this.sms,
+    required this.labelNotif,
+    required this.labelEmail,
+    required this.labelSms,
     required this.onNotifAktif,
     required this.onNotifEmail,
     required this.onSms,
@@ -168,21 +199,21 @@ class _KartuNotifikasi extends StatelessWidget {
         children: [
           _BarisSwitch(
             icon: Icons.notifications_outlined,
-            label: 'Nyalakan Notifikasi',
+            label: labelNotif,
             value: notifAktif,
             onChanged: onNotifAktif,
           ),
           const Divider(height: 1, color: AppColors.border, indent: 56),
           _BarisSwitch(
             icon: Icons.mail_outline,
-            label: 'Notifikasi Email',
+            label: labelEmail,
             value: notifEmail,
             onChanged: onNotifEmail,
           ),
           const Divider(height: 1, color: AppColors.border, indent: 56),
           _BarisSwitch(
             icon: Icons.comment_outlined,
-            label: 'SMS',
+            label: labelSms,
             value: sms,
             onChanged: onSms,
           ),
@@ -242,6 +273,20 @@ class _BarisSwitch extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _KartuAplikasi extends StatelessWidget {
+  final String labelBahasa;
+  final String labelTema;
+  final String labelPrivasi;
+  final String nilaiBahasa;
+  final VoidCallback onPilihBahasa;
+
+  const _KartuAplikasi({
+    required this.labelBahasa,
+    required this.labelTema,
+    required this.labelPrivasi,
+    required this.nilaiBahasa,
+    required this.onPilihBahasa,
+  });
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -250,19 +295,20 @@ class _KartuAplikasi extends StatelessWidget {
         children: [
           _BarisMenu(
             icon: Icons.language,
-            label: 'Pilih Bahasa',
-            onTap: () {},
+            label: labelBahasa,
+            trailingText: nilaiBahasa,
+            onTap: onPilihBahasa,
           ),
           const Divider(height: 1, color: AppColors.border, indent: 56),
           _BarisMenu(
             icon: Icons.dark_mode_outlined,
-            label: 'Sesuaikan Tema',
+            label: labelTema,
             onTap: () {},
           ),
           const Divider(height: 1, color: AppColors.border, indent: 56),
           _BarisMenu(
             icon: Icons.shield_outlined,
-            label: 'Pengaturan Privasi',
+            label: labelPrivasi,
             onTap: () {},
           ),
         ],
@@ -276,6 +322,18 @@ class _KartuAplikasi extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _KartuTentangKami extends StatelessWidget {
+  final String labelTentang;
+  final String labelBantuan;
+  final String labelSyarat;
+  final String labelPrivasi;
+
+  const _KartuTentangKami({
+    required this.labelTentang,
+    required this.labelBantuan,
+    required this.labelSyarat,
+    required this.labelPrivasi,
+  });
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -284,25 +342,25 @@ class _KartuTentangKami extends StatelessWidget {
         children: [
           _BarisMenu(
             icon: Icons.info_outline,
-            label: 'Tentang Donor Ku',
+            label: labelTentang,
             onTap: () {},
           ),
           const Divider(height: 1, color: AppColors.border, indent: 56),
           _BarisMenu(
             icon: Icons.help_outline,
-            label: 'Bantuan',
+            label: labelBantuan,
             onTap: () {},
           ),
           const Divider(height: 1, color: AppColors.border, indent: 56),
           _BarisMenu(
             icon: Icons.description_outlined,
-            label: 'Syarat & Ketentuan',
+            label: labelSyarat,
             onTap: () {},
           ),
           const Divider(height: 1, color: AppColors.border, indent: 56),
           _BarisMenu(
             icon: Icons.lock_outline,
-            label: 'Kebijakan Privasi',
+            label: labelPrivasi,
             onTap: () {},
           ),
         ],
@@ -318,11 +376,13 @@ class _KartuTentangKami extends StatelessWidget {
 class _BarisMenu extends StatelessWidget {
   final IconData icon;
   final String label;
+  final String? trailingText;
   final VoidCallback? onTap;
 
   const _BarisMenu({
     required this.icon,
     required this.label,
+    this.trailingText,
     this.onTap,
   });
 
@@ -347,6 +407,16 @@ class _BarisMenu extends StatelessWidget {
                 ),
               ),
             ),
+            if (trailingText != null) ...[
+              Text(
+                trailingText!,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(width: 4),
+            ],
             const Icon(
               Icons.chevron_right,
               size: 24,
@@ -365,8 +435,14 @@ class _BarisMenu extends StatelessWidget {
 
 class _KartuAkun extends StatelessWidget {
   final VoidCallback onKeluar;
+  final String labelKeluar;
+  final String labelHapusAkun;
 
-  const _KartuAkun({required this.onKeluar});
+  const _KartuAkun({
+    required this.onKeluar,
+    required this.labelKeluar,
+    required this.labelHapusAkun,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -374,22 +450,21 @@ class _KartuAkun extends StatelessWidget {
       decoration: _dekorasiKartu,
       child: Column(
         children: [
-          // Baris Keluar
           InkWell(
             onTap: onKeluar,
             borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(20),
               topRight: Radius.circular(20),
             ),
-            child: const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               child: Row(
                 children: [
-                  Icon(Icons.logout, size: 24, color: AppColors.textPrimary),
-                  SizedBox(width: 8),
+                  const Icon(Icons.logout, size: 24, color: AppColors.textPrimary),
+                  const SizedBox(width: 8),
                   Text(
-                    'Keluar',
-                    style: TextStyle(
+                    labelKeluar,
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.normal,
                       color: AppColors.textPrimary,
@@ -400,22 +475,21 @@ class _KartuAkun extends StatelessWidget {
             ),
           ),
           const Divider(height: 1, color: AppColors.border, indent: 56),
-          // Tombol Hapus Akun
           InkWell(
             onTap: () {},
             borderRadius: const BorderRadius.only(
               bottomLeft: Radius.circular(20),
               bottomRight: Radius.circular(20),
             ),
-            child: const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               child: Row(
                 children: [
-                  Icon(Icons.delete_outline, size: 24, color: AppColors.primary),
-                  SizedBox(width: 8),
+                  const Icon(Icons.delete_outline, size: 24, color: AppColors.primary),
+                  const SizedBox(width: 8),
                   Text(
-                    'Hapus Akun',
-                    style: TextStyle(
+                    labelHapusAkun,
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.normal,
                       color: AppColors.primary,
